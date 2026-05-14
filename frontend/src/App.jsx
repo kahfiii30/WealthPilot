@@ -31,10 +31,18 @@ function App() {
 
   // Auth State Listener
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      setLoading(false);
+      return;
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) fetchUserData(session.user.id);
       else setLoading(false);
+    }).catch(err => {
+      console.error("Auth Session Error:", err);
+      setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -46,7 +54,15 @@ function App() {
       }
     });
 
-    return () => subscription.unsubscribe();
+    // Safety timeout to prevent stuck loading
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 5000);
+
+    return () => {
+      subscription.unsubscribe();
+      clearTimeout(timer);
+    };
   }, []);
 
   const resetLocalState = () => {

@@ -237,13 +237,20 @@ function App() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-6">
-          <div className="relative w-16 h-16">
-            <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
-            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center relative overflow-hidden">
+        {/* Background Glows */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[150px] rounded-full animate-pulse"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-blue-500/5 blur-[100px] rounded-full animate-pulse delay-700"></div>
+
+        <div className="flex flex-col items-center gap-8 relative z-10">
+          <div className="relative w-20 h-20">
+            <div className="absolute inset-0 border-[6px] border-slate-800/50 rounded-2xl"></div>
+            <div className="absolute inset-0 border-[6px] border-emerald-400 border-t-transparent border-r-transparent rounded-2xl animate-spin shadow-[0_0_20px_rgba(74,222,128,0.2)]"></div>
           </div>
-          <p className="text-on-surface font-bold tracking-[0.2em] uppercase animate-pulse">WealthPilot</p>
+          <div className="text-center">
+            <h1 className="text-3xl font-black text-slate-100 tracking-[0.3em] uppercase mb-2">WealthPilot</h1>
+            <p className="text-[10px] font-black text-emerald-400 uppercase tracking-[0.5em] animate-pulse">Initializing Command Center</p>
+          </div>
         </div>
       </div>
     );
@@ -258,7 +265,7 @@ function App() {
   }
 
   return (
-    <div className="relative min-h-screen bg-[#0b0f19]">
+    <div className="relative min-h-screen text-slate-100 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(74,222,128,0.08),transparent_26%),linear-gradient(135deg,#020617_0%,#07111f_45%,#0b1628_100%)]">
       <div className="hidden md:block">
         <Sidebar 
           activePage={activePage} 
@@ -275,7 +282,7 @@ function App() {
         t={t}
       />
 
-      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative bg-[#0b0f19]">
+      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative">
         <AnimatePresence mode="wait">
           {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
           {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}

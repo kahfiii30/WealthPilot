@@ -2,203 +2,230 @@ import React from 'react';
 
 function Insight({ t, fm }) {
   return (
-    <div className="max-w-[1400px] mx-auto p-lg">
+    <div className="max-w-[1400px] mx-auto p-8">
       {/* Page Title Area */}
-      <div className="flex flex-col mb-lg">
-        <h2 className="font-headline-lg text-headline-lg text-on-surface">{t('insight')}</h2>
-        <p className="text-on-surface-variant font-body-md">Personalized analysis for your financial future.</p>
+      <div className="flex flex-col mb-10">
+        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 ml-1">Strategy & Analysis</p>
+        <h2 className="text-4xl font-black text-slate-100 tracking-tighter">{t('insight')}</h2>
+        <p className="text-sm font-bold text-slate-500 tracking-tight mt-1">Personalized intelligence for your financial future.</p>
       </div>
 
       {/* Bento Grid Layout */}
-      <div className="grid grid-cols-12 gap-lg">
+      <div className="grid grid-cols-12 gap-8">
         {/* Financial Health Score Card */}
-        <div className="col-span-12 lg:col-span-5 glass-card rounded-xl p-lg flex flex-col items-center justify-center relative overflow-hidden min-h-[400px]">
+        <div className="col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 flex flex-col items-center justify-center relative overflow-hidden min-h-[450px] shadow-2xl backdrop-blur-xl group">
           {/* Background Accent Glow */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-primary/10 blur-[100px] rounded-full"></div>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/10 blur-[120px] rounded-full group-hover:bg-emerald-400/15 transition-all duration-500"></div>
+          
           <div className="relative flex flex-col items-center">
-            <div className="w-40 h-40 md:w-48 md:h-48 rounded-full border-[10px] md:border-[12px] border-surface-container-highest flex items-center justify-center relative">
+            <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border-[12px] border-slate-800/50 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,0,0,0.3)]">
               {/* Progress Stroke (SVG for precision) */}
-              <svg className="absolute inset-0 w-full h-full -rotate-90">
-                <circle className="text-primary" cx="50%" cy="50%" fill="none" r="42%" stroke="currentColor" strokeDasharray="527" strokeDashoffset="116" strokeWidth="10"></circle>
+              <svg className="absolute inset-0 w-full h-full -rotate-90 scale-[1.08]">
+                <circle 
+                  className="text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.4)]" 
+                  cx="50%" 
+                  cy="50%" 
+                  fill="none" 
+                  r="42%" 
+                  stroke="currentColor" 
+                  strokeDasharray="527" 
+                  strokeDashoffset="116" 
+                  strokeWidth="12" 
+                  strokeLinecap="round"
+                ></circle>
               </svg>
               <div className="text-center">
-                <span className="font-display-lg text-4xl md:text-5xl lg:text-display-lg text-on-surface block">78</span>
-                <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Score</span>
+                <span className="text-6xl md:text-7xl font-black text-slate-100 tracking-tighter block leading-none">78</span>
+                <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mt-2 block">Wealth Score</span>
               </div>
             </div>
-            <div className="mt-lg px-4 py-1.5 bg-primary/20 text-primary border border-primary/30 rounded-full font-bold text-label-md">
-              Status: Healthy
+            <div className="mt-10 px-6 py-2 bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 rounded-full font-black text-xs uppercase tracking-widest shadow-[0_0_20px_rgba(74,222,128,0.1)]">
+              Status: Excellent
             </div>
           </div>
-          <div className="mt-xl w-full grid grid-cols-3 gap-md border-t border-outline-variant/30 pt-lg">
-            <div className="text-center">
-              <p className="text-[10px] md:text-on-surface-variant font-label-md mb-xs">{t('totalIncome')}</p>
-              <span className="material-symbols-outlined text-primary text-xl">trending_up</span>
-              <p className="font-mono-data text-[10px] md:text-mono-data text-on-surface mt-xs">Surplus</p>
+          
+          <div className="mt-12 w-full grid grid-cols-3 gap-6 border-t border-slate-700/30 pt-10">
+            <div className="text-center group/item">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 group-hover/item:text-emerald-400 transition-colors">{t('totalIncome')}</p>
+              <span className="material-symbols-outlined text-emerald-400 font-bold text-2xl mb-1">trending_up</span>
+              <p className="text-xs font-black text-slate-100 tracking-tight">Surplus</p>
             </div>
-            <div className="text-center">
-              <p className="text-[10px] md:text-on-surface-variant font-label-md mb-xs">{t('debts')}</p>
-              <span className="material-symbols-outlined text-primary text-xl">verified_user</span>
-              <p className="font-mono-data text-[10px] md:text-mono-data text-on-surface mt-xs">Low Risk</p>
+            <div className="text-center group/item">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 group-hover/item:text-emerald-400 transition-colors">{t('debts')}</p>
+              <span className="material-symbols-outlined text-emerald-400 font-bold text-2xl mb-1">verified_user</span>
+              <p className="text-xs font-black text-slate-100 tracking-tight">Low Risk</p>
             </div>
-            <div className="text-center">
-              <p className="text-[10px] md:text-on-surface-variant font-label-md mb-xs">{t('savings')}</p>
-              <span className="material-symbols-outlined text-primary text-xl">savings</span>
-              <p className="font-mono-data text-[10px] md:text-mono-data text-on-surface mt-xs">Active</p>
+            <div className="text-center group/item">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 group-hover/item:text-emerald-400 transition-colors">{t('savings')}</p>
+              <span className="material-symbols-outlined text-emerald-400 font-bold text-2xl mb-1">savings</span>
+              <p className="text-xs font-black text-slate-100 tracking-tight">Active</p>
             </div>
           </div>
         </div>
 
         {/* Analysis & Improvements Bento Group */}
-        <div className="col-span-12 lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-lg">
+        <div className="col-span-12 lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Positive Points */}
-          <div className="glass-card rounded-xl p-lg">
-            <div className="flex items-center gap-sm mb-lg">
-              <span className="material-symbols-outlined text-primary">check_circle</span>
-              <h3 className="font-headline-lg text-headline-lg-mobile text-on-surface">Analysis points</h3>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70">
+            <div className="flex items-center gap-3 mb-8">
+              <span className="material-symbols-outlined text-emerald-400 font-bold">check_circle</span>
+              <h3 className="text-xl font-black text-slate-100 tracking-tight">Strength Analysis</h3>
             </div>
-            <ul className="space-y-lg">
-              <li className="flex justify-between items-center text-sm md:text-base">
-                <span className="text-on-surface-variant">{t('totalIncome')} &gt; {t('totalExpense')}</span>
-                <span className="text-primary font-mono-data">Optimal</span>
+            <ul className="space-y-6">
+              <li className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-400 tracking-tight">{t('totalIncome')} &gt; {t('totalExpense')}</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-lg">Optimal</span>
               </li>
-              <li className="flex justify-between items-center text-sm md:text-base">
-                <span className="text-on-surface-variant">Save rate 27.8%</span>
-                <span className="text-primary font-mono-data">Excellent</span>
+              <li className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-400 tracking-tight">Save rate 27.8%</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-lg">Excellent</span>
               </li>
-              <li className="flex justify-between items-center text-sm md:text-base">
-                <span className="text-on-surface-variant">Debt controlled</span>
-                <span className="text-primary font-mono-data">Stable</span>
+              <li className="flex justify-between items-center">
+                <span className="text-sm font-bold text-slate-400 tracking-tight">Debt controlled</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400 px-2 py-1 bg-emerald-400/10 rounded-lg">Stable</span>
               </li>
             </ul>
           </div>
 
           {/* Improvements Needed */}
-          <div className="glass-card rounded-xl p-lg border-error/20">
-            <div className="flex items-center gap-sm mb-lg">
-              <span className="material-symbols-outlined text-error">warning</span>
-              <h3 className="font-headline-lg text-headline-lg-mobile text-on-surface">Improvements needed</h3>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-red-400/30 hover:bg-slate-900/70">
+            <div className="flex items-center gap-3 mb-8">
+              <span className="material-symbols-outlined text-red-300 font-bold">warning</span>
+              <h3 className="text-xl font-black text-slate-100 tracking-tight">Risk Factors</h3>
             </div>
-            <div className="space-y-lg">
-              <div className="p-md bg-error/10 rounded-lg border border-error/20">
-                <p className="text-error font-label-md mb-xs font-bold uppercase">Critical</p>
-                <p className="text-on-surface text-sm">Emergency fund &lt; 3 months</p>
+            <div className="space-y-6">
+              <div className="p-5 bg-red-400/10 rounded-2xl border border-red-500/20">
+                <p className="text-[9px] font-black text-red-300 uppercase tracking-[0.2em] mb-1">Critical</p>
+                <p className="text-sm font-bold text-slate-100 tracking-tight">Emergency fund &lt; 3 months</p>
               </div>
-              <div className="p-md bg-surface-container-high rounded-lg border border-outline-variant/30">
-                <p className="text-tertiary font-label-md mb-xs font-bold uppercase">Caution</p>
-                <p className="text-on-surface text-sm">Consumptive spending up</p>
+              <div className="p-5 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+                <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">Attention</p>
+                <p className="text-sm font-bold text-slate-100 tracking-tight">Consumptive spending up 12%</p>
               </div>
             </div>
           </div>
 
           {/* Smart Insight AI Card */}
-          <div className="md:col-span-2 glass-card rounded-xl p-lg border-primary/20 flex flex-col md:flex-row gap-lg items-center">
-            <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-primary text-3xl md:text-4xl">auto_awesome</span>
+          <div className="md:col-span-2 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-8 shadow-xl backdrop-blur-xl flex flex-col md:flex-row gap-8 items-center group hover:border-emerald-400/40 transition-all duration-300">
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-[0_0_30px_rgba(74,222,128,0.1)]">
+              <span className="material-symbols-outlined text-emerald-400 text-4xl md:text-5xl font-bold">auto_awesome</span>
             </div>
             <div className="flex-1 text-center md:text-left">
-              <div className="flex flex-col md:flex-row items-center gap-sm mb-xs">
-                <h3 className="font-headline-lg text-headline-lg-mobile text-on-surface">Smart Insight (AI)</h3>
-                <span className="text-primary font-label-md px-2 py-0.5 bg-primary/10 rounded-full text-[10px]">New Update</span>
+              <div className="flex flex-col md:flex-row items-center gap-3 mb-3">
+                <h3 className="text-2xl font-black text-slate-100 tracking-tight">Smart Insight AI</h3>
+                <span className="text-[9px] font-black text-emerald-400 px-2 py-0.5 bg-emerald-400/10 border border-emerald-400/20 rounded-full uppercase tracking-widest">Real-time Analysis</span>
               </div>
-              <p className="text-on-surface text-sm md:text-base leading-relaxed">
-                Your food spending increased by <span className="text-error font-bold">22%</span>. Potential over budget <span className="text-primary font-bold">{fm(310000)}</span>.
+              <p className="text-base font-bold text-slate-300 leading-relaxed tracking-tight">
+                Your lifestyle spending increased by <span className="text-red-300">22%</span>. Potential savings of <span className="text-emerald-400 font-black">{fm(310000)}</span> found in subscription audits.
               </p>
-              <div className="mt-md flex flex-col sm:flex-row gap-md">
-                <button className="px-4 py-2 bg-primary/10 text-primary border border-primary/30 rounded-lg text-label-md font-bold hover:bg-primary/20 transition-all cursor-pointer w-full sm:w-auto text-xs">Review Spending</button>
-                <button className="px-4 py-2 text-on-surface-variant hover:text-on-surface text-label-md transition-all cursor-pointer w-full sm:w-auto text-xs">Dismiss</button>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                <button className="px-6 py-2.5 bg-emerald-400 text-slate-950 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_20px_rgba(74,222,128,0.2)] active:scale-95">Execute Audit</button>
+                <button className="px-6 py-2.5 text-slate-400 hover:text-slate-100 text-xs font-black uppercase tracking-widest transition-all">Dismiss Analysis</button>
               </div>
             </div>
           </div>
         </div>
 
         {/* Goal Tracker Card */}
-        <div className="col-span-12 glass-card rounded-xl p-md md:p-lg">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-xl gap-4">
+        <div className="col-span-12 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
             <div>
-              <h3 className="font-headline-lg text-headline-lg text-on-surface">Goal Tracker</h3>
-              <p className="text-on-surface-variant text-sm">Track your journey to financial freedom.</p>
+              <h3 className="text-2xl font-black text-slate-100 tracking-tight">Strategic Goal Tracker</h3>
+              <p className="text-sm font-bold text-slate-500 tracking-tight">Projecting your journey to absolute financial freedom.</p>
             </div>
-            <button className="w-full sm:w-auto px-4 py-2 border border-outline-variant rounded-lg text-on-surface hover:border-primary transition-colors font-label-md cursor-pointer text-xs">View All Goals</button>
+            <button className="px-6 py-2.5 border border-slate-700/50 rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 hover:border-emerald-400/30 transition-all">View Strategic Map</button>
           </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-xl">
-            <div className="space-y-md">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <div className="space-y-8">
               <div className="flex justify-between items-end">
                 <div>
-                  <h4 className="font-headline-lg text-lg md:text-headline-lg-mobile text-on-surface">Emergency Fund</h4>
-                  <p className="text-on-surface-variant text-[10px] md:text-label-md">Target: {fm(50000000)}</p>
+                  <h4 className="text-xl font-black text-slate-100 tracking-tight">Emergency Fund</h4>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Target: {fm(50000000)}</p>
                 </div>
                 <div className="text-right">
-                  <span className="font-display-sm text-2xl md:text-display-sm text-primary block">24%</span>
-                  <span className="text-on-surface-variant text-[10px] md:text-label-md">Complete</span>
+                  <span className="text-3xl font-black text-emerald-400 tracking-tighter block leading-none">24%</span>
+                  <span className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] mt-1 block">Completed</span>
                 </div>
               </div>
               {/* Progress Bar */}
-              <div className="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
-                <div className="h-full bg-primary w-[24%]" style={{ boxShadow: '0 0 10px rgba(75, 226, 119, 0.4)' }}></div>
+              <div className="w-full h-4 bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
+                <div className="h-full bg-gradient-to-r from-emerald-400 to-emerald-600 shadow-[0_0_15px_rgba(74,222,128,0.3)] w-[24%]"></div>
               </div>
-              <div className="flex justify-between text-[10px] md:text-label-md text-on-surface-variant">
-                <span>Current: {fm(12000000)}</span>
-                <span>Remaining: {fm(38000000)}</span>
+              <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span>Invested: {fm(12000000)}</span>
+                <span>Requirement: {fm(38000000)}</span>
               </div>
             </div>
             {/* Mini Chart/Visual Representation of Savings */}
-            <div className="flex items-end gap-1 md:gap-2 h-24 md:h-32 pt-lg">
+            <div className="flex items-end gap-2 h-32 pt-4">
               {[20, 35, 25, 50, 45, 60, 80].map((h, i) => (
-                <div key={i} className={`flex-1 rounded-t-lg transition-all ${i === 6 ? 'bg-primary' : 'bg-surface-container-high hover:bg-primary/40'}`} style={{ height: `${h}%` }}></div>
+                <div 
+                  key={i} 
+                  className={`flex-1 rounded-t-lg transition-all duration-300 shadow-[0_0_20px_rgba(0,0,0,0.2)] ${i === 6 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400 shadow-[0_0_15px_rgba(74,222,128,0.2)]' : 'bg-slate-800/60 hover:bg-emerald-400/30'}`}
+                  style={{ height: `${h}%` }}
+                ></div>
               ))}
             </div>
           </div>
         </div>
 
         {/* Asset vs Debt Trends */}
-        <div className="col-span-12 lg:col-span-8 glass-card rounded-xl p-md md:p-lg">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-lg gap-3">
-            <h3 className="font-headline-lg text-headline-lg text-on-surface">Wealth Growth Trend</h3>
-            <div className="flex gap-sm">
-              <span className="flex items-center gap-1.5 text-[10px] md:text-label-md text-on-surface-variant">
-                <span className="w-2.5 h-2.5 rounded-full bg-primary"></span> {t('assets')}
+        <div className="col-span-12 lg:col-span-8 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
+            <h3 className="text-2xl font-black text-slate-100 tracking-tight">Capital Accumulation Trend</h3>
+            <div className="flex gap-6">
+              <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(74,222,128,0.4)]"></span> {t('assets')}
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] md:text-label-md text-on-surface-variant">
-                <span className="w-2.5 h-2.5 rounded-full bg-error"></span> {t('debts')}
+              <span className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <span className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.4)]"></span> {t('debts')}
               </span>
             </div>
           </div>
-          <div className="h-[200px] md:h-[240px] w-full flex items-end gap-1 md:gap-gutter px-1 md:px-md overflow-x-auto no-scrollbar">
+          <div className="h-[240px] w-full flex items-end gap-3 px-2 overflow-x-auto no-scrollbar">
             {['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'].map((month, i) => (
-              <div key={i} className="min-w-[50px] md:min-w-0 flex-1 flex flex-col items-center gap-sm">
-                <div className="w-full flex gap-1 items-end h-[120px] md:h-[160px]">
-                  <div className={`flex-1 bg-primary${i === 5 ? '' : '/40'} rounded-sm`} style={{ height: `${40 + i * 10}%` }}></div>
-                  <div className={`flex-1 bg-error${i === 5 ? '' : '/40'} rounded-sm`} style={{ height: `${20 - i * 2}%` }}></div>
+              <div key={i} className="min-w-[60px] flex-1 flex flex-col items-center gap-4 group cursor-default">
+                <div className="w-full flex gap-1.5 items-end h-[160px]">
+                  <div 
+                    className={`flex-1 rounded-t-md transition-all duration-300 ${i === 5 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-emerald-400/30 group-hover:bg-emerald-400/50'}`}
+                    style={{ height: `${40 + i * 10}%` }}
+                  ></div>
+                  <div 
+                    className={`flex-1 rounded-t-md transition-all duration-300 ${i === 5 ? 'bg-gradient-to-t from-red-600 to-red-400' : 'bg-red-400/30 group-hover:bg-red-400/50'}`}
+                    style={{ height: `${20 - i * 2}%` }}
+                  ></div>
                 </div>
-                <span className={`text-[10px] md:text-label-md ${i === 5 ? 'text-on-surface font-bold' : 'text-on-surface-variant'}`}>{month}</span>
+                <span className={`text-[10px] font-black uppercase tracking-widest transition-colors ${i === 5 ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-300'}`}>{month}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Recent Activities / Notifications */}
-        <div className="col-span-12 lg:col-span-4 glass-card rounded-xl p-md md:p-lg">
-          <h3 className="font-headline-lg text-headline-lg text-on-surface mb-lg">Action Items</h3>
-          <div className="space-y-md">
+        {/* Recent Activities / Action Items */}
+        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+          <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">Strategic Tasks</h3>
+          <div className="space-y-4">
             {[
-              { icon: 'account_balance', color: 'secondary', title: 'Connect Bank Account', desc: 'Sync Mandiri or BCA for accuracy.' },
-              { icon: 'calendar_month', color: 'tertiary', title: 'Budget Review', desc: 'Monthly review is due in 2 days.' },
-              { icon: 'add_moderator', color: 'primary', title: 'Update Insurance', desc: 'Match coverage with current assets.' }
+              { icon: 'account_balance', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Sync Capital Source', desc: 'Mandiri & BCA accounts pending sync.' },
+              { icon: 'calendar_month', color: 'text-sky-400', bg: 'bg-sky-400/10', title: 'Tactical Review', desc: 'Monthly performance audit due.' },
+              { icon: 'add_moderator', color: 'text-purple-400', bg: 'bg-purple-400/10', title: 'Optimize Insurance', desc: 'Coverage alignment for Q3 assets.' }
             ].map((item, i) => (
-              <div key={i} className="flex items-start gap-md p-3 md:p-md bg-surface-container hover:bg-surface-container-high transition-colors rounded-lg group cursor-pointer border border-outline-variant/10">
-                <div className={`w-10 h-10 rounded-lg bg-${item.color}-container/20 flex items-center justify-center shrink-0`}>
-                  <span className={`material-symbols-outlined text-${item.color}`}>{item.icon}</span>
+              <div 
+                key={i} 
+                className="flex items-start gap-4 p-4 bg-slate-950/40 border border-slate-700/30 hover:border-emerald-400/30 transition-all rounded-2xl group cursor-pointer"
+              >
+                <div className={`w-11 h-11 rounded-xl ${item.bg} flex items-center justify-center shrink-0 border border-white/5 shadow-inner`}>
+                  <span className={`material-symbols-outlined font-bold ${item.color}`}>{item.icon}</span>
                 </div>
-                <div>
-                  <p className="text-on-surface font-bold text-sm md:text-body-md">{item.title}</p>
-                  <p className="text-on-surface-variant text-[10px] md:text-label-md line-clamp-1">{item.desc}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-slate-100 tracking-tight group-hover:text-emerald-400 transition-colors">{item.title}</p>
+                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest line-clamp-1 mt-0.5">{item.desc}</p>
                 </div>
               </div>
             ))}
           </div>
-          <button className="w-full mt-lg py-3 text-center text-on-surface-variant font-label-md hover:text-primary transition-colors border-t border-outline-variant/30 pt-md cursor-pointer text-xs">
-            View All Activity
+          <button className="w-full mt-8 py-4 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 hover:text-emerald-400 transition-colors border-t border-slate-800 pt-6">
+            View Intelligence Log
           </button>
         </div>
       </div>

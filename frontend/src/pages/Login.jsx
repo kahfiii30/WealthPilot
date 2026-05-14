@@ -18,65 +18,100 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen w-screen bg-[#050914] flex items-center justify-center px-4 py-8 overflow-x-hidden">
+    <div className="min-h-screen w-screen bg-[#050914] flex items-center justify-center px-4 py-8 relative overflow-hidden">
+      {/* Background Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse-glow" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-emerald-500/10 rounded-full blur-[120px] animate-pulse-glow" />
+      
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="relative z-10 w-full rounded-[2.5rem] border border-white/10 bg-white/[0.03] backdrop-blur-2xl p-8 sm:p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.6)]"
         style={{
-          width: "100%",
-          maxWidth: "420px",
+          maxWidth: "440px",
           minWidth: "320px"
         }}
       >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white whitespace-nowrap">
+        {/* Decorative Inner Glow */}
+        <div className="absolute inset-px rounded-[2.4rem] border border-white/5 pointer-events-none" />
+
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 mb-6">
+            <span className="material-symbols-outlined text-emerald-400 text-3xl">account_balance_wallet</span>
+          </div>
+          <h1 className="text-4xl font-bold text-white tracking-tight mb-3 whitespace-nowrap bg-clip-text text-transparent bg-gradient-to-b from-white to-white/70">
             WealthPilot
           </h1>
-          <p className="mt-3 text-base leading-relaxed text-slate-400 whitespace-normal">
-            Sign in to your financial command center
+          <p className="text-slate-400 text-base leading-relaxed whitespace-normal">
+            Securely access your financial command center
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm text-center">
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm text-center flex items-center justify-center gap-2"
+          >
+            <span className="material-symbols-outlined text-sm">error</span>
             {error}
-          </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleLogin} className="mt-8 w-full space-y-5">
-          <div className="w-full">
-            <label className="mb-2 block text-sm font-bold uppercase tracking-wide text-slate-300">
-              EMAIL ADDRESS
-            </label>
-            <input 
-              type="email" 
-              value={email} 
-              onChange={e => setEmail(e.target.value)} 
-              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none focus:border-emerald-400"
-              required 
-            />
+        <form onSubmit={handleLogin} className="space-y-6">
+          <div className="space-y-2">
+            <label className="block text-slate-300 text-xs font-bold uppercase tracking-[0.15em] ml-1">Email Address</label>
+            <div className="relative group">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-emerald-400 transition-colors">mail</span>
+              <input 
+                type="email" 
+                value={email} 
+                onChange={e => setEmail(e.target.value)} 
+                className="w-full h-14 pl-12 pr-4 bg-slate-950/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all"
+                placeholder="pilot@wealth.com"
+                required 
+              />
+            </div>
           </div>
-          <div className="w-full">
-            <label className="mb-2 block text-sm font-bold uppercase tracking-wide text-slate-300">
-              PASSWORD
-            </label>
-            <input 
-              type="password" 
-              value={password} 
-              onChange={e => setPassword(e.target.value)} 
-              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none focus:border-emerald-400"
-              required 
-            />
+
+          <div className="space-y-2">
+            <label className="block text-slate-300 text-xs font-bold uppercase tracking-[0.15em] ml-1">Password</label>
+            <div className="relative group">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-500 group-focus-within:text-emerald-400 transition-colors">lock</span>
+              <input 
+                type="password" 
+                value={password} 
+                onChange={e => setPassword(e.target.value)} 
+                className="w-full h-14 pl-12 pr-4 bg-slate-950/50 border border-white/10 rounded-2xl text-white placeholder:text-slate-600 outline-none focus:border-emerald-500/50 focus:ring-4 focus:ring-emerald-500/10 transition-all"
+                placeholder="••••••••"
+                required 
+              />
+            </div>
           </div>
+
           <button 
             type="submit" 
             disabled={loading}
-            className="block h-12 w-full rounded-xl bg-emerald-500 font-bold text-slate-950 hover:bg-emerald-400 transition disabled:opacity-50"
+            className="group relative w-full h-14 bg-emerald-500 rounded-2xl font-bold text-slate-950 overflow-hidden hover:scale-[1.01] active:scale-[0.98] transition-all disabled:opacity-50"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+            <span className="relative flex items-center justify-center gap-2">
+              {loading ? 'Authenticating...' : (
+                <>
+                  Sign In
+                  <span className="material-symbols-outlined text-lg">arrow_forward</span>
+                </>
+              )}
+            </span>
           </button>
         </form>
+
+        <div className="mt-10 pt-8 border-t border-white/5 text-center">
+          <p className="text-slate-500 text-sm">
+            Don't have an account? <span className="text-emerald-400 font-semibold cursor-pointer hover:underline">Get Access</span>
+          </p>
+        </div>
       </motion.div>
     </div>
   );

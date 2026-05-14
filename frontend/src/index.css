@@ -109,6 +109,13 @@
   --text-display-lg--line-height: 1.1;
   --text-display-lg--letter-spacing: -0.02em;
   --text-display-lg--font-weight: 700;
+
+  /* Animation Tokens */
+  --motion-fast: 160ms;
+  --motion-normal: 240ms;
+  --motion-slow: 360ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer base {
@@ -119,18 +126,88 @@
   }
 }
 
+/* Responsive Utilities */
+.desktop-only {
+  display: block;
+}
+.mobile-only {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: block;
+  }
+  
+  :root {
+    --spacing-container-margin: 16px;
+  }
+}
+
 @layer utilities {
   .glass-card {
-    background: rgba(17, 24, 39, 0.8);
+    background: rgba(17, 24, 39, 0.7);
     backdrop-filter: blur(12px);
-    border: 1px solid rgba(55, 65, 81, 0.5);
-    transition: border-color 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all var(--motion-normal) var(--ease-out);
+    position: relative;
+    overflow: hidden;
   }
   .glass-card:hover {
-    border-color: rgba(55, 65, 81, 1);
+    border-color: rgba(75, 226, 119, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5), 0 0 20px rgba(75, 226, 119, 0.05);
   }
   .inner-glow {
     box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.05);
+  }
+
+  /* Skeleton Loading */
+  @keyframes shimmer {
+    0% { background-position: -1000px 0; }
+    100% { background-position: 1000px 0; }
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, #192029 25%, #232a34 50%, #192029 75%);
+    background-size: 1000px 100%;
+    animation: shimmer 2s infinite linear;
+    border-radius: 8px;
+  }
+
+  @keyframes scale-up {
+    from { opacity: 0; transform: scale(0.96) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .animate-scale-up {
+    animation: scale-up var(--motion-normal) var(--ease-out) forwards;
+  }
+
+  /* Premium Focus States */
+  .focus-ring {
+    transition: all var(--motion-fast) var(--ease-out);
+  }
+  .focus-ring:focus-within, .focus-ring:focus {
+    border-color: #4be277;
+    box-shadow: 0 0 0 1px rgba(75, 226, 119, 0.3), 0 0 15px rgba(75, 226, 119, 0.1);
+  }
+
+  /* Smooth Transitions for Interactive Elements */
+  button, a, input, select, textarea {
+    transition: all var(--motion-fast) var(--ease-out);
+  }
+
+  .premium-button-active:active {
+    transform: scale(0.98);
+  }
+
+  .premium-button-hover:hover {
+    filter: brightness(1.1);
+    box-shadow: 0 4px 15px rgba(75, 226, 119, 0.2);
   }
 
   @keyframes pulse-glow {
@@ -150,6 +227,15 @@
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
+  
+  /* Hide scrollbar but keep functionality */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 
 /* Premium Asset/Debt Modal Styles */
@@ -167,6 +253,15 @@
   position: relative;
   z-index: 101;
   color-scheme: dark;
+}
+
+@media (max-width: 768px) {
+  .asset-modal {
+    padding: 24px;
+    width: 100%;
+    margin: 16px;
+    border-radius: 16px;
+  }
 }
 
 .asset-modal-header {
@@ -227,6 +322,12 @@
   display: flex;
   gap: 12px;
   margin-top: 12px;
+}
+
+@media (max-width: 480px) {
+  .asset-actions {
+    flex-direction: column;
+  }
 }
 
 .asset-cancel-btn,

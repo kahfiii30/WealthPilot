@@ -13,6 +13,8 @@ import Login from './pages/Login';
 import Settings from './pages/Settings';
 import AnimatedPage from './components/AnimatedPage';
 import TransactionForm from './components/TransactionForm';
+import { translate } from './utils/translations';
+import { formatMoney } from './utils/formatMoney';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -21,8 +23,15 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   // Core Data States
-  const [userProfile, setUserProfile] = useState({ firstName: "", lastName: "", email: "", avatarUrl: "" });
-  const [preferences, setPreferences] = useState({ currency: "IDR", theme: "Dark", dashboardPeriod: "This Month", numberFormat: "Indonesian" });
+  const [userProfile, setUserProfile] = useState({ firstName: "Pilot", lastName: "", email: "", avatarUrl: "" });
+  const [preferences, setPreferences] = useState({ 
+    currency: "IDR", 
+    theme: "Dark", 
+    dashboardPeriod: "This Month", 
+    numberFormat: "Indonesian",
+    language: "en",
+    exchangeRate: 16000 
+  });
   const [notifications, setNotifications] = useState({ budgetWarning: true, monthlyReport: true, debtReminder: true, goalProgress: false, largeExpenseAlert: true });
   const [transactions, setTransactions] = useState([]);
   const [assets, setAssets] = useState([]);
@@ -41,7 +50,7 @@ function App() {
       if (session) fetchUserData(session.user.id);
       else setLoading(false);
     }).catch(err => {
-      console.error("Auth Session Error:", err);
+      console.error(err);
       setLoading(false);
     });
 
@@ -54,19 +63,11 @@ function App() {
       }
     });
 
-    // Safety timeout to prevent stuck loading
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 5000);
-
-    return () => {
-      subscription.unsubscribe();
-      clearTimeout(timer);
-    };
+    return () => subscription.unsubscribe();
   }, []);
 
   const resetLocalState = () => {
-    setUserProfile({ firstName: "", lastName: "", email: "", avatarUrl: "" });
+    setUserProfile({ firstName: "Pilot", lastName: "", email: "", avatarUrl: "" });
     setTransactions([]);
     setAssets([]);
     setDebts([]);
@@ -76,48 +77,36 @@ function App() {
   const fetchUserData = async (userId) => {
     setLoading(true);
     try {
-      // 1. Fetch Profile
       const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
       if (profile) {
         setUserProfile({
-          firstName: profile.first_name || "",
+          firstName: profile.first_name || "Pilot",
           lastName: profile.last_name || "",
           email: profile.email || "",
           avatarUrl: profile.avatar_url || ""
         });
       }
 
-      // 2. Fetch Settings
       const { data: settings } = await supabase.from('user_settings').select('*').eq('user_id', userId).single();
       if (settings) {
-        setPreferences(settings.preferences);
+        setPreferences({
+          ...settings.preferences,
+          language: 'en',
+          exchangeRate: settings.exchange_rate_usd_idr || 16000,
+          currency: settings.preferences.currency || 'IDR'
+        });
         setNotifications(settings.notifications);
       }
 
-      // 3. Fetch Transactions
       const { data: transData } = await supabase.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
       if (transData) setTransactions(transData);
 
-      // 4. Fetch Assets
       const { data: assetsData } = await supabase.from('assets').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (assetsData) {
-        setAssets(assetsData.map(a => ({
-          ...a,
-          updatedAt: a.updated_at
-        })));
-      }
+      if (assetsData) setAssets(assetsData);
 
-      // 5. Fetch Debts
       const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (debtsData) {
-        setDebts(debtsData.map(d => ({
-          ...d,
-          dueDate: d.due_date,
-          updatedAt: d.updated_at
-        })));
-      }
+      if (debtsData) setDebts(debtsData);
 
-      // 6. Fetch Budgets
       const { data: budgetsData } = await supabase.from('budgets').select('*').eq('user_id', userId);
       if (budgetsData) setBudgets(budgetsData);
 
@@ -133,8 +122,6 @@ function App() {
     resetLocalState();
   };
 
-  // --- CRUD FUNCTIONS (SUPABASE MIGRATED) ---
-
   const handleAddTransaction = async (t) => {
     const { data, error } = await supabase.from('transactions').insert([{ ...t, user_id: session.user.id }]).select();
     if (!error && data) setTransactions(prev => [data[0], ...prev]);
@@ -145,235 +132,132 @@ function App() {
     if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
   };
 
-  const addAsset = async (a) => {
-    const { data, error } = await supabase.from('assets').insert([{
-      user_id: session.user.id,
-      name: a.name,
-      category: a.category,
-      amount: a.amount,
-      note: a.note
-    }]).select();
-    if (!error && data) setAssets(prev => [{ ...data[0], updatedAt: data[0].updated_at }, ...prev]);
-  };
-
-  const updateAsset = async (id, updated) => {
-    const { data, error } = await supabase.from('assets').update({
-      name: updated.name,
-      category: updated.category,
-      amount: updated.amount,
-      note: updated.note,
-      updated_at: new Date().toISOString()
-    }).eq('id', id).select();
-    if (!error && data) setAssets(prev => prev.map(a => a.id === id ? { ...data[0], updatedAt: data[0].updated_at } : a));
-  };
-
-  const deleteAsset = async (id) => {
-    const { error } = await supabase.from('assets').delete().eq('id', id);
-    if (!error) setAssets(prev => prev.filter(a => a.id !== id));
-  };
-
-  const addDebt = async (d) => {
-    const { data, error } = await supabase.from('debts').insert([{
-      user_id: session.user.id,
-      name: d.name,
-      category: d.category,
-      amount: d.amount,
-      note: d.note,
-      due_date: d.dueDate
-    }]).select();
-    if (!error && data) setDebts(prev => [{ ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at }, ...prev]);
-  };
-
-  const updateDebt = async (id, updated) => {
-    const { data, error } = await supabase.from('debts').update({
-      name: updated.name,
-      category: updated.category,
-      amount: updated.amount,
-      note: updated.note,
-      due_date: updated.dueDate,
-      updated_at: new Date().toISOString()
-    }).eq('id', id).select();
-    if (!error && data) setDebts(prev => prev.map(d => d.id === id ? { ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at } : d));
-  };
-
-  const deleteDebt = async (id) => {
-    const { error } = await supabase.from('debts').delete().eq('id', id);
-    if (!error) setDebts(prev => prev.filter(d => d.id !== id));
-  };
-
-  const addBudget = async (b) => {
-    const { data, error } = await supabase.from('budgets').insert([{ ...b, user_id: session.user.id }]).select();
-    if (!error && data) setBudgets(prev => [...prev, data[0]]);
-  };
-
-  const updateBudget = async (id, updated) => {
-    const { data, error } = await supabase.from('budgets').update(updated).eq('id', id).select();
-    if (!error && data) setBudgets(prev => prev.map(b => b.id === id ? data[0] : b));
-  };
-
-  const deleteBudget = async (id) => {
-    const { error } = await supabase.from('budgets').delete().eq('id', id);
-    if (!error) setBudgets(prev => prev.filter(b => b.id !== id));
-  };
-
-  const handleSetUserProfile = async (updated) => {
-    const nextProfile = typeof updated === 'function' ? updated(userProfile) : updated;
-    const { error } = await supabase.from('profiles').update({
-      first_name: nextProfile.firstName,
-      last_name: nextProfile.lastName,
-      avatar_url: nextProfile.avatarUrl,
-      updated_at: new Date().toISOString()
-    }).eq('id', session.user.id);
-    
-    if (!error) setUserProfile(nextProfile);
-  };
-
-  const handleSetPreferences = async (prefs) => {
-    const { error } = await supabase.from('user_settings').update({ preferences: prefs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
-    if (!error) setPreferences(prefs);
-  };
-
-  const handleSetNotifications = async (notifs) => {
-    const { error } = await supabase.from('user_settings').update({ notifications: notifs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
-    if (!error) setNotifications(notifs);
-  };
-
-  const handleResetFinanceData = async () => {
-    if (window.confirm("Are you sure you want to reset all financial data? This will delete all transactions, assets, debts, and budgets from the cloud.")) {
-      await supabase.from('transactions').delete().eq('user_id', session.user.id);
-      await supabase.from('assets').delete().eq('user_id', session.user.id);
-      await supabase.from('debts').delete().eq('user_id', session.user.id);
-      await supabase.from('budgets').delete().eq('user_id', session.user.id);
-      resetLocalState();
-    }
-  };
-
-  if (!isSupabaseConfigured) {
-    return (
-      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-6 text-center">
-        <div className="glass-card max-w-md p-lg rounded-2xl border border-error/20 shadow-2xl">
-          <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-6">
-            <span className="material-symbols-outlined text-[32px]">warning</span>
-          </div>
-          <h2 className="text-display-sm font-bold text-on-surface mb-4">Configuration Error</h2>
-          <p className="text-body-lg text-on-surface-variant mb-8">
-            Supabase credentials are missing. The application cannot initialize without them.
-          </p>
-          
-          <div className="text-left space-y-4 bg-surface-container rounded-xl p-md border border-outline-variant/30 mb-8">
-            <p className="text-sm font-bold text-primary flex items-center gap-2">
-              <span className="material-symbols-outlined text-[18px]">info</span>
-              Required for Vercel:
-            </p>
-            <ul className="text-xs text-on-surface-variant space-y-2 list-disc pl-4">
-              <li>VITE_SUPABASE_URL</li>
-              <li>VITE_SUPABASE_ANON_KEY</li>
-            </ul>
-          </div>
-
-          <p className="text-xs text-on-surface-variant italic">
-            Please add these to your Vercel Project Settings &gt; Environment Variables and redeploy.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // Helpers
+  const t = (key) => translate(key, 'en');
+  const fm = (amount) => formatMoney(amount, preferences);
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-on-surface-variant font-label-md uppercase tracking-widest animate-pulse">Initializing Flight Systems...</p>
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+            <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          </div>
+          <p className="text-on-surface font-bold tracking-[0.2em] uppercase animate-pulse">WealthPilot</p>
         </div>
       </div>
     );
   }
 
+  if (!isSupabaseConfigured) {
+    return <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-error">Supabase Configuration Missing</div>;
+  }
+
   if (!session) {
-    return (
-      <AnimatePresence mode="wait">
-        <Login key="login" />
-      </AnimatePresence>
-    );
+    return <Login />;
   }
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div 
-        key="app-shell"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.4 }}
-        className="relative min-h-screen bg-[#0b0f19]"
-      >
-        <div className="hidden md:block">
-          <Sidebar 
-            activePage={activePage} 
-            setActivePage={setActivePage} 
-            onQuickAdd={() => setIsQuickAddOpen(true)} 
-            onLogout={handleLogout}
-          />
-        </div>
-        <Header 
+    <div className="relative min-h-screen bg-[#0b0f19]">
+      <div className="hidden md:block">
+        <Sidebar 
+          activePage={activePage} 
+          setActivePage={setActivePage} 
           onQuickAdd={() => setIsQuickAddOpen(true)} 
-          onLogout={handleLogout} 
-          userProfile={userProfile}
+          onLogout={handleLogout}
+          t={t}
         />
+      </div>
+      <Header 
+        onQuickAdd={() => setIsQuickAddOpen(true)} 
+        onLogout={handleLogout} 
+        userProfile={userProfile}
+        t={t}
+      />
 
-        <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative bg-[#0b0f19]">
-          <AnimatePresence mode="wait">
-            {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} /></AnimatedPage>}
-            {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} /></AnimatedPage>}
-            {activePage === 'budget' && (
-              <AnimatedPage key="budget">
-                <Budget 
-                  transactions={transactions} 
-                  budgets={budgets} 
-                  onAddBudget={addBudget} 
-                  onUpdateBudget={updateBudget} 
-                  onDeleteBudget={deleteBudget} 
-                />
-              </AnimatedPage>
-            )}
-            {activePage === 'assets' && (
-              <AnimatedPage key="assets">
-                <AssetsDebt 
-                  assets={assets} 
-                  debts={debts}
-                  onAddAsset={addAsset}
-                  onUpdateAsset={updateAsset}
-                  onDeleteAsset={deleteAsset}
-                  onAddDebt={addDebt}
-                  onUpdateDebt={updateDebt}
-                  onDeleteDebt={deleteDebt}
-                />
-              </AnimatedPage>
-            )}
-            {activePage === 'insight' && <AnimatedPage key="insight"><Insight /></AnimatedPage>}
-            {activePage === 'settings' && (
-              <AnimatedPage key="settings">
-                <Settings 
-                  userProfile={userProfile} 
-                  setUserProfile={handleSetUserProfile}
-                  preferences={preferences}
-                  setPreferences={handleSetPreferences}
-                  notifications={notifications}
-                  setNotifications={handleSetNotifications}
-                  onLogout={handleLogout}
-                  onResetData={handleResetFinanceData}
-                />
-              </AnimatedPage>
-            )}
-          </AnimatePresence>
-        </main>
-        
-        <MobileNav activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} />
+      <main className="md:ml-[240px] pt-[72px] pb-[100px] md:pb-lg min-h-screen overflow-y-auto overflow-x-hidden relative">
+        <AnimatePresence mode="wait">
+          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'budget' && (
+            <AnimatedPage key="budget">
+              <Budget 
+                transactions={transactions} 
+                budgets={budgets} 
+                onAddBudget={async (b) => {
+                  const { data } = await supabase.from('budgets').insert([{ ...b, user_id: session.user.id }]).select();
+                  if (data) setBudgets(prev => [...prev, data[0]]);
+                }}
+                onUpdateBudget={async (id, updated) => {
+                  const { data } = await supabase.from('budgets').update(updated).eq('id', id).select();
+                  if (data) setBudgets(prev => prev.map(b => b.id === id ? data[0] : b));
+                }}
+                onDeleteBudget={async (id) => {
+                  await supabase.from('budgets').delete().eq('id', id);
+                  setBudgets(prev => prev.filter(b => b.id !== id));
+                }}
+                t={t}
+                fm={fm}
+              />
+            </AnimatedPage>
+          )}
+          {activePage === 'assets' && (
+            <AnimatedPage key="assets">
+              <AssetsDebt 
+                assets={assets} 
+                debts={debts}
+                onAddAsset={async (a) => {
+                  const { data } = await supabase.from('assets').insert([{ ...a, user_id: session.user.id }]).select();
+                  if (data) setAssets(prev => [data[0], ...prev]);
+                }}
+                onDeleteAsset={async (id) => {
+                  await supabase.from('assets').delete().eq('id', id);
+                  setAssets(prev => prev.filter(a => a.id !== id));
+                }}
+                onAddDebt={async (d) => {
+                  const { data } = await supabase.from('debts').insert([{ ...d, user_id: session.user.id }]).select();
+                  if (data) setDebts(prev => [data[0], ...prev]);
+                }}
+                onDeleteDebt={async (id) => {
+                  await supabase.from('debts').delete().eq('id', id);
+                  setDebts(prev => prev.filter(d => d.id !== id));
+                }}
+                t={t}
+                fm={fm}
+              />
+            </AnimatedPage>
+          )}
+          {activePage === 'insight' && <AnimatedPage key="insight"><Insight t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'settings' && (
+            <AnimatedPage key="settings">
+              <Settings 
+                userProfile={userProfile} 
+                setUserProfile={async (p) => {
+                  await supabase.from('profiles').update(p).eq('id', session.user.id);
+                  setUserProfile(p);
+                }}
+                preferences={preferences}
+                setPreferences={setPreferences}
+                notifications={notifications}
+                setNotifications={setNotifications}
+                onLogout={handleLogout}
+                onResetData={async () => {
+                  await supabase.from('transactions').delete().eq('user_id', session.user.id);
+                  resetLocalState();
+                }}
+                t={t}
+                fm={fm}
+              />
+            </AnimatedPage>
+          )}
+        </AnimatePresence>
+      </main>
+      
+      <MobileNav activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} />
 
-        <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} />
-      </motion.div>
-    </AnimatePresence>
+      <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} t={t} fm={fm} currency={preferences.currency} />
+    </div>
   );
 }
 

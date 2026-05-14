@@ -1,12 +1,13 @@
 import React from 'react';
+import { motion } from 'framer-motion';
 
-function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout }) {
+function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
   const navItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { id: 'transactions', label: 'Transactions', icon: 'receipt_long' },
-    { id: 'budget', label: 'Budget', icon: 'account_balance_wallet' },
-    { id: 'assets', label: 'Assets & Debt', icon: 'account_balance' },
-    { id: 'insight', label: 'Insight', icon: 'insights' },
+    { id: 'dashboard', label: t('dashboard'), icon: 'dashboard' },
+    { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },
+    { id: 'budget', label: t('budget'), icon: 'account_balance_wallet' },
+    { id: 'assets', label: t('assetsDebt'), icon: 'account_balance' },
+    { id: 'insight', label: t('insight'), icon: 'insights' },
   ];
 
   return (
@@ -19,26 +20,28 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout }) {
         {navItems.map(item => {
           const isActive = activePage === item.id;
           return (
-            <a
+            <motion.a
               key={item.id}
               href="#"
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
               onClick={(e) => { e.preventDefault(); setActivePage(item.id); }}
-              className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 ${
+              className={`flex items-center gap-3 px-4 py-3 transition-all duration-200 rounded-lg ${
                 isActive
-                  ? 'bg-secondary-container/30 text-primary border-r-4 border-primary rounded-r-lg scale-95'
+                  ? 'bg-primary/10 text-primary border-l-4 border-primary font-bold shadow-sm'
                   : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'
               }`}
             >
-              <span className="material-symbols-outlined">{item.icon}</span>
+              <span className={`material-symbols-outlined ${isActive ? 'font-fill' : ''}`} style={isActive ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
               <span className="font-label-md text-label-md">{item.label}</span>
-            </a>
+            </motion.a>
           );
         })}
       </nav>
       <div className="mt-auto px-sm pt-lg space-y-sm border-t border-outline-variant/20">
         <button onClick={onQuickAdd} className="w-full flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-lg font-bold hover:scale-[0.98] transition-transform text-sm mb-lg cursor-pointer">
           <span className="material-symbols-outlined text-[20px]">add</span>
-          Quick Add Transaction
+          {t('addTransaction')}
         </button>
         <a 
           onClick={(e) => { e.preventDefault(); setActivePage('settings'); }}
@@ -46,11 +49,11 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout }) {
           href="#"
         >
           <span className="material-symbols-outlined">settings</span>
-          <span className="font-label-md text-label-md">Settings</span>
+          <span className="font-label-md text-label-md">{t('settings')}</span>
         </a>
         <button 
           onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-2 text-error hover:bg-error/10 transition-colors cursor-pointer rounded-lg mt-1"
+          className="w-full flex items-center gap-3 px-4 py-2 text-error hover:bg-error/10 transition-all cursor-pointer rounded-lg mt-1 premium-button-active"
         >
           <span className="material-symbols-outlined">logout</span>
           <span className="font-label-md text-label-md font-bold">Logout</span>

@@ -107,9 +107,6 @@ function App() {
       const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
       if (debtsData) setDebts(debtsData);
 
-      const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (debtsData) setDebts(debtsData);
-
     } catch (error) {
       console.error("Error fetching user data:", error);
     } finally {

@@ -41,9 +41,9 @@ function Budget({ transactions = [], t, fm }) {
     try {
       const parsed = JSON.parse(saved);
       if (!Array.isArray(parsed)) return [];
-      return parsed.map(budget => ({
-        ...budget,
-        limit: Number(budget.limit || 0)
+      return parsed.map(bItem => ({
+        ...bItem,
+        limit: Number(bItem.limit || 0)
       }));
     } catch (error) {
       console.error("Failed to load budgets from localStorage", error);
@@ -58,11 +58,11 @@ function Budget({ transactions = [], t, fm }) {
 
   // 2. Calculations
   const monthlyBudgets = budgets.filter(
-    budget => budget.month === selectedMonthKey
+    b => b.month === selectedMonthKey
   );
 
-  const totalBudget = monthlyBudgets.reduce((sum, budget) => {
-    const value = Number(budget.limit);
+  const totalBudget = monthlyBudgets.reduce((sum, b) => {
+    const value = Number(b.limit);
     return sum + (Number.isFinite(value) ? value : 0);
   }, 0);
 
@@ -89,21 +89,21 @@ function Budget({ transactions = [], t, fm }) {
   const consumedPercent = totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
 
   // Category Breakdown Data
-  const categoryStats = monthlyBudgets.map(budget => {
+  const cStats = monthlyBudgets.map(b => {
     const actualSpent = transactions
       .filter(t_data => t_data.type === "expense")
-      .filter(t_data => t_data.category === budget.category)
+      .filter(t_data => t_data.category === b.category)
       .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey)
       .reduce((sum, t_data) => {
         const value = Number(t_data.amount);
         return sum + (Number.isFinite(value) ? value : 0);
       }, 0);
 
-    const percentage = budget.limit > 0 ? (actualSpent / budget.limit) * 100 : 0;
-    return { ...budget, actualSpent, percentage };
+    const percentage = b.limit > 0 ? (actualSpent / b.limit) * 100 : 0;
+    return { ...b, actualSpent, percentage };
   });
 
-  const overBudgetItemsCount = categoryStats.filter(stat => stat.actualSpent > stat.limit).length;
+  const overBudgetItemsCount = cStats.filter(s => s.actualSpent > s.limit).length;
 
   // High Impact Spending
   const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey);
@@ -117,13 +117,13 @@ function Budget({ transactions = [], t, fm }) {
 
   // Chart Data
   const getLastThreeMonths = () => {
-    const months = [];
+    const monthsArr = [];
     const [year, month] = selectedMonthKey.split('-').map(Number);
-    for (let i = 2; i >= 0; i--) {
-      const d = new Date(year, month - 1 - i, 1);
-      months.push(getMonthKey(d));
+    for (let idx = 2; idx >= 0; idx--) {
+      const d = new Date(year, month - 1 - idx, 1);
+      monthsArr.push(getMonthKey(d));
     }
-    return months;
+    return monthsArr;
   };
 
   const chartData = getLastThreeMonths().map(m => {
@@ -163,11 +163,11 @@ function Budget({ transactions = [], t, fm }) {
     setBudgets(prev => prev.filter(b => b.id !== id));
   };
 
-  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
-  const item = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } } };
+  const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } } };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="p-4 md:p-container-margin max-w-[1400px] mx-auto overflow-x-hidden">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 md:p-container-margin max-w-[1400px] mx-auto overflow-x-hidden">
       <div className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-1 rounded mb-4 inline-block">BUDGET DEBUG ACTIVE</div>
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-xl gap-6">
         <div>
@@ -204,7 +204,7 @@ function Budget({ transactions = [], t, fm }) {
           </div>
         </div>
 
-        <motion.div variants={item} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-lg">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-lg">
           <div className="glass-card p-6 md:p-lg rounded-xl flex flex-col border-l-4 border-l-primary shadow-lg hover:translate-y-[-4px] transition-transform">
             <p className="font-label-md text-label-md text-on-surface-variant mb-2 md:mb-sm uppercase">Total Budget</p>
             <p className="text-xl md:text-headline-lg font-bold">{fm(totalBudget)}</p>
@@ -219,32 +219,32 @@ function Budget({ transactions = [], t, fm }) {
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="col-span-12 lg:col-span-7 glass-card p-6 md:p-lg rounded-xl shadow-xl border border-outline-variant/10">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 glass-card p-6 md:p-lg rounded-xl shadow-xl border border-outline-variant/10">
           <div className="flex items-center justify-between mb-8 md:mb-xl">
             <h4 className="text-lg md:text-headline-lg font-bold">{t('categoryBreakdown')}</h4>
             <span onClick={() => setIsManageModalOpen(true)} className="text-xs md:font-label-md md:text-label-md text-primary underline cursor-pointer">{t('manageLimits')}</span>
           </div>
           <div className="space-y-8 md:space-y-xl max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            {categoryStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : categoryStats.map((stat, i) => (
-              <motion.div key={stat.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (i * 0.05) }} className="group">
+            {cStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : cStats.map((sObj, sIdx) => (
+              <motion.div key={sObj.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (sIdx * 0.05) }} className="group">
                 <div className="flex justify-between items-end mb-4">
                   <div className="flex-1">
-                    <p className={`text-xs md:text-label-md ${stat.percentage > 100 ? 'text-error' : ''}`}>{stat.category}</p>
-                    <p className={`text-lg md:text-headline-lg font-bold ${stat.percentage > 100 ? 'text-error' : ''}`}>
-                      {fm(stat.actualSpent)} <span className="text-xs md:text-body-md font-normal text-on-surface-variant">/ {fm(stat.limit)}</span>
+                    <p className={`text-xs md:text-label-md ${sObj.percentage > 100 ? 'text-error' : ''}`}>{sObj.category}</p>
+                    <p className={`text-lg md:text-headline-lg font-bold ${sObj.percentage > 100 ? 'text-error' : ''}`}>
+                      {fm(sObj.actualSpent)} <span className="text-xs md:text-body-md font-normal text-on-surface-variant">/ {fm(sObj.limit)}</span>
                     </p>
                   </div>
-                  <p className={`text-sm md:text-mono-data font-bold ${stat.percentage > 100 ? 'text-error' : 'text-primary'}`}>{stat.percentage.toFixed(0)}%</p>
+                  <p className={`text-sm md:text-mono-data font-bold ${sObj.percentage > 100 ? 'text-error' : 'text-primary'}`}>{sObj.percentage.toFixed(0)}%</p>
                 </div>
                 <div className="h-2.5 w-full bg-surface-container-highest rounded-full overflow-hidden border border-outline-variant/5">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(stat.percentage, 100)}%` }} className={`h-full ${stat.percentage > 100 ? 'bg-error' : 'bg-primary'}`}></motion.div>
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full ${sObj.percentage > 100 ? 'bg-error' : 'bg-primary'}`}></motion.div>
                 </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        <motion.div variants={item} className="col-span-12 lg:col-span-5 glass-card p-6 md:p-lg rounded-xl shadow-xl border border-outline-variant/10">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 glass-card p-6 md:p-lg rounded-xl shadow-xl border border-outline-variant/10">
           <h4 className="text-lg md:text-headline-lg font-bold mb-8">Budget vs Actual</h4>
           <div className="relative h-[220px] flex items-end justify-around gap-2 px-2">
             {chartData.map((d, idx) => (
@@ -260,7 +260,7 @@ function Budget({ transactions = [], t, fm }) {
         </motion.div>
 
         {/* High Impact Spending */}
-        <motion.div variants={item} className="col-span-12 glass-card rounded-xl overflow-hidden shadow-2xl border border-outline-variant/10">
+        <motion.div variants={itemVariants} className="col-span-12 glass-card rounded-xl overflow-hidden shadow-2xl border border-outline-variant/10">
           <div className="p-6 md:p-lg border-b border-outline-variant/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <h4 className="text-lg md:text-headline-lg font-bold">Recent High-Impact Spending</h4>
             <div className="flex items-center gap-md bg-surface-container-low px-4 py-2 rounded-lg border border-outline-variant/20 w-full md:w-64 focus-within:w-72 transition-all duration-300">
@@ -291,29 +291,29 @@ function Budget({ transactions = [], t, fm }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/10">
-                  {highImpact.map((t_data, i) => {
-                    const budget = monthlyBudgets.find(b => b.category === t_data.category);
-                    const categoryActual = monthlyExpenses.filter(x => x.category === t_data.category).reduce((acc, x) => acc + x.amount, 0);
+                  {highImpact.map((tItem, idx) => {
+                    const bMatch = monthlyBudgets.find(b => b.category === tItem.category);
+                    const cActualVal = monthlyExpenses.filter(x => x.category === tItem.category).reduce((acc, x) => acc + x.amount, 0);
                     
-                    let impactStatus = 'No Budget';
-                    let impactColor = 'text-on-surface-variant';
+                    let iLabel = 'No Budget';
+                    let iLabelColor = 'text-on-surface-variant';
                     
-                    if (budget) {
-                      if (categoryActual > budget.limit) {
-                        impactStatus = 'Over Budget';
-                        impactColor = 'text-error font-bold';
+                    if (bMatch) {
+                      if (cActualVal > bMatch.limit) {
+                        iLabel = 'Over Budget';
+                        iLabelColor = 'text-error font-bold';
                       } else {
-                        impactStatus = 'Within Limits';
-                        impactColor = 'text-primary font-bold';
+                        iLabel = 'Within Limits';
+                        iLabelColor = 'text-primary font-bold';
                       }
                     }
 
                     return (
                       <motion.tr 
-                        key={t_data.id} 
+                        key={tItem.id} 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.6 + (i * 0.05) }}
+                        transition={{ delay: 0.6 + (idx * 0.05) }}
                         className="hover:bg-surface-variant/40 transition-colors group"
                       >
                         <td className="p-4 md:p-lg">
@@ -322,18 +322,18 @@ function Budget({ transactions = [], t, fm }) {
                               <span className="material-symbols-outlined text-[18px] md:text-[24px]">payments</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm md:text-body-md font-semibold truncate group-hover:text-primary transition-colors">{t_data.note || t_data.category}</p>
-                              <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">{new Date(t_data.date).toLocaleDateString()} • {t_data.method}</p>
+                              <p className="text-sm md:text-body-md font-semibold truncate group-hover:text-primary transition-colors">{tItem.note || tItem.category}</p>
+                              <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">{new Date(tItem.date).toLocaleDateString()} • {tItem.method}</p>
                             </div>
                           </div>
                         </td>
                         <td className="p-4 md:p-lg">
-                          <span className={`px-2 md:px-md py-1 rounded-full text-[10px] md:text-[11px] font-bold inline-block whitespace-nowrap ${impactStatus === 'Over Budget' ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
-                            {t_data.category}
+                          <span className={`px-2 md:px-md py-1 rounded-full text-[10px] md:text-[11px] font-bold inline-block whitespace-nowrap ${iLabel === 'Over Budget' ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+                            {tItem.category}
                           </span>
                         </td>
-                        <td className="p-4 md:p-lg text-right font-mono-data text-xs md:text-mono-data font-bold text-on-surface group-hover:text-primary transition-colors">{fm(t_data.amount)}</td>
-                        <td className={`p-4 md:p-lg text-right text-[10px] md:text-xs uppercase tracking-tighter ${impactColor}`}>{impactStatus}</td>
+                        <td className="p-4 md:p-lg text-right font-mono-data text-xs md:text-mono-data font-bold text-on-surface group-hover:text-primary transition-colors">{fm(tItem.amount)}</td>
+                        <td className={`p-4 md:p-lg text-right text-[10px] md:text-xs uppercase tracking-tighter ${iLabelColor}`}>{iLabel}</td>
                       </motion.tr>
                     );
                   })}
@@ -363,7 +363,7 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
   return (
     <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose}></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="asset-modal relative z-[201] w-full max-w-md">
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1.0 }} className="asset-modal relative z-[201] w-full max-w-md">
         <div className="asset-modal-header">
           <h2 className="text-2xl font-bold">{initialData ? t('editBudget') : t('addBudget')}</h2>
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
@@ -393,18 +393,18 @@ function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-background/80 backdrop-blur-md" onClick={onClose}></div>
-      <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="asset-modal relative z-[151] w-full max-w-lg">
+      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1.0 }} className="asset-modal relative z-[151] w-full max-w-lg">
         <div className="asset-modal-header">
           <h2 className="text-2xl font-bold">{t('manageLimits')}</h2>
           <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors cursor-pointer"><span className="material-symbols-outlined">close</span></button>
         </div>
         <div className="p-lg space-y-md max-h-[60vh] overflow-y-auto custom-scrollbar">
-          {monthlyBudgets.length === 0 ? <p className="text-center py-8 text-on-surface-variant italic">{t('noLimitsSet')}</p> : monthlyBudgets.map(b => (
-            <div key={b.id} className="flex justify-between items-center p-md glass-card rounded-xl border border-outline-variant/20">
-              <div><p className="font-bold text-on-surface">{b.category}</p><p className="text-sm text-primary">{formatRupiah(b.limit)}</p></div>
+          {monthlyBudgets.length === 0 ? <p className="text-center py-8 text-on-surface-variant italic">{t('noLimitsSet')}</p> : monthlyBudgets.map(bItem => (
+            <div key={bItem.id} className="flex justify-between items-center p-md glass-card rounded-xl border border-outline-variant/20">
+              <div><p className="font-bold text-on-surface">{bItem.category}</p><p className="text-sm text-primary">{formatRupiah(bItem.limit)}</p></div>
               <div className="flex gap-2">
-                <button onClick={() => onEdit(b)} className="p-2 text-primary hover:bg-primary/10 rounded-full"><span className="material-symbols-outlined">edit</span></button>
-                <button onClick={() => onDelete(b.id)} className="p-2 text-error hover:bg-error/10 rounded-full"><span className="material-symbols-outlined">delete</span></button>
+                <button onClick={() => onEdit(bItem)} className="p-2 text-primary hover:bg-primary/10 rounded-full"><span className="material-symbols-outlined">edit</span></button>
+                <button onClick={() => onDelete(bItem.id)} className="p-2 text-error hover:bg-error/10 rounded-full"><span className="material-symbols-outlined">delete</span></button>
               </div>
             </div>
           ))}

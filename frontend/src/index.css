@@ -119,10 +119,28 @@
 }
 
 @layer base {
-  body { 
-    background-color: #0b0f19; 
-    color: #dce3f0; 
-    font-family: 'Inter', sans-serif; 
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background-color: #0b0f19;
+    color: #dce3f0;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
+  #root {
+    min-height: 100vh;
   }
 }
 

@@ -18,48 +18,61 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-4">
+    <div className="min-h-screen w-screen bg-[#050914] flex items-center justify-center px-4 py-8 overflow-x-hidden">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card w-full max-w-md p-8 rounded-2xl border border-outline-variant/20 shadow-2xl bg-surface-dim"
+        className="rounded-3xl border border-slate-800 bg-slate-900/70 p-8 shadow-2xl"
+        style={{
+          width: "100%",
+          maxWidth: "420px",
+          minWidth: "320px"
+        }}
       >
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary tracking-tight mb-2">WealthPilot</h1>
-          <p className="text-on-surface-variant text-sm">Sign in to your financial command center</p>
+          <h1 className="text-3xl font-bold text-white whitespace-nowrap">
+            WealthPilot
+          </h1>
+          <p className="mt-3 text-base leading-relaxed text-slate-400 whitespace-normal">
+            Sign in to your financial command center
+          </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm text-center">
+          <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-sm text-center">
             {error}
           </div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-on-surface-variant text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
+        <form onSubmit={handleLogin} className="mt-8 w-full space-y-5">
+          <div className="w-full">
+            <label className="mb-2 block text-sm font-bold uppercase tracking-wide text-slate-300">
+              EMAIL ADDRESS
+            </label>
             <input 
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl h-12 px-4 text-on-surface focus:border-primary/50 transition-all outline-none"
+              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none focus:border-emerald-400"
               required 
             />
           </div>
-          <div>
-            <label className="block text-on-surface-variant text-xs font-bold uppercase tracking-wider mb-2">Password</label>
+          <div className="w-full">
+            <label className="mb-2 block text-sm font-bold uppercase tracking-wide text-slate-300">
+              PASSWORD
+            </label>
             <input 
               type="password" 
               value={password} 
               onChange={e => setPassword(e.target.value)} 
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl h-12 px-4 text-on-surface focus:border-primary/50 transition-all outline-none"
+              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700 bg-slate-950 px-4 text-white outline-none focus:border-emerald-400"
               required 
             />
           </div>
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-primary text-background h-12 rounded-xl font-bold hover:scale-[0.98] active:scale-[0.95] transition-all disabled:opacity-50"
+            className="block h-12 w-full rounded-xl bg-emerald-500 font-bold text-slate-950 hover:bg-emerald-400 transition disabled:opacity-50"
           >
             {loading ? 'Authenticating...' : 'Sign In'}
           </button>

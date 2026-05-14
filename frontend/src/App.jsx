@@ -18,6 +18,7 @@ import { formatMoney } from './utils/formatMoney';
 
 function App() {
   const [session, setSession] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
   const [activePage, setActivePage] = useState('dashboard');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -47,8 +48,13 @@ function App() {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) fetchUserData(session.user.id);
-      else setLoading(false);
+      if (session) {
+        localStorage.setItem("isLoggedIn", "true");
+        setIsLoggedIn(true);
+        fetchUserData(session.user.id);
+      } else {
+        setLoading(false);
+      }
     }).catch(err => {
       console.error(err);
       setLoading(false);
@@ -56,8 +62,13 @@ function App() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
-      if (session) fetchUserData(session.user.id);
-      else {
+      if (session) {
+        localStorage.setItem("isLoggedIn", "true");
+        setIsLoggedIn(true);
+        fetchUserData(session.user.id);
+      } else {
+        localStorage.setItem("isLoggedIn", "false");
+        setIsLoggedIn(false);
         resetLocalState();
         setLoading(false);
       }
@@ -116,6 +127,8 @@ function App() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.setItem("isLoggedIn", "false");
+    setIsLoggedIn(false);
     resetLocalState();
   };
 
@@ -240,7 +253,7 @@ function App() {
     return <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-error">Supabase Configuration Missing</div>;
   }
 
-  if (!session) {
+  if (!isLoggedIn) {
     return <Login />;
   }
 

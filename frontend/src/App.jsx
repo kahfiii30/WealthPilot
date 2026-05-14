@@ -19,7 +19,8 @@ import {
   fetchTransactions, createTransaction, deleteTransaction,
   fetchAssets, createAsset, updateAsset as apiUpdateAsset, deleteAsset as apiDeleteAsset,
   fetchDebts, createDebt, updateDebt as apiUpdateDebt, deleteDebt as apiDeleteDebt,
-  fetchBudgets, createBudget as apiCreateBudget, updateBudget as apiUpdateBudget, deleteBudget as apiDeleteBudget
+  fetchBudgets, createBudget as apiCreateBudget, updateBudget as apiUpdateBudget, deleteBudget as apiDeleteBudget,
+  fetchProfile, updateProfile as apiUpdateProfile, normalizeProfile
 } from './services/financeService';
 
 function App() {
@@ -96,14 +97,11 @@ function App() {
   const fetchUserData = async (userId) => {
     setLoading(true);
     try {
-      const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (profile) {
-        setUserProfile({
-          firstName: profile.first_name || "Pilot",
-          lastName: profile.last_name || "",
-          email: profile.email || "",
-          avatarUrl: profile.avatar_url || ""
-        });
+      // Fetch profile using service
+      const { data: { user } } = await supabase.auth.getUser();
+      const profileData = await fetchProfile();
+      if (profileData) {
+        setUserProfile(normalizeProfile(profileData, user));
       }
 
       const { data: settings } = await supabase.from('user_settings').select('*').eq('user_id', userId).single();
@@ -145,12 +143,15 @@ function App() {
   };
 
   const handleAddTransaction = async (t_data) => {
-    if (!session?.user) {
-      alert("Please sign in with Supabase before saving data.");
-      return;
-    }
     try {
-      const created = await createTransaction(session.user.id, t_data);
+      console.log("App: handleAddTransaction called with", t_data);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        alert("Please sign in with Supabase before saving data.");
+        return;
+      }
+      const created = await createTransaction(user.id, t_data);
+      console.log("App: Transaction created successfully:", created);
       setTransactions(prev => [created, ...prev]);
       return created;
     } catch (error) {
@@ -173,12 +174,15 @@ function App() {
   const fm = (amount) => formatMoney(amount, preferences);
 
   const addAsset = async (a) => {
-    if (!session?.user) {
-      alert("Please sign in with Supabase before saving data.");
-      return;
-    }
     try {
-      const created = await createAsset(session.user.id, a);
+      console.log("App: addAsset called with", a);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        alert("Please sign in with Supabase before saving data.");
+        return;
+      }
+      const created = await createAsset(user.id, a);
+      console.log("App: Asset created successfully:", created);
       setAssets(prev => [created, ...prev]);
       return created;
     } catch (error) {
@@ -206,12 +210,15 @@ function App() {
   };
 
   const addDebt = async (d) => {
-    if (!session?.user) {
-      alert("Please sign in with Supabase before saving data.");
-      return;
-    }
     try {
-      const created = await createDebt(session.user.id, d);
+      console.log("App: addDebt called with", d);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        alert("Please sign in with Supabase before saving data.");
+        return;
+      }
+      const created = await createDebt(user.id, d);
+      console.log("App: Debt created successfully:", created);
       setDebts(prev => [created, ...prev]);
       return created;
     } catch (error) {
@@ -239,12 +246,15 @@ function App() {
   };
 
   const addBudget = async (b) => {
-    if (!session?.user) {
-      alert("Please sign in with Supabase before saving data.");
-      return;
-    }
     try {
-      const created = await apiCreateBudget(session.user.id, b);
+      console.log("App: addBudget called with", b);
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        alert("Please sign in with Supabase before saving data.");
+        return;
+      }
+      const created = await apiCreateBudget(user.id, b);
+      console.log("App: Budget created successfully:", created);
       setBudgets(prev => [created, ...prev]);
       return created;
     } catch (error) {
@@ -272,16 +282,15 @@ function App() {
   };
 
 
-  const handleSetUserProfile = async (updated) => {
-    const nextProfile = typeof updated === 'function' ? updated(userProfile) : updated;
-    const { error } = await supabase.from('profiles').update({
-      first_name: nextProfile.firstName,
-      last_name: nextProfile.lastName,
-      avatar_url: nextProfile.avatarUrl,
-      updated_at: new Date().toISOString()
-    }).eq('id', session.user.id);
-    
-    if (!error) setUserProfile(nextProfile);
+  const handleUpdateProfile = async (payload) => {
+    try {
+      const updated = await apiUpdateProfile(payload);
+      setUserProfile(updated);
+      return updated;
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      throw error;
+    }
   };
 
   const handleSetPreferences = async (prefs) => {
@@ -355,7 +364,7 @@ function App() {
 
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative">
         <AnimatePresence mode="wait">
-          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} /></AnimatedPage>}
           {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
           {activePage === 'budget' && (
             <AnimatedPage key="budget">
@@ -404,7 +413,7 @@ function App() {
             <AnimatedPage key="settings">
               <Settings 
                 userProfile={userProfile} 
-                setUserProfile={handleSetUserProfile}
+                setUserProfile={handleUpdateProfile}
                 preferences={preferences}
                 setPreferences={handleSetPreferences}
                 notifications={notifications}

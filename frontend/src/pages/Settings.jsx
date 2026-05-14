@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { uploadAvatar } from '../services/financeService';
 
 function Settings({ 
   userProfile, 
@@ -17,45 +18,97 @@ function Settings({
   const [feedback, setFeedback] = useState('');
   const fileInputRef = useRef(null);
   const [localPrefs, setLocalPrefs] = useState(preferences);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: ""
+  });
 
   // Sync local state when props change
   React.useEffect(() => {
     setLocalPrefs(preferences);
   }, [preferences]);
 
+  React.useEffect(() => {
+    if (userProfile) {
+      setForm({
+        firstName: userProfile.firstName || "",
+        lastName: userProfile.lastName || "",
+        email: userProfile.email || ""
+      });
+    }
+  }, [userProfile]);
+
   const showFeedback = (msg) => {
     setFeedback(msg);
     setTimeout(() => setFeedback(''), 3000);
   };
 
-  const handleProfileSave = (e) => {
+  const handleProfileSave = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const updated = {
-      ...userProfile,
-      firstName: formData.get('firstName'),
-      lastName: formData.get('lastName'),
-      email: formData.get('email'),
-    };
-    setUserProfile(updated);
-    showFeedback(t('saveChanges') + ' success!');
+    try {
+      setIsSaving(true);
+      setError(null);
+      setSuccess(null);
+      
+      const payload = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        avatarUrl: userProfile.avatarUrl
+      };
+      
+      await setUserProfile(payload);
+      setSuccess("Profile updated successfully.");
+      showFeedback(t('saveChanges') + ' success!');
+    } catch (err) {
+      setError(err.message || "Failed to update profile.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handlePhotoChange = (e) => {
+  const handlePhotoChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("File is too large! Maximum size is 2MB.");
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
+    if (!allowedTypes.includes(file.type)) {
+      setError("Please upload PNG, JPG, or WEBP image.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setUserProfile(prev => ({ ...prev, avatarUrl: reader.result }));
+    if (file.size > 2 * 1024 * 1024) {
+      setError("Avatar image must be under 2MB.");
+      return;
+    }
+
+    try {
+      setIsUploadingAvatar(true);
+      setError(null);
+      setSuccess(null);
+
+      const avatarUrl = await uploadAvatar(file);
+      
+      // Update profile with new avatar URL
+      await setUserProfile({
+        ...userProfile,
+        avatarUrl: avatarUrl
+      });
+
+      setSuccess("Avatar updated successfully!");
       showFeedback('Photo updated successfully!');
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Failed to upload avatar:", err);
+      setError(err.message || "Failed to upload avatar.");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
   };
 
   const handlePrefSave = (e) => {
@@ -149,6 +202,20 @@ function Settings({
               {activeTab === 'profile' && (
                 <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl">
                   <h3 className="text-xl font-black text-slate-100 tracking-tight mb-8">Personal Information</h3>
+                  
+                  {error && (
+                    <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[18px]">warning</span>
+                      {error}
+                    </div>
+                  )}
+
+                  {success && (
+                    <div className="mb-6 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 flex items-center gap-3">
+                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                      {success}
+                    </div>
+                  )}
                   <form onSubmit={handleProfileSave}>
                     <div className="space-y-8">
                       <div className="flex flex-col sm:flex-row items-center gap-8 mb-10">
@@ -162,10 +229,11 @@ function Settings({
                         <div className="flex flex-col items-center sm:items-start gap-3">
                           <button 
                             type="button"
+                            disabled={isUploadingAvatar}
                             onClick={() => fileInputRef.current.click()}
-                            className="px-5 py-2.5 bg-slate-950/50 border border-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-xs font-black uppercase tracking-widest"
+                            className="px-5 py-2.5 bg-slate-950/50 border border-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-xs font-black uppercase tracking-widest disabled:opacity-50"
                           >
-                            Update Command Avatar
+                            {isUploadingAvatar ? "Uploading..." : "Update Command Avatar"}
                           </button>
                           <input 
                             type="file" 
@@ -186,7 +254,8 @@ function Settings({
                             required
                             type="text" 
                             className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
-                            defaultValue={userProfile.firstName} 
+                            value={form.firstName} 
+                            onChange={e => setForm({...form, firstName: e.target.value})}
                           />
                         </div>
                         <div className="space-y-2">
@@ -195,7 +264,8 @@ function Settings({
                             name="lastName" 
                             type="text" 
                             className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
-                            defaultValue={userProfile.lastName} 
+                            value={form.lastName} 
+                            onChange={e => setForm({...form, lastName: e.target.value})}
                           />
                         </div>
                       </div>
@@ -207,14 +277,15 @@ function Settings({
                           required
                           type="email" 
                           className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
-                          defaultValue={userProfile.email} 
+                          value={form.email} 
+                          onChange={e => setForm({...form, email: e.target.value})}
                         />
                       </div>
                     </div>
                     <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
                       <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
-                      <button className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-all cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95 uppercase tracking-widest text-xs">
-                        Commit Changes
+                      <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-all cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95 uppercase tracking-widest text-xs disabled:opacity-50">
+                        {isSaving ? "Saving..." : "Commit Changes"}
                       </button>
                     </div>
                   </form>

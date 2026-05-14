@@ -42,7 +42,8 @@ export const normalizeAsset = (item) => ({
   amount: Number(item.amount || 0),
   note: item.note || "",
   notes: item.note || "",
-  updatedAt: item.updated_at || item.created_at || null
+  createdAt: item.created_at || null,
+  updatedAt: item.updated_at || null
 });
 
 export const normalizeDebt = (item) => ({
@@ -70,6 +71,17 @@ export const normalizeBudget = (item) => ({
   updatedAt: item.updated_at || null
 });
 
+export const normalizeProfile = (profile, user) => ({
+  id: profile?.id || null,
+  userId: profile?.user_id || user?.id || null,
+  firstName: profile?.first_name || "Pilot",
+  lastName: profile?.last_name || "",
+  email: profile?.email || user?.email || "",
+  avatarUrl: profile?.avatar_url || "",
+  createdAt: profile?.created_at || null,
+  updatedAt: profile?.updated_at || null
+});
+
 // --- Services ---
 
 export const fetchTransactions = async (userId) => {
@@ -88,17 +100,29 @@ export const fetchTransactions = async (userId) => {
 };
 
 export const createTransaction = async (userId, payload) => {
-  console.log("Creating transaction for user:", userId, "payload:", payload);
+  console.log("SAVE CLICKED (Transaction)");
+  
+  // Ensure we have a valid user
+  let finalUserId = userId;
+  if (!finalUserId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in first before saving data.");
+    finalUserId = user.id;
+  }
+
   const dbPayload = {
-    user_id: userId,
+    user_id: finalUserId,
     type: payload.type,
-    title: payload.title,
+    title: payload.title || payload.note || payload.notes || payload.category || "Transaction",
     amount: payload.amount,
     category: payload.category,
     method: payload.method,
-    date: payload.date,
+    date: payload.date || new Date().toISOString().slice(0, 10),
     note: payload.note || payload.notes || ""
   };
+  
+  console.log("USER:", finalUserId);
+  console.log("PAYLOAD:", dbPayload);
 
   const { data, error } = await supabase
     .from('transactions')
@@ -107,10 +131,11 @@ export const createTransaction = async (userId, payload) => {
     .single();
   
   if (error) {
-    console.error("Supabase createTransaction error:", error);
+    console.error("Supabase insert error (Transaction):", error);
     throw error;
   }
-  console.log("Transaction created successfully:", data);
+  
+  console.log("SUPABASE DATA:", data);
   return normalizeTransaction(data);
 };
 
@@ -135,14 +160,25 @@ export const fetchAssets = async (userId) => {
 };
 
 export const createAsset = async (userId, payload) => {
-  console.log("Creating asset for user:", userId, "payload:", payload);
+  console.log("SAVE CLICKED (Asset)");
+  
+  let finalUserId = userId;
+  if (!finalUserId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in first before saving data.");
+    finalUserId = user.id;
+  }
+
   const dbPayload = {
-    user_id: userId,
+    user_id: finalUserId,
     name: payload.name,
     category: payload.category,
     amount: payload.amount,
     note: payload.note || payload.notes || ""
   };
+  
+  console.log("USER:", finalUserId);
+  console.log("PAYLOAD:", dbPayload);
 
   const { data, error } = await supabase
     .from('assets')
@@ -151,10 +187,11 @@ export const createAsset = async (userId, payload) => {
     .single();
   
   if (error) {
-    console.error("Supabase createAsset error:", error);
+    console.error("Supabase insert error (Asset):", error);
     throw error;
   }
-  console.log("Asset created successfully:", data);
+  
+  console.log("SUPABASE DATA:", data);
   return normalizeAsset(data);
 };
 
@@ -211,15 +248,26 @@ export const fetchDebts = async (userId) => {
 };
 
 export const createDebt = async (userId, payload) => {
-  console.log("Creating liability for user:", userId, "payload:", payload);
+  console.log("SAVE CLICKED (Debt)");
+  
+  let finalUserId = userId;
+  if (!finalUserId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in first before saving data.");
+    finalUserId = user.id;
+  }
+
   const dbPayload = {
-    user_id: userId,
+    user_id: finalUserId,
     name: payload.name,
     category: payload.category,
     amount: payload.amount,
     note: payload.note || payload.notes || "",
-    due_date: payload.dueDate || payload.due_date
+    due_date: payload.dueDate || payload.due_date || null
   };
+  
+  console.log("USER:", finalUserId);
+  console.log("PAYLOAD:", dbPayload);
 
   const { data, error } = await supabase
     .from('debts')
@@ -228,10 +276,11 @@ export const createDebt = async (userId, payload) => {
     .single();
   
   if (error) {
-    console.error("Supabase createDebt error:", error);
+    console.error("Supabase insert error (Debt):", error);
     throw error;
   }
-  console.log("Liability created successfully:", data);
+  
+  console.log("SUPABASE DATA:", data);
   return normalizeDebt(data);
 };
 
@@ -284,13 +333,24 @@ export const fetchBudgets = async (userId) => {
 };
 
 export const createBudget = async (userId, payload) => {
-  console.log("Creating budget for user:", userId, "payload:", payload);
+  console.log("SAVE CLICKED (Budget)");
+  
+  let finalUserId = userId;
+  if (!finalUserId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in first before saving data.");
+    finalUserId = user.id;
+  }
+
   const dbPayload = {
-    user_id: userId,
+    user_id: finalUserId,
     category: payload.category,
     limit_amount: payload.limit || payload.limitAmount || 0,
     month: payload.month
   };
+  
+  console.log("USER:", finalUserId);
+  console.log("PAYLOAD:", dbPayload);
 
   const { data, error } = await supabase
     .from('budgets')
@@ -299,10 +359,11 @@ export const createBudget = async (userId, payload) => {
     .single();
   
   if (error) {
-    console.error("Supabase createBudget error:", error);
+    console.error("Supabase insert error (Budget):", error);
     throw error;
   }
-  console.log("Budget created successfully:", data);
+  
+  console.log("SUPABASE DATA:", data);
   return normalizeBudget(data);
 };
 
@@ -340,4 +401,108 @@ export const deleteBudget = async (id) => {
     console.error("Supabase deleteBudget error:", error);
     throw error;
   }
+};
+
+export const fetchProfile = async () => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    console.error("No Supabase user:", userError);
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("Failed to fetch profile:", error);
+    throw error;
+  }
+
+  if (!data) {
+    const { data: created, error: createError } = await supabase
+      .from("profiles")
+      .insert([{
+        user_id: user.id,
+        first_name: "Pilot",
+        last_name: "",
+        email: user.email || "",
+        avatar_url: ""
+      }])
+      .select()
+      .single();
+
+    if (createError) {
+      console.error("Failed to create profile:", createError);
+      throw createError;
+    }
+
+    return created;
+  }
+
+  return data;
+};
+
+export const updateProfile = async (payload) => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    throw new Error("Please sign in before updating profile.");
+  }
+
+  const dbPayload = {
+    user_id: user.id,
+    first_name: payload.firstName.trim() || "Pilot",
+    last_name: payload.lastName.trim(),
+    email: payload.email.trim() || user.email || "",
+    avatar_url: payload.avatarUrl || "",
+    updated_at: new Date().toISOString()
+  };
+
+  console.log("Profile payload:", dbPayload);
+
+  const { data, error } = await supabase
+    .from("profiles")
+    .upsert([dbPayload], {
+      onConflict: "user_id"
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Failed to save profile:", error);
+    throw error;
+  }
+
+  console.log("Profile save result:", data);
+  return normalizeProfile(data, user);
+};
+
+export const uploadAvatar = async (file) => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("Please sign in before uploading avatar.");
+
+  const fileExt = file.name.split(".").pop();
+  const filePath = `${user.id}/avatar-${Date.now()}.${fileExt}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("avatars")
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true
+    });
+
+  if (uploadError) {
+    console.error("Avatar upload error:", uploadError);
+    throw uploadError;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from("avatars")
+    .getPublicUrl(filePath);
+
+  return publicUrlData.publicUrl;
 };

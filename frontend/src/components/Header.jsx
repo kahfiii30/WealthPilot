@@ -40,7 +40,9 @@ function Header({ onQuickAdd, userProfile, t }) {
         
         <div className="flex items-center gap-4 border-l border-slate-700/30 pl-6">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-black text-slate-100 tracking-tight line-clamp-1">{userProfile?.firstName || 'Commander'}</p>
+            <p className="text-sm font-black text-slate-100 tracking-tight line-clamp-1">
+              {[userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(" ") || 'Pilot'}
+            </p>
             <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Platinum</p>
           </div>
           <img 

@@ -3,7 +3,11 @@ import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
 
-function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm }) {
+function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm, userProfile }) {
+  const displayName = [userProfile?.firstName, userProfile?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim() || "Pilot";
   // calculate metrics
   const totalIncome = transactions.filter(t_data => t_data.type === 'income').reduce((acc, t_data) => acc + t_data.amount, 0);
   const totalExpense = transactions.filter(t_data => t_data.type === 'expense').reduce((acc, t_data) => acc + t_data.amount, 0);
@@ -47,7 +51,9 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
     >
       {/* Welcome Header */}
       <motion.section variants={item} className="mb-10 flex flex-col gap-2">
-        <h2 className="text-4xl font-black text-slate-100 tracking-tighter">{t('welcome')}</h2>
+        <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
+          {t('welcome')}, {displayName}.
+        </h2>
         <div className="flex items-center gap-3">
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
           <p className="text-base font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>

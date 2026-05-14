@@ -29,7 +29,7 @@ export const translations = {
     register: "Register",
     email: "Email Address",
     password: "Password",
-    welcome: "Good Evening, Pilot.",
+    welcome: "Good Evening",
     healthStatus: "Your financial health is tracking well.",
     cashflowOverview: "Cashflow Overview",
     spendingBreakdown: "Spending Breakdown",

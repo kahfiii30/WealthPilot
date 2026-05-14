@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { supabase } from './lib/supabaseClient';
+import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
@@ -231,6 +231,37 @@ function App() {
       resetLocalState();
     }
   };
+
+  if (!isSupabaseConfigured) {
+    return (
+      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-6 text-center">
+        <div className="glass-card max-w-md p-lg rounded-2xl border border-error/20 shadow-2xl">
+          <div className="w-16 h-16 bg-error/10 text-error rounded-full flex items-center justify-center mx-auto mb-6">
+            <span className="material-symbols-outlined text-[32px]">warning</span>
+          </div>
+          <h2 className="text-display-sm font-bold text-on-surface mb-4">Configuration Error</h2>
+          <p className="text-body-lg text-on-surface-variant mb-8">
+            Supabase credentials are missing. The application cannot initialize without them.
+          </p>
+          
+          <div className="text-left space-y-4 bg-surface-container rounded-xl p-md border border-outline-variant/30 mb-8">
+            <p className="text-sm font-bold text-primary flex items-center gap-2">
+              <span className="material-symbols-outlined text-[18px]">info</span>
+              Required for Vercel:
+            </p>
+            <ul className="text-xs text-on-surface-variant space-y-2 list-disc pl-4">
+              <li>VITE_SUPABASE_URL</li>
+              <li>VITE_SUPABASE_ANON_KEY</li>
+            </ul>
+          </div>
+
+          <p className="text-xs text-on-surface-variant italic">
+            Please add these to your Vercel Project Settings &gt; Environment Variables and redeploy.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

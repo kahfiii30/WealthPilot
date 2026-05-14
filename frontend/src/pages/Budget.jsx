@@ -173,7 +173,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
           />
           <button 
             onClick={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} 
-            className="rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-6 py-3 font-semibold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] active:scale-[0.98] flex items-center justify-center gap-2"
+            className="rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-6 py-3 font-semibold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined font-bold text-[20px]">add</span> 
             {t('addBudget')}
@@ -182,7 +182,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
       </div>
 
       <div className="grid grid-cols-12 gap-8 mb-8">
-        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35)] group">
+        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
           <div className="relative z-10">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">{t('dailySafeToSpend')}</p>
             <h3 className={`text-5xl font-black tracking-tighter mb-2 ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
@@ -202,21 +202,21 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </div>
 
         <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-all duration-300 hover:bg-slate-900/70 hover:translate-y-[-4px]">
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Total Budget</p>
             <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalBudget)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-all duration-300 hover:bg-slate-900/70 hover:translate-y-[-4px]">
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Total Actual</p>
             <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalActual)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-all duration-300 hover:bg-slate-900/70 hover:translate-y-[-4px] sm:col-span-2 md:col-span-1">
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Over Budget</p>
             <p className={`text-3xl font-black tracking-tighter ${overBudgetItemsCount > 0 ? 'text-red-300' : 'text-emerald-400'}`}>{overBudgetItemsCount} Category</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
           <div className="flex items-center justify-between mb-10">
             <h4 className="text-2xl font-black text-slate-100 tracking-tight">{t('categoryBreakdown')}</h4>
             <span onClick={() => setIsManageModalOpen(true)} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 underline cursor-pointer transition-colors">{t('manageLimits')}</span>
@@ -241,7 +241,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
           <h4 className="text-2xl font-black text-slate-100 tracking-tight mb-10">Budget vs Actual</h4>
           <div className="relative h-[220px] flex items-end justify-around gap-4 px-2">
             {chartData.map((d, idx) => (
@@ -257,10 +257,10 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </motion.div>
 
         {/* High Impact Spending */}
-        <motion.div variants={itemVariants} className="col-span-12 rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-all duration-300 hover:border-emerald-400/30">
+        <motion.div variants={itemVariants} className="col-span-12 rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-colors duration-200 hover:border-emerald-400/30">
           <div className="p-8 border-b border-slate-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <h4 className="text-2xl font-black text-slate-100 tracking-tight">Recent High-Impact Spending</h4>
-            <div className="relative w-full md:w-64 group focus-within:w-72 transition-all duration-300">
+            <div className="relative w-full md:w-64 group transition-all duration-300">
               <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
               <input 
                 value={searchTerm}
@@ -311,11 +311,11 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.6 + (idx * 0.05) }}
-                        className="hover:bg-slate-800/30 transition-colors group"
+                        className="hover:bg-slate-800/30 transition-colors duration-200 group"
                       >
                         <td className="px-8 py-5">
                           <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-all duration-300">
+                            <div className="w-11 h-11 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center text-emerald-400 transition-colors duration-200">
                               <span className="material-symbols-outlined font-bold text-[20px]">payments</span>
                             </div>
                             <div className="min-w-0">
@@ -362,8 +362,10 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
     <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose}></div>
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-        animate={{ opacity: 1, scale: 1.0, y: 0 }} 
+        initial={{ opacity: 0, y: 16 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        exit={{ opacity: 0, y: 12 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-[201] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl"
         style={{
           width: "100%",
@@ -459,8 +461,10 @@ function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, 
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose}></div>
       <motion.div 
-        initial={{ opacity: 0, scale: 0.9, y: 20 }} 
-        animate={{ opacity: 1, scale: 1.0, y: 0 }} 
+        initial={{ opacity: 0, y: 16 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        exit={{ opacity: 0, y: 12 }}
+        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-[151] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
         style={{
           width: "100%",

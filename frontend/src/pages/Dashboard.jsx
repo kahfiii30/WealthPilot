@@ -63,11 +63,11 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
       {/* Primary Metrics */}
       <div className="grid grid-cols-12 gap-8 mb-8">
         {/* Total Net Worth Card */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35)] group">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
           <div>
             <div className="flex justify-between items-start mb-4">
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
-              <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 group-hover:scale-110 transition-transform duration-300">
+              <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 transition-colors duration-200">
                 <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
               </div>
             </div>
@@ -93,7 +93,7 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
         </motion.div>
 
         {/* Income vs Expense Dashboard */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
           <div className="mb-8">
             <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-2">{t('cashflowOverview')}</h3>
             <p className="text-sm font-bold text-slate-500 tracking-tight">Real-time breakdown of your income vs expenses.</p>
@@ -127,7 +127,7 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
       {/* Bento Grid: Spending & Transactions */}
       <div className="grid grid-cols-12 gap-8">
         {/* Spending Breakdown */}
-        <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+        <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
           <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
           <div className="space-y-6">
             {categories.map((cat) => {

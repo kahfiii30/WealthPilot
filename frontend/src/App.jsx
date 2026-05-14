@@ -362,7 +362,7 @@ function App() {
         t={t}
       />
 
-      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative">
+      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative">
         <AnimatePresence mode="wait">
           {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} /></AnimatedPage>}
           {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}

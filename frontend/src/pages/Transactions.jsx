@@ -59,21 +59,21 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
             <button 
               key={f}
               onClick={() => setFilter(f)} 
-              className={`px-6 py-2.5 font-black rounded-xl text-xs uppercase tracking-widest cursor-pointer transition-all duration-200 active:scale-95 ${filter === f ? (f === 'expense' ? 'bg-red-400 text-slate-950 shadow-[0_0_20px_rgba(248,113,113,0.3)]' : 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]') : 'bg-slate-900/50 border border-slate-700/40 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'}`}
+              className={`px-6 py-2.5 font-black rounded-xl text-xs uppercase tracking-widest cursor-pointer transition-colors duration-200 ${filter === f ? (f === 'expense' ? 'bg-red-400 text-slate-950 shadow-[0_0_20px_rgba(248,113,113,0.3)]' : 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]') : 'bg-slate-900/50 border border-slate-700/40 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'}`}
             >
               {f}
             </button>
           ))}
         </div>
 
-        <div className="relative w-full md:w-64 group focus-within:w-72 transition-all duration-300">
+        <div className="relative w-full md:w-64 group transition-colors duration-300">
           <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
           <input 
             type="text" 
             placeholder="Search fleet data..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner"
+            className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-colors duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner"
           />
         </div>
       </div>
@@ -90,7 +90,7 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
             className="space-y-4"
           >
             {filtered.map((t_data) => (
-              <motion.div key={t_data.id} variants={item} className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 shadow-xl backdrop-blur-xl transition-all duration-300 active:scale-[0.98]">
+              <motion.div key={t_data.id} variants={item} className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 shadow-xl backdrop-blur-xl transition-colors duration-200">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${t_data.type === 'income' ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' : 'bg-red-400/10 text-red-300 border-red-500/20'}`}>
@@ -113,7 +113,7 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
                       {t_data.method}
                     </div>
                   </div>
-                  <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 p-2 hover:bg-red-500/10 rounded-xl transition-all active:scale-90">
+                  <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 p-2 hover:bg-red-500/10 rounded-xl transition-colors duration-200">
                     <span className="material-symbols-outlined font-bold">delete</span>
                   </button>
                 </div>
@@ -124,7 +124,7 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-all duration-300 hover:border-emerald-400/30">
+      <div className="hidden md:block rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-colors duration-200 hover:border-emerald-400/30">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-950/35 border-b border-slate-700/30">
@@ -150,7 +150,7 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
               </tr>
             ) : (
               filtered.map((t_data) => (
-                <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors group">
+                <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors duration-200 group">
                   <td className="px-8 py-5 text-xs font-bold text-slate-500 tracking-tight">
                     {formatDate(t_data.date)}
                   </td>
@@ -175,11 +175,11 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
                       {t_data.method}
                     </div>
                   </td>
-                  <td className={`px-8 py-5 text-right font-black tracking-tighter text-lg transition-all ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
+                  <td className={`px-8 py-5 text-right font-black tracking-tighter text-lg transition-colors duration-200 ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </td>
                   <td className="px-8 py-5 text-center">
-                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 hover:bg-red-500/10 p-2 rounded-xl transition-all active:scale-90">
+                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 hover:bg-red-500/10 p-2 rounded-xl transition-colors duration-200">
                       <span className="material-symbols-outlined font-bold">delete</span>
                     </button>
                   </td>

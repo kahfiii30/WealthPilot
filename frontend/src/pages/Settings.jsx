@@ -177,10 +177,10 @@ function Settings({
               variants={item}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-none md:w-full flex items-center gap-4 px-5 py-4 transition-all duration-200 rounded-2xl cursor-pointer whitespace-nowrap active:scale-[0.98] ${
+              className={`flex-none md:w-full flex items-center gap-4 px-5 py-4 transition-colors duration-200 rounded-2xl cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id 
                 ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 font-black shadow-[0_0_20px_rgba(74,222,128,0.05)]' 
-                : 'text-slate-500 hover:text-slate-300 hover:bg-slate-900/50'
+                : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-slate-900/50'
               }`}
             >
               <span className={`material-symbols-outlined text-[22px] font-bold ${activeTab === tab.id ? 'text-emerald-400' : 'text-slate-500'}`}>{tab.icon}</span>
@@ -253,7 +253,7 @@ function Settings({
                             name="firstName" 
                             required
                             type="text" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold" 
                             value={form.firstName} 
                             onChange={e => setForm({...form, firstName: e.target.value})}
                           />
@@ -263,7 +263,7 @@ function Settings({
                           <input 
                             name="lastName" 
                             type="text" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold" 
                             value={form.lastName} 
                             onChange={e => setForm({...form, lastName: e.target.value})}
                           />
@@ -276,7 +276,7 @@ function Settings({
                           name="email" 
                           required
                           type="email" 
-                          className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" 
+                          className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold" 
                           value={form.email} 
                           onChange={e => setForm({...form, email: e.target.value})}
                         />
@@ -284,7 +284,7 @@ function Settings({
                     </div>
                     <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
                       <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
-                      <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-all cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95 uppercase tracking-widest text-xs disabled:opacity-50">
+                      <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs disabled:opacity-50">
                         {isSaving ? "Saving..." : "Commit Changes"}
                       </button>
                     </div>
@@ -302,7 +302,7 @@ function Settings({
                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('currency')}</label>
                           <select 
                             name="currency" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-all appearance-none cursor-pointer font-bold" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 appearance-none cursor-pointer font-bold" 
                             value={localPrefs.currency}
                             onChange={(e) => setLocalPrefs({...localPrefs, currency: e.target.value})}
                           >
@@ -319,7 +319,7 @@ function Settings({
                             name="exchangeRate" 
                             type="number" 
                             step="0.01"
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-all font-black" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 font-black" 
                             value={localPrefs.exchangeRate}
                             onChange={(e) => setLocalPrefs({...localPrefs, exchangeRate: parseFloat(e.target.value) || 0})}
                           />
@@ -328,7 +328,7 @@ function Settings({
                           <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Appearance Theme</label>
                           <select 
                             name="theme" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-all appearance-none cursor-pointer font-bold" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 appearance-none cursor-pointer font-bold" 
                             value={localPrefs.theme}
                             onChange={(e) => setLocalPrefs({...localPrefs, theme: e.target.value})}
                           >
@@ -340,7 +340,7 @@ function Settings({
                     </div>
                     <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
                       <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
-                      <button className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-all cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95 uppercase tracking-widest text-xs">
+                      <button className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs">
                         Update Preferences
                       </button>
                     </div>
@@ -360,7 +360,7 @@ function Settings({
                         { id: 'goalProgress', label: 'Goal Progress', desc: 'Updates on my financial goals status' },
                         { id: 'largeExpenseAlert', label: 'Large Expense Alert', desc: 'Notify me of any expense over ' + fm(1000000, preferences) }
                       ].map(notif => (
-                        <label key={notif.id} className="flex items-center gap-5 p-5 bg-slate-950/40 rounded-2xl cursor-pointer hover:bg-slate-950/60 transition-all border border-slate-700/30 group">
+                        <label key={notif.id} className="flex items-center gap-5 p-5 bg-slate-950/40 rounded-2xl cursor-pointer hover:bg-slate-950/60 transition-colors duration-200 border border-slate-700/30 group">
                           <input 
                             name={notif.id} 
                             type="checkbox" 
@@ -376,7 +376,7 @@ function Settings({
                     </div>
                     <div className="mt-12 pt-8 border-t border-slate-800 flex items-center justify-between">
                       <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
-                      <button className="px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-all cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95 uppercase tracking-widest text-xs">
+                      <button className="px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs">
                         Commit Alerts
                       </button>
                     </div>
@@ -398,7 +398,7 @@ function Settings({
                       </div>
                       
                       <div className="flex gap-4 pt-4">
-                        <button onClick={onLogout} className="flex-1 py-4 bg-slate-950/40 border border-red-500/20 text-red-300 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-500/10 transition-all cursor-pointer active:scale-95">
+                        <button onClick={onLogout} className="flex-1 py-4 bg-slate-950/40 border border-red-500/20 text-red-300 rounded-xl font-black uppercase tracking-widest text-xs hover:bg-red-500/10 transition-colors duration-200 cursor-pointer">
                           Terminate Session
                         </button>
                       </div>
@@ -410,7 +410,7 @@ function Settings({
                     <p className="text-sm font-bold text-slate-400 mb-8 tracking-tight">{t('confirmReset')}</p>
                     <button 
                       onClick={onResetData}
-                      className="w-full py-4 bg-gradient-to-r from-red-400 to-red-500 text-slate-950 font-black rounded-xl hover:from-red-300 hover:to-red-400 transition-all cursor-pointer shadow-[0_0_30_rgba(248,113,113,0.2)] active:scale-[0.98] uppercase tracking-[0.2em] text-xs"
+                      className="w-full py-4 bg-gradient-to-r from-red-400 to-red-500 text-slate-950 font-black rounded-xl hover:from-red-300 hover:to-red-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30_rgba(248,113,113,0.2)] uppercase tracking-[0.2em] text-xs"
                     >
                       Purge Financial Repository
                     </button>

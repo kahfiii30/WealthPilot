@@ -20,7 +20,7 @@ const EmptyState = ({ title, desc, icon = 'info', actionLabel, onAction }) => {
       {actionLabel && (
         <button 
           onClick={onAction}
-          className="px-lg py-2.5 bg-primary/10 text-primary font-bold rounded-lg border border-primary/20 hover:bg-primary/20 transition-all cursor-pointer"
+          className="px-lg py-2.5 bg-primary/10 text-primary font-bold rounded-lg border border-primary/20 hover:bg-primary/20 transition-colors duration-200 cursor-pointer"
         >
           {actionLabel}
         </button>

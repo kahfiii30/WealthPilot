@@ -11,7 +11,7 @@ function Header({ onQuickAdd, userProfile, t }) {
       </div>
 
       {/* Search Container */}
-      <div className="hidden lg:flex items-center gap-3 bg-slate-950/55 px-4 py-2.5 rounded-xl border border-slate-700/40 w-[300px] xl:w-[400px] focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 transition-all duration-300 group">
+      <div className="hidden lg:flex items-center gap-3 bg-slate-950/55 px-4 py-2.5 rounded-xl border border-slate-700/40 w-[300px] xl:w-[400px] focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 transition-colors duration-200 group">
         <span className="material-symbols-outlined text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
         <input 
           className="bg-transparent border-none focus:ring-0 text-sm w-full text-slate-100 placeholder:text-slate-500 outline-none" 
@@ -22,7 +22,7 @@ function Header({ onQuickAdd, userProfile, t }) {
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-400 hover:text-emerald-400 transition-all duration-200 hidden sm:block">
+          <button className="p-2 text-slate-400 hover:text-emerald-400 transition-colors duration-200 hidden sm:block">
             <span className="material-symbols-outlined">notifications</span>
           </button>
           

@@ -92,14 +92,14 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('expense')} 
-                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-all ${type === 'expense' ? 'bg-red-500 text-slate-950 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-colors duration-200 ${type === 'expense' ? 'bg-red-500 text-slate-950 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   {t('expense')}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('income')} 
-                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-all ${type === 'income' ? 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-colors duration-200 ${type === 'income' ? 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   {t('income')}
                 </button>
@@ -125,7 +125,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
                   {t('amount')}
                 </label>
-                <div className="flex items-center bg-slate-950/70 border border-slate-700/50 focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 rounded-xl overflow-hidden h-14 transition-all">
+                <div className="flex items-center bg-slate-950/70 border border-slate-700/50 focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 rounded-xl overflow-hidden h-14 transition-colors duration-200">
                   <span className="px-6 text-emerald-400 font-black h-full flex items-center bg-slate-950/80 border-r border-slate-700/50 select-none">
                     {currency === 'USD' ? '$' : 'Rp'}
                   </span>
@@ -226,7 +226,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                 <button 
                   type="submit" 
                   disabled={isSaving}
-                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition active:scale-95 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition-all duration-200 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isSaving ? (
                     <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>

@@ -26,22 +26,23 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
         {navItems.map(item => {
           const isActive = activePage === item.id;
           return (
-            <motion.button
+            <button
               key={item.id}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => setActivePage(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 group ${
+              className={`relative w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors duration-200 ease-out border ${
                 isActive 
-                  ? 'bg-emerald-400/12 text-emerald-400 border border-emerald-400/20 shadow-[0_0_30px_rgba(74,222,128,0.08)]' 
-                  : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+                  ? 'bg-emerald-400/12 text-emerald-400 border-emerald-400/20 shadow-[0_0_28px_rgba(16,185,129,0.08)]' 
+                  : 'text-slate-400 border-transparent hover:bg-slate-800/60 hover:text-slate-100'
               }`}
             >
-              <span className={`material-symbols-outlined transition-transform duration-300 group-hover:scale-110 ${isActive ? 'font-bold' : ''}`}>
+              <span className={`material-symbols-outlined transition-colors duration-200 ${isActive ? 'font-bold' : ''}`}>
                 {item.icon}
               </span>
               <span className="font-bold tracking-tight text-sm">{item.label}</span>
-            </motion.button>
+              {isActive && (
+                <span className="pointer-events-none absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-emerald-400" />
+              )}
+            </button>
           );
         })}
       </nav>
@@ -49,7 +50,7 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
       <div className="mt-auto px-4 pt-6 space-y-3 border-t border-slate-800/50">
         <button 
           onClick={onQuickAdd} 
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 py-3.5 rounded-xl font-bold shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] active:scale-[0.98] text-sm mb-4"
+          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 py-3.5 rounded-xl font-bold shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] text-sm mb-4"
         >
           <span className="material-symbols-outlined text-[20px] font-bold">add</span>
           {t('addTransaction')}
@@ -57,21 +58,21 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
 
         <button 
           onClick={() => setActivePage('settings')}
-          className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group ${
+          className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors duration-200 border ${
             activePage === 'settings' 
-              ? 'bg-emerald-400/12 text-emerald-400 border border-emerald-400/20 shadow-[0_0_30px_rgba(74,222,128,0.08)]' 
-              : 'text-slate-400 hover:bg-slate-800/60 hover:text-slate-100'
+              ? 'bg-emerald-400/12 text-emerald-400 border-emerald-400/20 shadow-[0_0_28px_rgba(16,185,129,0.08)]' 
+              : 'text-slate-400 border-transparent hover:bg-slate-800/60 hover:text-slate-100'
           }`}
         >
-          <span className={`material-symbols-outlined transition-transform duration-300 group-hover:scale-110 ${activePage === 'settings' ? 'font-bold' : ''}`}>settings</span>
+          <span className={`material-symbols-outlined ${activePage === 'settings' ? 'font-bold' : ''}`}>settings</span>
           <span className="font-bold tracking-tight text-sm">{t('settings')}</span>
         </button>
 
         <button 
           onClick={onLogout}
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-all duration-300 group"
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors duration-200"
         >
-          <span className="material-symbols-outlined group-hover:rotate-12 transition-transform">logout</span>
+          <span className="material-symbols-outlined">logout</span>
           <span className="font-bold tracking-tight text-sm">Logout</span>
         </button>
       </div>

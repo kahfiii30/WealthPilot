@@ -26,7 +26,7 @@ function MobileNav({ activePage, setActivePage, onQuickAdd, t }) {
       <div className="relative -top-5">
         <button 
           onClick={onQuickAdd}
-          className="w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_8px_20px_rgba(75,226,119,0.3)] flex items-center justify-center hover:brightness-110 active:scale-90 transition-all cursor-pointer"
+          className="w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_8px_20px_rgba(75,226,119,0.3)] flex items-center justify-center hover:brightness-110 transition-colors duration-200 cursor-pointer"
         >
           <span className="material-symbols-outlined text-3xl">add</span>
         </button>

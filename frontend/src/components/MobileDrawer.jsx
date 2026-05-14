@@ -67,7 +67,7 @@ function MobileDrawer({ isOpen, onClose, activePage, setActivePage, onLogout, us
                       setActivePage(item.id);
                       onClose();
                     }}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors duration-200 ${
                       isActive
                         ? 'bg-primary/10 text-primary font-bold'
                         : 'text-on-surface-variant hover:bg-surface-variant/50 hover:text-on-surface'
@@ -89,7 +89,7 @@ function MobileDrawer({ isOpen, onClose, activePage, setActivePage, onLogout, us
                   onLogout();
                   onClose();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-3 bg-error/10 text-error rounded-xl font-bold hover:bg-error hover:text-white transition-all cursor-pointer"
+                className="w-full flex items-center justify-center gap-2 py-3 bg-error/10 text-error rounded-xl font-bold hover:bg-error hover:text-white transition-colors duration-200 cursor-pointer"
               >
                 <span className="material-symbols-outlined">logout</span>
                 Logout

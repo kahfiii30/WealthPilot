@@ -8,7 +8,7 @@ function StatCard({ title, amount, icon, isError }) {
       whileHover={{ y: -2 }}
       className="flex items-center gap-4 group cursor-default"
     >
-      <div className={`p-3 rounded-xl transition-all duration-300 group-hover:scale-110 border ${isError ? 'bg-red-500/10 text-red-300 border-red-500/20 group-hover:bg-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20 group-hover:bg-emerald-400/20'}`}>
+      <div className={`p-3 rounded-xl transition-colors duration-200 border ${isError ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20'}`}>
         <span className="material-symbols-outlined font-bold">{icon}</span>
       </div>
       <div>

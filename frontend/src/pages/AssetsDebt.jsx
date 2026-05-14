@@ -110,7 +110,7 @@ function AssetsDebt({
     >
       {/* Header / Summary Section */}
       <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between overflow-hidden relative group shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+        <div className="lg:col-span-2 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between overflow-hidden relative group shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
           <div className="relative z-10">
             <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">{t('totalNetWorth')} (Portfolio)</h2>
@@ -136,7 +136,7 @@ function AssetsDebt({
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col gap-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col gap-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div>
             <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Asset Ratio</h3>
             <div className="flex items-center justify-between">
@@ -185,7 +185,7 @@ function AssetsDebt({
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsAssetModalOpen(true); }}
-              className="bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hover:bg-emerald-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 flex items-center gap-2"
+              className="bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hover:bg-emerald-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
             >
               <span className="material-symbols-outlined font-bold text-[18px]">add</span>
               {t('addAsset')}
@@ -206,10 +206,10 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-all duration-300 shadow-lg hover:translate-y-[-2px]"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-11 h-11 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 transition-colors duration-200">
                       <span className="material-symbols-outlined font-bold">{getAssetIcon(asset.category)}</span>
                     </div>
                     <div>
@@ -223,10 +223,10 @@ function AssetsDebt({
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditAsset(asset)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all">
+                      <button onClick={() => handleEditAsset(asset)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
                         <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all">
+                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
                         <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
                       </button>
                     </div>
@@ -246,7 +246,7 @@ function AssetsDebt({
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsDebtModalOpen(true); }}
-              className="bg-red-400/10 text-red-300 border border-red-500/20 hover:bg-red-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-all duration-200 flex items-center gap-2"
+              className="bg-red-400/10 text-red-300 border border-red-500/20 hover:bg-red-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
             >
               <span className="material-symbols-outlined font-bold text-[18px]">add</span>
               {t('addDebt')}
@@ -267,10 +267,10 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-all duration-300 shadow-lg hover:translate-y-[-2px] border-l-4 border-l-red-400"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg border-l-4 border-l-red-400"
                 >
                   <div className="flex items-center gap-5">
-                    <div className="w-11 h-11 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-11 h-11 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 transition-colors duration-200">
                       <span className="material-symbols-outlined font-bold">{getDebtIcon(debt.category)}</span>
                     </div>
                     <div>
@@ -284,10 +284,10 @@ function AssetsDebt({
                       <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditDebt(debt)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all">
+                      <button onClick={() => handleEditDebt(debt)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
                         <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all">
+                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
                         <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
                       </button>
                     </div>
@@ -372,9 +372,10 @@ function Modal({ isOpen, onClose, title, children, t }) {
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={onClose}></div>
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
             className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
             style={{
               width: "100%",

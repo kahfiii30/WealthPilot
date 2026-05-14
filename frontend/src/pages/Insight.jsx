@@ -250,7 +250,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
         {isInsightDismissed && (
           <button 
             onClick={handleResetInsight}
-            className="px-5 py-2 bg-slate-900/55 border border-slate-700/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-400/10 transition-all"
+            className="px-5 py-2 bg-slate-900/55 border border-slate-700/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-400/10 transition-colors duration-200"
           >
             Show Smart Insight
           </button>
@@ -261,7 +261,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
       <div className="grid grid-cols-12 gap-8">
         {/* Financial Health Score Card */}
         <div className="col-span-12 lg:col-span-5 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 flex flex-col items-center justify-center relative overflow-hidden min-h-[480px] shadow-2xl backdrop-blur-xl group">
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/10 blur-[120px] rounded-full group-hover:bg-emerald-400/15 transition-all duration-500"></div>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-400/10 blur-[120px] rounded-full transition-colors duration-500"></div>
           
           <div className="relative flex flex-col items-center">
             <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border-[12px] border-slate-800/50 flex items-center justify-center relative shadow-[0_0_50px_rgba(0,0,0,0.3)]">
@@ -312,7 +312,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
         {/* Analysis & Improvements Bento Group */}
         <div className="col-span-12 lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Strength Analysis */}
-          <div className="rounded-3xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+          <div className="rounded-3xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-emerald-400 font-bold">check_circle</span>
               <h3 className="text-xl font-black text-slate-100 tracking-tight">Strength Analysis</h3>
@@ -342,7 +342,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
           </div>
 
           {/* Risk Factors */}
-          <div className="rounded-3xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-red-400/30">
+          <div className="rounded-3xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-red-400/30">
             <div className="flex items-center gap-3 mb-8">
               <span className="material-symbols-outlined text-red-400 font-bold">warning</span>
               <h3 className="text-xl font-black text-slate-100 tracking-tight">Risk Factors</h3>
@@ -377,7 +377,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="md:col-span-2 rounded-3xl border border-emerald-400/20 bg-emerald-400/5 p-8 shadow-xl backdrop-blur-xl flex flex-col md:flex-row gap-8 items-center group hover:border-emerald-400/40 transition-all duration-300"
+                className="md:col-span-2 rounded-3xl border border-emerald-400/20 bg-emerald-400/5 p-8 shadow-xl backdrop-blur-xl flex flex-col md:flex-row gap-8 items-center group hover:border-emerald-400/40 transition-colors duration-200"
               >
                 <div className="w-20 h-20 rounded-3xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 shadow-[0_0_30px_rgba(74,222,128,0.1)] relative">
                   <div className="absolute inset-0 bg-emerald-400/5 animate-pulse rounded-3xl"></div>
@@ -399,13 +399,13 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button 
                       onClick={() => setIsAuditModalOpen(true)}
-                      className="px-8 py-3 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-[0.98]"
+                      className="px-8 py-3 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-colors duration-200 shadow-[0_0_30px_rgba(74,222,128,0.2)]"
                     >
                       Execute Full Audit
                     </button>
                     <button 
                       onClick={handleDismissInsight}
-                      className="px-8 py-3 text-slate-400 hover:text-slate-100 text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98]"
+                      className="px-8 py-3 text-slate-400 hover:text-slate-100 text-xs font-black uppercase tracking-widest transition-colors duration-200"
                     >
                       Dismiss Analysis
                     </button>
@@ -417,13 +417,13 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
         </div>
 
         {/* Goal Tracker Card */}
-        <div className="col-span-12 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+        <div className="col-span-12 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
             <div>
               <h3 className="text-3xl font-black text-slate-100 tracking-tight">Strategic Goal Tracker</h3>
               <p className="text-base font-bold text-slate-500 tracking-tight mt-1">Projecting your journey to absolute financial freedom.</p>
             </div>
-            <button className="px-8 py-3 border border-slate-700/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 hover:border-emerald-400/30 transition-all active:scale-[0.98]">View Strategic Map</button>
+            <button className="px-8 py-3 border border-slate-700/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 hover:border-emerald-400/30 transition-colors duration-200">View Strategic Map</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             <div className="space-y-10">
@@ -476,7 +476,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
         </div>
 
         {/* Capital Accumulation Trend */}
-        <div className="col-span-12 lg:col-span-8 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30">
+        <div className="col-span-12 lg:col-span-8 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-12 gap-6">
             <h3 className="text-3xl font-black text-slate-100 tracking-tight">Monthly Flow Analysis</h3>
             <div className="flex gap-8">
@@ -510,7 +510,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
         </div>
 
         {/* Strategic Tasks */}
-        <div className="col-span-12 lg:col-span-4 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 flex flex-col">
+        <div className="col-span-12 lg:col-span-4 rounded-3xl border border-slate-700/30 bg-slate-900/55 p-10 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 flex flex-col">
           <h3 className="text-3xl font-black text-slate-100 tracking-tight mb-10">Strategic Tasks</h3>
           <div className="space-y-6 flex-1">
             {strategicTasks.length > 0 ? strategicTasks.map((item, i) => (
@@ -520,7 +520,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
                 onClick={() => handleTaskClick(item)}
-                className="flex items-start gap-5 p-5 bg-slate-950/40 border border-slate-700/30 hover:border-emerald-400/30 transition-all rounded-2xl group cursor-pointer active:scale-[0.98]"
+                className="flex items-start gap-5 p-5 bg-slate-950/40 border border-slate-700/30 hover:border-emerald-400/30 transition-colors duration-200 rounded-2xl group cursor-pointer"
               >
                 <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center shrink-0 border border-white/5 shadow-inner`}>
                   <span className={`material-symbols-outlined font-bold text-3xl ${item.color}`}>{item.icon}</span>
@@ -539,7 +539,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
           </div>
           <button 
             onClick={() => setIsLogModalOpen(true)}
-            className="w-full mt-10 py-5 text-center text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-emerald-400 transition-colors border-t border-slate-800/50 pt-8 active:scale-[0.98]"
+            className="w-full mt-10 py-5 text-center text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-emerald-400 transition-colors border-t border-slate-800/50 pt-8"
           >
             View Optimization Log
           </button>
@@ -603,7 +603,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
                     </div>
                     <p className="text-xs font-bold text-slate-500 leading-relaxed">{rec.description}</p>
                   </div>
-                  <button onClick={() => rec.action === 'Add' ? onQuickAdd() : onNavigate(rec.action.toLowerCase().includes('budget') ? 'budget' : 'assets')} className="px-5 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all shrink-0">
+                  <button onClick={() => rec.action === 'Add' ? onQuickAdd() : onNavigate(rec.action.toLowerCase().includes('budget') ? 'budget' : 'assets')} className="px-5 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-colors duration-200 shrink-0">
                     {rec.action}
                   </button>
                 </div>
@@ -678,7 +678,7 @@ function Modal({ isOpen, onClose, title, children, t }) {
               </div>
               <button 
                 onClick={onClose}
-                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-950/40 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
+                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-950/40 border border-slate-700/50 text-slate-400 hover:text-white transition-colors duration-200"
               >
                 <span className="material-symbols-outlined">close</span>
               </button>
@@ -687,7 +687,7 @@ function Modal({ isOpen, onClose, title, children, t }) {
             <div className="mt-12 pt-8 border-t border-slate-800 text-center">
               <button 
                 onClick={onClose}
-                className="px-10 py-4 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-[0.98]"
+                className="px-10 py-4 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-colors duration-200 shadow-[0_0_30px_rgba(74,222,128,0.2)]"
               >
                 Close Report
               </button>

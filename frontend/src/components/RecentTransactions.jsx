@@ -7,7 +7,7 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
   const recent = sorted.slice(0, 5); // Show only top 5 recent
 
   return (
-    <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-all duration-300 hover:border-emerald-400/30 hover:bg-slate-900/70 hover:shadow-[0_20px_60px_rgba(0,0,0,0.35)]">
+    <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-2xl font-black text-slate-100 tracking-tight">{t('recentTransactions')}</h3>
         <button className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 transition-colors">SEE ALL</button>
@@ -36,7 +36,7 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
                 >
                   <td className="py-5">
                     <div className="flex items-center gap-4">
-                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 border ${t_data.type === 'income' ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' : 'bg-slate-800/50 text-sky-300 border-slate-700/30'}`}>
+                      <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-colors duration-200 border ${t_data.type === 'income' ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' : 'bg-slate-800/50 text-sky-300 border-slate-700/30'}`}>
                         <span className="material-symbols-outlined font-bold">{t_data.type === 'income' ? 'payments' : 'receipt_long'}</span>
                       </div>
                       <div>
@@ -46,11 +46,11 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
                     </div>
                   </td>
                   <td className="py-5 text-sm font-bold text-slate-400 tracking-tight">{t_data.date}</td>
-                  <td className={`py-5 text-right font-black tracking-tighter text-lg transition-all ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
+                  <td className={`py-5 text-right font-black tracking-tighter text-lg transition-colors duration-200 ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </td>
                   <td className="py-5 text-center">
-                    <button onClick={() => onDelete(t_data.id)} className="text-red-300 hover:text-red-400 cursor-pointer p-2 rounded-xl hover:bg-red-500/10 transition-all active:scale-90">
+                    <button onClick={() => onDelete(t_data.id)} className="text-red-300 hover:text-red-400 cursor-pointer p-2 rounded-xl hover:bg-red-500/10 transition-colors duration-200">
                       <span className="material-symbols-outlined font-bold">delete</span>
                     </button>
                   </td>

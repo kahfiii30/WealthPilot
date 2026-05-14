@@ -228,9 +228,11 @@ function Budget({ transactions = [], t, fm }) {
             {categoryStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : categoryStats.map((stat, i) => (
               <motion.div key={stat.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (i * 0.05) }} className="group">
                 <div className="flex justify-between items-end mb-4">
-                  <div>
+                  <div className="flex-1">
                     <p className={`text-xs md:text-label-md ${stat.percentage > 100 ? 'text-error' : ''}`}>{stat.category}</p>
-                    <p className={`text-lg md:text-headline-lg font-bold`}>{fm(stat.actualSpent)} <span className="text-xs md:text-body-md font-normal text-on-surface-variant">/ {fm(stat.limit)}</span></p>
+                    <p className={`text-lg md:text-headline-lg font-bold ${stat.percentage > 100 ? 'text-error' : ''}`}>
+                      {fm(stat.actualSpent)} <span className="text-xs md:text-body-md font-normal text-on-surface-variant">/ {fm(stat.limit)}</span>
+                    </p>
                   </div>
                   <p className={`text-sm md:text-mono-data font-bold ${stat.percentage > 100 ? 'text-error' : 'text-primary'}`}>{stat.percentage.toFixed(0)}%</p>
                 </div>

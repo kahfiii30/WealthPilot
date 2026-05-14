@@ -1,0 +1,13 @@
+{
+  "name": "wealthpilot-root",
+  "version": "1.0.0",
+  "description": "WealthPilot Financial Dashboard",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "backend": "node backend/server.js",
+    "install-all": "npm install --prefix frontend && npm install --prefix backend"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

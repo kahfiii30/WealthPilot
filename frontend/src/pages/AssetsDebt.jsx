@@ -331,24 +331,25 @@ function Modal({ isOpen, onClose, title, children, t }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" 
-            onClick={onClose}
-          ></motion.div>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={onClose}></div>
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative z-[101] w-full max-w-md rounded-3xl border border-slate-700/50 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl overflow-hidden"
+            className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              minWidth: "320px"
+            }}
           >
-            <div className="flex justify-between items-center mb-8">
-              <h2 className="text-2xl font-black text-slate-100 tracking-tight">{title}</h2>
-              <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-slate-400">
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">{title}</h2>
+              <button 
+                onClick={onClose} 
+                className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              >
                 <span className="material-symbols-outlined font-bold text-[24px]">close</span>
               </button>
             </div>
@@ -363,30 +364,61 @@ function Modal({ isOpen, onClose, title, children, t }) {
 function AssetForm({ initialData, categories, onSave, onCancel, t }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', note: '' });
   return (
-    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('note')} ({t('assets')})</label>
-        <input required className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Bank Account" />
+    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('assets')})</label>
+        <input 
+          required 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          value={formData.name} 
+          onChange={e => setFormData({...formData, name: e.target.value})} 
+          placeholder="e.g. Bank Account" 
+        />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('category')}</label>
-          <select className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all appearance-none cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+          <select 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            value={formData.category} 
+            onChange={e => setFormData({...formData, category: e.target.value})}
+          >
             {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
           </select>
         </div>
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('amount')}</label>
-          <input required type="number" className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-black" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} placeholder="0" />
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+          <input 
+            required 
+            type="number" 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            value={formData.amount} 
+            onChange={e => setFormData({...formData, amount: e.target.value})} 
+            placeholder="0" 
+          />
         </div>
       </div>
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('note')} (Optional)</label>
-        <textarea className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all resize-none h-24 text-sm" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} placeholder="Description..." />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+        <textarea 
+          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          value={formData.note} 
+          onChange={e => setFormData({...formData, note: e.target.value})} 
+          placeholder="Description..." 
+        />
       </div>
-      <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onCancel} className="flex-1 h-12 text-slate-400 border border-slate-700/50 hover:bg-slate-800 rounded-xl font-bold transition-all">{t('cancel')}</button>
-        <button type="submit" className="flex-[2] h-12 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 rounded-xl font-black flex items-center justify-center gap-2 hover:from-emerald-300 hover:to-emerald-400 transition-all shadow-[0_0_20px_rgba(74,222,128,0.2)]">
+      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+        >
+          {t('cancel')}
+        </button>
+        <button 
+          type="submit" 
+          className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2"
+        >
           <span className="material-symbols-outlined font-bold">save</span>
           {t('save')}
         </button>
@@ -398,34 +430,71 @@ function AssetForm({ initialData, categories, onSave, onCancel, t }) {
 function DebtForm({ initialData, categories, onSave, onCancel, t }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', dueDate: '', note: '' });
   return (
-    <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('note')} ({t('debts')})</label>
-        <input required className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-bold" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Credit Card" />
+    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('debts')})</label>
+        <input 
+          required 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          value={formData.name} 
+          onChange={e => setFormData({...formData, name: e.target.value})} 
+          placeholder="e.g. Credit Card" 
+        />
       </div>
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('category')}</label>
-          <select className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all appearance-none cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+          <select 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            value={formData.category} 
+            onChange={e => setFormData({...formData, category: e.target.value})}
+          >
             {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
           </select>
         </div>
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('amount')}</label>
-          <input required type="number" className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all font-black" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} placeholder="0" />
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+          <input 
+            required 
+            type="number" 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            value={formData.amount} 
+            onChange={e => setFormData({...formData, amount: e.target.value})} 
+            placeholder="0" 
+          />
         </div>
       </div>
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('date')}</label>
-        <input required type="date" className="w-full h-12 bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all cursor-pointer [color-scheme:dark] font-bold" value={formData.dueDate} onChange={e => setFormData({...formData, dueDate: e.target.value})} />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('date')}</label>
+        <input 
+          required 
+          type="date" 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer [color-scheme:dark] font-bold" 
+          value={formData.dueDate} 
+          onChange={e => setFormData({...formData, dueDate: e.target.value})} 
+        />
       </div>
-      <div className="space-y-2">
-        <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('note')} (Optional)</label>
-        <textarea className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all resize-none h-24 text-sm" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} placeholder="Description..." />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+        <textarea 
+          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          value={formData.note} 
+          onChange={e => setFormData({...formData, note: e.target.value})} 
+          placeholder="Description..." 
+        />
       </div>
-      <div className="flex gap-4 pt-4">
-        <button type="button" onClick={onCancel} className="flex-1 h-12 text-slate-400 border border-slate-700/50 hover:bg-slate-800 rounded-xl font-bold transition-all">{t('cancel')}</button>
-        <button type="submit" className="flex-[2] h-12 bg-gradient-to-r from-red-400 to-red-500 text-slate-950 rounded-xl font-black flex items-center justify-center gap-2 hover:from-red-300 hover:to-red-400 transition-all shadow-[0_0_20px_rgba(248,113,113,0.2)]">
+      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+        >
+          {t('cancel')}
+        </button>
+        <button 
+          type="submit" 
+          className="h-12 w-full rounded-xl bg-gradient-to-r from-red-400 to-red-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(248,113,113,0.20)] transition hover:from-red-300 hover:to-red-400 sm:w-auto flex items-center justify-center gap-2"
+        >
           <span className="material-symbols-outlined font-bold">save</span>
           {t('save')}
         </button>

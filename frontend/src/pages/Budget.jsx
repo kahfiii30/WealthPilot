@@ -27,29 +27,13 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Budget({ transactions = [], t, fm }) {
+function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
   // 1. State Management
   const [selectedMonthKey, setSelectedMonthKey] = useState(getMonthKey(new Date()));
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const [budgets, setBudgets] = useState(() => {
-    const saved = localStorage.getItem("budgets");
-    if (!saved) return [];
-    try {
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed)) return [];
-      return parsed.map(bItem => ({
-        ...bItem,
-        limit: Number(bItem.limit || 0)
-      }));
-    } catch (error) {
-      console.error("Failed to load budgets from localStorage", error);
-      return [];
-    }
-  });
 
   // Persist to localStorage
   useEffect(() => {
@@ -361,6 +345,7 @@ function Budget({ transactions = [], t, fm }) {
 function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
   const categories = ['Food & Dining', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Education', 'Other'];
   const [formData, setFormData] = useState({ category: categories[0], limit: '' });
+
   useEffect(() => {
     if (initialData) setFormData({ category: initialData.category, limit: initialData.limit.toString() });
     else setFormData({ category: categories[0], limit: '' });
@@ -369,40 +354,78 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose}></div>
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1.0 }} className="relative z-[201] w-full max-w-md rounded-3xl border border-slate-700/50 bg-slate-900/90 p-8 shadow-2xl backdrop-blur-xl">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-black text-slate-100 tracking-tight">{initialData ? t('editBudget') : t('addBudget')}</h2>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-slate-400"><span className="material-symbols-outlined">close</span></button>
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+      <div className="absolute inset-0" onClick={onClose}></div>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+        animate={{ opacity: 1, scale: 1.0, y: 0 }} 
+        className="relative z-[201] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl"
+        style={{
+          width: "100%",
+          maxWidth: "560px",
+          minWidth: "320px"
+        }}
+      >
+        <div className="mb-8 flex items-start justify-between gap-4">
+          <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">
+            {initialData ? t('editBudget') : t('addBudget')}
+          </h2>
+
+          <button 
+            onClick={onClose}
+            className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          >
+            <span className="material-symbols-outlined">close</span>
+          </button>
         </div>
-        <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('category')}</label>
+
+        <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
+          <div className="w-full space-y-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              {t('category')}
+            </label>
             <select 
               value={formData.category} 
               onChange={e => setFormData({...formData, category: e.target.value})}
-              className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all appearance-none cursor-pointer"
+              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
             >
               {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
             </select>
           </div>
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('monthlyLimit')} (Rp)</label>
-            <input 
-              required 
-              type="text" 
-              inputMode="numeric" 
-              value={formData.limit} 
-              onChange={e => setFormData({...formData, limit: e.target.value.replace(/[^\d]/g, '')})} 
-              placeholder="e.g. 1.000.000" 
-              className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-4 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-all text-lg font-bold"
-            />
-            <p className="text-[10px] font-bold text-emerald-400/70 mt-2 ml-1 italic tracking-tight">Format: {formatRupiah(parseAmount(formData.limit))}</p>
+
+          <div className="w-full space-y-2">
+            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              {t('monthlyLimit')}
+            </label>
+            <div className="relative group">
+              <input 
+                required 
+                type="text" 
+                inputMode="numeric" 
+                value={formData.limit} 
+                onChange={e => setFormData({...formData, limit: e.target.value.replace(/[^\d]/g, '')})} 
+                placeholder="e.g. 1.000.000" 
+                className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-lg font-bold"
+              />
+              <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 font-bold pointer-events-none group-focus-within:text-emerald-400/50 transition-colors">IDR</div>
+            </div>
+            <p className="text-[10px] font-bold text-emerald-400/70 mt-2 ml-1 italic tracking-tight">
+              Format: {formatRupiah(parseAmount(formData.limit))}
+            </p>
           </div>
-          <div className="flex gap-4 mt-10">
-            <button type="button" onClick={onClose} className="flex-1 px-6 py-3.5 rounded-xl border border-slate-700/50 text-slate-400 font-bold hover:bg-slate-800 transition-all">{t('cancel')}</button>
-            <button type="submit" className="flex-1 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black shadow-[0_0_20px_rgba(74,222,128,0.2)] hover:from-emerald-300 hover:to-emerald-400 transition-all flex items-center justify-center gap-2">
+
+          <div className="mt-10 flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-end">
+            <button 
+              type="button" 
+              onClick={onClose} 
+              className="h-12 w-full rounded-xl border border-slate-700/50 px-8 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+            >
+              {t('cancel')}
+            </button>
+            <button 
+              type="submit" 
+              className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-10 font-black text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2"
+            >
               <span className="material-symbols-outlined font-bold">save</span>
               {initialData ? t('update') : t('save')}
             </button>
@@ -416,34 +439,51 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
 function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, onAdd, t }) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose}></div>
-      <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1.0 }} className="relative z-[151] w-full max-w-lg rounded-3xl border border-slate-700/50 bg-slate-900/90 shadow-2xl backdrop-blur-xl overflow-hidden">
-        <div className="p-8 border-b border-slate-700/30 flex justify-between items-center">
-          <h2 className="text-2xl font-black text-slate-100 tracking-tight">{t('manageLimits')}</h2>
-          <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-slate-400"><span className="material-symbols-outlined">close</span></button>
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+      <div className="absolute inset-0" onClick={onClose}></div>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }} 
+        animate={{ opacity: 1, scale: 1.0, y: 0 }} 
+        className="relative z-[151] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
+        style={{
+          width: "100%",
+          maxWidth: "560px",
+          minWidth: "320px"
+        }}
+      >
+        <div className="p-8 border-b border-slate-700/30 flex justify-between items-center gap-4">
+          <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">{t('manageLimits')}</h2>
+          <button 
+            onClick={onClose} 
+            className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+          >
+            <span className="material-symbols-outlined font-bold">close</span>
+          </button>
         </div>
-        <div className="p-8 space-y-4 max-h-[50vh] overflow-y-auto no-scrollbar">
+        <div className="p-8 space-y-5 max-h-[50vh] overflow-y-auto no-scrollbar bg-slate-950/20">
           {monthlyBudgets.length === 0 ? (
-            <p className="text-center py-10 text-slate-500 italic font-bold">{t('noLimitsSet')}</p>
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <span className="material-symbols-outlined text-slate-700 text-5xl mb-4">analytics</span>
+              <p className="text-slate-500 italic font-bold tracking-tight">{t('noLimitsSet')}</p>
+            </div>
           ) : (
             monthlyBudgets.map(bItem => (
-              <div key={bItem.id} className="flex justify-between items-center p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 hover:border-emerald-400/30 transition-all group">
+              <div key={bItem.id} className="flex justify-between items-center p-6 bg-slate-900/40 rounded-2xl border border-slate-700/30 hover:border-emerald-400/30 transition-all group">
                 <div>
-                  <p className="font-black text-slate-100 tracking-tight group-hover:text-emerald-400 transition-colors">{bItem.category}</p>
-                  <p className="text-sm font-black text-emerald-400 tracking-tighter">{formatRupiah(bItem.limit)}</p>
+                  <p className="font-black text-slate-100 tracking-tight group-hover:text-emerald-400 transition-colors mb-1">{bItem.category}</p>
+                  <p className="text-lg font-black text-emerald-400 tracking-tighter">{formatRupiah(bItem.limit)}</p>
                 </div>
-                <div className="flex gap-2">
-                  <button onClick={() => onEdit(bItem)} className="p-2.5 text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all"><span className="material-symbols-outlined font-bold">edit</span></button>
-                  <button onClick={() => onDelete(bItem.id)} className="p-2.5 text-red-400 hover:bg-red-400/10 rounded-xl transition-all"><span className="material-symbols-outlined font-bold">delete</span></button>
+                <div className="flex gap-3">
+                  <button onClick={() => onEdit(bItem)} className="w-11 h-11 flex items-center justify-center text-emerald-400 hover:bg-emerald-400/10 rounded-xl border border-emerald-400/10 transition-all"><span className="material-symbols-outlined font-bold text-xl">edit</span></button>
+                  <button onClick={() => onDelete(bItem.id)} className="w-11 h-11 flex items-center justify-center text-red-400 hover:bg-red-400/10 rounded-xl border border-red-400/10 transition-all"><span className="material-symbols-outlined font-bold text-xl">delete</span></button>
                 </div>
               </div>
             ))
           )}
         </div>
-        <div className="p-8 border-t border-slate-700/30 flex gap-4 bg-slate-950/20">
-          <button onClick={onClose} className="flex-1 px-6 py-3.5 rounded-xl border border-slate-700/50 text-slate-400 font-bold hover:bg-slate-800 transition-all">{t('close')}</button>
-          <button onClick={() => { onClose(); onAdd(); }} className="flex-1 px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black shadow-[0_0_20px_rgba(74,222,128,0.2)] hover:from-emerald-300 hover:to-emerald-400 transition-all flex items-center justify-center gap-2">
+        <div className="p-8 border-t border-slate-700/30 flex flex-col sm:flex-row gap-4 bg-slate-900/80">
+          <button onClick={onClose} className="flex-1 h-12 rounded-xl border border-slate-700/50 text-slate-400 font-bold hover:bg-slate-800 hover:text-slate-100 transition-all">{t('close')}</button>
+          <button onClick={() => { onClose(); onAdd(); }} className="flex-1 h-12 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black shadow-[0_0_20px_rgba(74,222,128,0.2)] hover:from-emerald-300 hover:to-emerald-400 transition-all flex items-center justify-center gap-2">
             <span className="material-symbols-outlined font-bold">add</span>
             {t('addNew')}
           </button>

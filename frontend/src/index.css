@@ -44,7 +44,21 @@
     color: #e5e7eb;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
+    overflow-y: auto;
     -webkit-font-smoothing: antialiased;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100%;
   }
 }
 

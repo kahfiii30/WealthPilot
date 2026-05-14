@@ -36,64 +36,69 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl cursor-pointer"
-          ></motion.div>
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={onClose}></div>
           
-          {/* Modal Content */}
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 15 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="relative w-[95vw] max-w-[500px] rounded-3xl border border-slate-700/30 bg-slate-900/80 shadow-2xl p-8 z-10 backdrop-blur-2xl flex flex-col max-h-[90vh] overflow-y-auto no-scrollbar"
+            exit={{ opacity: 0, scale: 0.9, y: 15 }}
+            className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              minWidth: "320px"
+            }}
           >
-            <div className="flex justify-between items-center mb-10 shrink-0">
+            <div className="mb-8 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1">New Entry</p>
-                <h2 className="text-2xl font-black text-slate-100 tracking-tighter">{t('addTransaction')}</h2>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1">Financial Intelligence</p>
+                <h2 className="text-3xl font-black text-slate-100 tracking-tighter whitespace-normal">
+                  {t('addTransaction')}
+                </h2>
               </div>
-              <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-950/40 border border-slate-700/50 text-slate-400 hover:text-white hover:border-slate-500 transition-all cursor-pointer shrink-0">
-                <span className="material-symbols-outlined text-[22px]">close</span>
+              <button 
+                onClick={onClose} 
+                className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              >
+                <span className="material-symbols-outlined text-[24px]">close</span>
               </button>
             </div>
 
-            <form className="flex flex-col space-y-8" onSubmit={handleSubmit}>
+            <form className="w-full space-y-6" onSubmit={handleSubmit}>
               {/* Type Switcher */}
-              <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-950/50 rounded-2xl border border-slate-700/30 shrink-0">
+              <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-950/50 rounded-2xl border border-slate-700/30">
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('expense')} 
-                  className={`py-3 text-center text-xs font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all ${type === 'expense' ? 'bg-red-500 text-slate-950 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-all ${type === 'expense' ? 'bg-red-500 text-slate-950 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   {t('expense')}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('income')} 
-                  className={`py-3 text-center text-xs font-black uppercase tracking-widest rounded-xl cursor-pointer transition-all ${type === 'income' ? 'bg-emerald-400 text-slate-950 shadow-[0_0_15px_rgba(74,222,128,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-all ${type === 'income' ? 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
                 >
                   {t('income')}
                 </button>
               </div>
 
               {/* Amount Field */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('amount')}</label>
-                <div className="flex items-center bg-slate-950/50 border border-slate-700/50 focus-within:border-emerald-400/50 focus-within:ring-2 focus-within:ring-emerald-400/10 rounded-2xl overflow-hidden h-16 transition-all">
-                  <span className="px-6 text-emerald-400 font-black h-full flex items-center bg-slate-950/80 border-r border-slate-700/50 select-none">{currency === 'USD' ? '$' : 'Rp'}</span>
+              <div className="w-full space-y-2">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                  {t('amount')}
+                </label>
+                <div className="flex items-center bg-slate-950/70 border border-slate-700/50 focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 rounded-xl overflow-hidden h-14 transition-all">
+                  <span className="px-6 text-emerald-400 font-black h-full flex items-center bg-slate-950/80 border-r border-slate-700/50 select-none">
+                    {currency === 'USD' ? '$' : 'Rp'}
+                  </span>
                   <input 
                     type="number" 
                     required 
                     value={amount} 
                     onChange={(e) => setAmount(e.target.value)} 
-                    className="flex-1 bg-transparent px-6 h-full text-slate-100 font-black text-2xl outline-none w-full min-w-0 tracking-tight" 
+                    className="flex-1 bg-transparent px-5 h-full text-slate-100 font-black text-xl outline-none w-full min-w-0 tracking-tight" 
                     placeholder="0" 
                     autoFocus 
                   />
@@ -101,13 +106,15 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
               </div>
 
               {/* Category & Method Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('category')}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="w-full space-y-2">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                    {t('category')}
+                  </label>
                   <select 
                     value={category} 
                     onChange={(e) => setCategory(e.target.value)} 
-                    className="w-full h-14 bg-slate-950/50 border border-slate-700/50 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 rounded-2xl px-5 text-slate-100 outline-none cursor-pointer transition-all font-bold appearance-none"
+                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
                   >
                     {type === 'expense' ? (
                       <>
@@ -128,12 +135,14 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                     )}
                   </select>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Method</label>
+                <div className="w-full space-y-2">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                    Method
+                  </label>
                   <select 
                     value={method} 
                     onChange={(e) => setMethod(e.target.value)} 
-                    className="w-full h-14 bg-slate-950/50 border border-slate-700/50 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 rounded-2xl px-5 text-slate-100 outline-none cursor-pointer transition-all font-bold appearance-none"
+                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
                   >
                     <option value="Cash" className="bg-slate-900">Cash</option>
                     <option value="Bank Transfer" className="bg-slate-900">Bank Transfer</option>
@@ -144,36 +153,47 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
               </div>
 
               {/* Date & Note Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('date')}</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="w-full space-y-2">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                    {t('date')}
+                  </label>
                   <input 
                     type="date" 
                     required 
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
-                    className="w-full h-14 bg-slate-950/50 border border-slate-700/50 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 rounded-2xl px-5 text-slate-100 outline-none cursor-pointer transition-all font-bold" 
+                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer font-bold" 
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('note')}</label>
+                <div className="w-full space-y-2">
+                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                    {t('note')}
+                  </label>
                   <input 
                     type="text" 
                     value={note} 
                     onChange={(e) => setNote(e.target.value)} 
-                    className="w-full h-14 bg-slate-950/50 border border-slate-700/50 focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 rounded-2xl px-5 text-slate-100 outline-none transition-all font-bold" 
+                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
                     placeholder="Brief description..." 
                   />
                 </div>
               </div>
 
-              <div className="pt-6 shrink-0">
+              <div className="mt-10 flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-end">
+                <button 
+                  type="button" 
+                  onClick={onClose} 
+                  className="h-12 w-full rounded-xl border border-slate-700/50 px-8 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+                >
+                  {t('cancel')}
+                </button>
                 <button 
                   type="submit" 
-                  className={`w-full h-16 text-slate-950 text-sm font-black uppercase tracking-[0.2em] rounded-2xl transition-all cursor-pointer shadow-xl flex items-center justify-center gap-3 active:scale-95 ${type === 'income' ? 'bg-emerald-400 hover:bg-emerald-300 shadow-emerald-400/20' : 'bg-red-500 hover:bg-red-400 shadow-red-500/20'}`}
+                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition active:scale-95 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'}`}
                 >
                   <span className="material-symbols-outlined font-bold">save</span>
-                  Confirm Transaction
+                  Confirm
                 </button>
               </div>
             </form>

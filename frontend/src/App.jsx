@@ -37,6 +37,7 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [assets, setAssets] = useState([]);
   const [debts, setDebts] = useState([]);
+  const [budgets, setBudgets] = useState([]);
 
 
   // Auth State Listener
@@ -83,6 +84,7 @@ function App() {
     setTransactions([]);
     setAssets([]);
     setDebts([]);
+    setBudgets([]);
   };
 
   const fetchUserData = async (userId) => {
@@ -117,6 +119,16 @@ function App() {
 
       const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
       if (debtsData) setDebts(debtsData);
+
+      const { data: budgetsData } = await supabase.from('budgets').select('*').eq('user_id', userId);
+      if (budgetsData) {
+        setBudgets(budgetsData);
+        localStorage.setItem("budgets", JSON.stringify(budgetsData));
+      } else {
+        // Fallback to local if Supabase empty but local has something (for migration/offline)
+        const local = localStorage.getItem("budgets");
+        if (local) setBudgets(JSON.parse(local));
+      }
 
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -290,6 +302,8 @@ function App() {
             <AnimatedPage key="budget">
               <Budget 
                 transactions={transactions} 
+                budgets={budgets}
+                setBudgets={setBudgets}
                 t={t}
                 fm={fm}
               />
@@ -311,7 +325,18 @@ function App() {
               />
             </AnimatedPage>
           )}
-          {activePage === 'insight' && <AnimatedPage key="insight"><Insight t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'insight' && (
+            <AnimatedPage key="insight">
+              <Insight 
+                transactions={transactions}
+                assets={assets}
+                debts={debts}
+                budgets={budgets}
+                t={t} 
+                fm={fm} 
+              />
+            </AnimatedPage>
+          )}
           {activePage === 'settings' && (
             <AnimatedPage key="settings">
               <Settings 

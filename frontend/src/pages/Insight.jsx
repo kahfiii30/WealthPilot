@@ -1,16 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getMonthKey } from '../services/financeService';
+import { formatDate } from '../utils/dateUtils';
 
 // Helper Functions
 const toNumber = (value) => {
   const number = Number(value);
   return Number.isFinite(number) ? number : 0;
-};
-
-const getMonthKey = (date) => {
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return null;
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
 };
 
 const formatRupiah = (value) => {
@@ -23,8 +19,9 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, fm }) {
+function Insight({ transactions = [], assets = [], debts = [], budgets = [], onNavigate, onQuickAdd, t, fm }) {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isInsightDismissed, setIsInsightDismissed] = useState(localStorage.getItem("smartInsightDismissed") === "true");
 
   // Current Context
@@ -59,7 +56,6 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
       .filter(a => liquidCategories.includes(a.category))
       .reduce((sum, a) => sum + toNumber(a.amount), 0);
     
-    // If no liquid assets found by category, fallback to all assets as per instructions
     const effectiveLiquid = liquidAssets > 0 ? liquidAssets : totalAssets;
 
     const monthsWithData = new Set(transactions.map(ti => getMonthKey(ti.date || ti.createdAt))).size || 1;
@@ -78,7 +74,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
       });
     const biggestCategory = Object.entries(categoryTotals).sort((a, b) => b[1] - a[1])[0] || [null, 0];
 
-    // 2. Wealth Score Logic
+    // Wealth Score Logic
     const saveRateScore = saveRate >= 30 ? 30 : Math.max(saveRate, 0);
     let debtScore = 3;
     if (debtToAssetRatio <= 20) debtScore = 25;
@@ -180,17 +176,28 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
     const tasks = [];
     const { totalAssets, emergencyFundMonths, debtToAssetRatio, saveRate, monthlyBudget, budgetUsage, monthlyIncome } = analysis;
 
-    if (assets.length === 0) tasks.push({ icon: 'add_card', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Add your first asset', desc: 'Required for net worth calculation.', priority: 'high', link: 'assets' });
-    if (debts.length === 0 && assets.length > 0) tasks.push({ icon: 'fact_check', color: 'text-sky-400', bg: 'bg-sky-400/10', title: 'Review debt position', desc: 'Ensure all liabilities are recorded.', priority: 'low', link: 'assets' });
-    if (emergencyFundMonths < 3) tasks.push({ icon: 'emergency', color: 'text-red-400', bg: 'bg-red-400/10', title: 'Build emergency fund', desc: 'Current buffer is less than 3 months.', priority: 'high', link: 'insight' });
-    if (debtToAssetRatio > 30) tasks.push({ icon: 'trending_down', color: 'text-orange-400', bg: 'bg-orange-400/10', title: 'Reduce debt exposure', desc: 'Keep debt-to-asset below 30% for stability.', priority: 'medium', link: 'assets' });
-    if (saveRate < 20 && monthlyIncome > 0) tasks.push({ icon: 'savings', color: 'text-emerald-300', bg: 'bg-emerald-300/10', title: 'Increase saving rate', desc: 'Target 20% savings for faster growth.', priority: 'medium', link: 'budget' });
-    if (monthlyBudget <= 0) tasks.push({ icon: 'assignment', color: 'text-blue-400', bg: 'bg-blue-400/10', title: 'Set monthly budget limits', desc: 'Essential for expense discipline.', priority: 'medium', link: 'budget' });
-    if (budgetUsage > 100) tasks.push({ icon: 'warning', color: 'text-red-300', bg: 'bg-red-300/10', title: 'Review over-budget items', desc: 'You have exceeded monthly limits.', priority: 'high', link: 'budget' });
-    if (monthlyIncome <= 0) tasks.push({ icon: 'payments', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Record this month income', desc: 'No income recorded for this period.', priority: 'high', link: 'transactions' });
+    if (assets.length === 0) tasks.push({ icon: 'add_card', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Add your first asset', desc: 'Required for net worth calculation.', priority: 'high', target: 'assets', flag: 'openAssetModalOnLoad' });
+    if (debts.length === 0 && assets.length > 0) tasks.push({ icon: 'fact_check', color: 'text-sky-400', bg: 'bg-sky-400/10', title: 'Review debt position', desc: 'Ensure all liabilities are recorded.', priority: 'low', target: 'assets', flag: 'openDebtModalOnLoad' });
+    if (emergencyFundMonths < 3) tasks.push({ icon: 'emergency', color: 'text-red-400', bg: 'bg-red-400/10', title: 'Build emergency fund', desc: 'Current buffer is less than 3 months.', priority: 'high', target: 'insight' });
+    if (debtToAssetRatio > 30) tasks.push({ icon: 'trending_down', color: 'text-orange-400', bg: 'bg-orange-400/10', title: 'Reduce debt exposure', desc: 'Keep debt-to-asset below 30% for stability.', priority: 'medium', target: 'assets', flag: 'openDebtModalOnLoad' });
+    if (saveRate < 20 && monthlyIncome > 0) tasks.push({ icon: 'savings', color: 'text-emerald-300', bg: 'bg-emerald-300/10', title: 'Increase saving rate', desc: 'Target 20% savings for faster growth.', priority: 'medium', target: 'budget', flag: 'openBudgetModalOnLoad' });
+    if (monthlyBudget <= 0) tasks.push({ icon: 'assignment', color: 'text-blue-400', bg: 'bg-blue-400/10', title: 'Set monthly budget limits', desc: 'Essential for expense discipline.', priority: 'medium', target: 'budget', flag: 'openBudgetModalOnLoad' });
+    if (budgetUsage > 100) tasks.push({ icon: 'warning', color: 'text-red-300', bg: 'bg-red-300/10', title: 'Review over-budget items', desc: 'You have exceeded monthly limits.', priority: 'high', target: 'budget' });
+    if (monthlyIncome <= 0) tasks.push({ icon: 'payments', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Record this month income', desc: 'No income recorded for this period.', priority: 'high', target: 'transactions' });
 
     return tasks.slice(0, 3);
   }, [analysis, assets.length, debts.length]);
+
+  const handleTaskClick = (task) => {
+    if (task.flag) {
+      localStorage.setItem(task.flag, "true");
+    }
+    if (task.target === 'transactions') {
+      onQuickAdd();
+    } else {
+      onNavigate(task.target);
+    }
+  };
 
   // 5. Trend Chart Data
   const trendData = useMemo(() => {
@@ -392,13 +399,13 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
                   <div className="flex flex-col sm:flex-row gap-4">
                     <button 
                       onClick={() => setIsAuditModalOpen(true)}
-                      className="px-8 py-3 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-95"
+                      className="px-8 py-3 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-[0.98]"
                     >
                       Execute Full Audit
                     </button>
                     <button 
                       onClick={handleDismissInsight}
-                      className="px-8 py-3 text-slate-400 hover:text-slate-100 text-xs font-black uppercase tracking-widest transition-all"
+                      className="px-8 py-3 text-slate-400 hover:text-slate-100 text-xs font-black uppercase tracking-widest transition-all active:scale-[0.98]"
                     >
                       Dismiss Analysis
                     </button>
@@ -416,7 +423,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
               <h3 className="text-3xl font-black text-slate-100 tracking-tight">Strategic Goal Tracker</h3>
               <p className="text-base font-bold text-slate-500 tracking-tight mt-1">Projecting your journey to absolute financial freedom.</p>
             </div>
-            <button className="px-8 py-3 border border-slate-700/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 hover:border-emerald-400/30 transition-all">View Strategic Map</button>
+            <button className="px-8 py-3 border border-slate-700/50 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-400 hover:text-emerald-400 hover:border-emerald-400/30 transition-all active:scale-[0.98]">View Strategic Map</button>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
             <div className="space-y-10">
@@ -512,7 +519,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className="flex items-start gap-5 p-5 bg-slate-950/40 border border-slate-700/30 hover:border-emerald-400/30 transition-all rounded-2xl group cursor-pointer"
+                onClick={() => handleTaskClick(item)}
+                className="flex items-start gap-5 p-5 bg-slate-950/40 border border-slate-700/30 hover:border-emerald-400/30 transition-all rounded-2xl group cursor-pointer active:scale-[0.98]"
               >
                 <div className={`w-14 h-14 rounded-2xl ${item.bg} flex items-center justify-center shrink-0 border border-white/5 shadow-inner`}>
                   <span className={`material-symbols-outlined font-bold text-3xl ${item.color}`}>{item.icon}</span>
@@ -529,120 +537,165 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], t, 
               </div>
             )}
           </div>
-          <button className="w-full mt-10 py-5 text-center text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-emerald-400 transition-colors border-t border-slate-800/50 pt-8">
+          <button 
+            onClick={() => setIsLogModalOpen(true)}
+            className="w-full mt-10 py-5 text-center text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-emerald-400 transition-colors border-t border-slate-800/50 pt-8 active:scale-[0.98]"
+          >
             View Optimization Log
           </button>
         </div>
       </div>
 
       {/* Audit Modal */}
-      <AnimatePresence>
-        {isAuditModalOpen && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" 
-              onClick={() => setIsAuditModalOpen(false)}
-            ></motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 15 }}
-              className="relative z-[201] w-full max-w-2xl rounded-3xl border border-slate-700/30 bg-slate-900/90 shadow-2xl p-10 max-h-[90vh] overflow-y-auto no-scrollbar"
-            >
-              <div className="flex justify-between items-center mb-10">
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1">Financial Intelligence</p>
-                  <h2 className="text-3xl font-black text-slate-100 tracking-tight">Full System Audit</h2>
-                </div>
-                <button 
-                  onClick={() => setIsAuditModalOpen(false)}
-                  className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-950/40 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
-                >
-                  <span className="material-symbols-outlined">close</span>
-                </button>
+      <Modal isOpen={isAuditModalOpen} onClose={() => setIsAuditModalOpen(false)} title="Full System Audit" t={t}>
+        <div className="space-y-10">
+          <div className="grid grid-cols-2 gap-8">
+            <div className="p-6 bg-slate-950/40 rounded-2xl border border-slate-700/30">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Wealth Snapshot</p>
+              <div className="space-y-2">
+                <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Total Assets</span><span className="text-xs font-black text-slate-100">{formatRupiah(analysis.totalAssets)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Liabilities</span><span className="text-xs font-black text-red-300">{formatRupiah(analysis.totalLiabilities)}</span></div>
+                <div className="border-t border-slate-800 my-2 pt-2 flex justify-between"><span className="text-xs font-bold text-slate-100">Net Worth</span><span className="text-sm font-black text-emerald-400">{formatRupiah(analysis.netWorth)}</span></div>
               </div>
-
-              <div className="space-y-10">
-                <div className="grid grid-cols-2 gap-8">
-                  <div className="p-6 bg-slate-950/40 rounded-2xl border border-slate-700/30">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Wealth Snapshot</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Total Assets</span><span className="text-xs font-black text-slate-100">{formatRupiah(analysis.totalAssets)}</span></div>
-                      <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Liabilities</span><span className="text-xs font-black text-red-300">{formatRupiah(analysis.totalLiabilities)}</span></div>
-                      <div className="border-t border-slate-800 my-2 pt-2 flex justify-between"><span className="text-xs font-bold text-slate-100">Net Worth</span><span className="text-sm font-black text-emerald-400">{formatRupiah(analysis.netWorth)}</span></div>
-                    </div>
-                  </div>
-                  <div className="p-6 bg-slate-950/40 rounded-2xl border border-slate-700/30">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Cashflow (MTD)</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Income</span><span className="text-xs font-black text-emerald-400">{formatRupiah(analysis.monthlyIncome)}</span></div>
-                      <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Expenses</span><span className="text-xs font-black text-red-300">{formatRupiah(analysis.monthlyExpense)}</span></div>
-                      <div className="border-t border-slate-800 my-2 pt-2 flex justify-between"><span className="text-xs font-bold text-slate-100">Savings</span><span className="text-sm font-black text-emerald-400">{formatRupiah(analysis.monthlySavings)}</span></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-black text-slate-100 mb-6 flex items-center gap-2">
-                    <span className="material-symbols-outlined text-emerald-400">insights</span>
-                    Efficiency Metrics
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-                    <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Save Rate</p>
-                      <p className="text-xl font-black text-emerald-400">{analysis.saveRate.toFixed(1)}%</p>
-                    </div>
-                    <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Debt Ratio</p>
-                      <p className="text-xl font-black text-emerald-300">{analysis.debtToAssetRatio.toFixed(1)}%</p>
-                    </div>
-                    <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
-                      <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Budget Usage</p>
-                      <p className="text-xl font-black text-sky-400">{analysis.budgetUsage.toFixed(1)}%</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="text-lg font-black text-slate-100 mb-6">Strategic Recommendations</h4>
-                  <div className="space-y-4">
-                    {smartInsight.recommendations.map((rec, i) => (
-                      <div key={i} className="p-5 bg-slate-950/40 border border-slate-700/30 rounded-2xl flex justify-between items-center gap-6">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-1">
-                            <p className="font-black text-slate-100 tracking-tight">{rec.title}</p>
-                            <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${rec.priority === 'high' ? 'bg-red-400/10 text-red-300' : 'bg-emerald-400/10 text-emerald-400'}`}>
-                              {rec.priority}
-                            </span>
-                          </div>
-                          <p className="text-xs font-bold text-slate-500 leading-relaxed">{rec.description}</p>
-                        </div>
-                        <button className="px-5 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all shrink-0">
-                          {rec.action}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+            </div>
+            <div className="p-6 bg-slate-950/40 rounded-2xl border border-slate-700/30">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Cashflow (MTD)</p>
+              <div className="space-y-2">
+                <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Income</span><span className="text-xs font-black text-emerald-400">{formatRupiah(analysis.monthlyIncome)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-bold text-slate-400">Expenses</span><span className="text-xs font-black text-red-300">{formatRupiah(analysis.monthlyExpense)}</span></div>
+                <div className="border-t border-slate-800 my-2 pt-2 flex justify-between"><span className="text-xs font-bold text-slate-100">Savings</span><span className="text-sm font-black text-emerald-400">{formatRupiah(analysis.monthlySavings)}</span></div>
               </div>
-
-              <div className="mt-12 pt-8 border-t border-slate-800 text-center">
-                <button 
-                  onClick={() => setIsAuditModalOpen(false)}
-                  className="px-10 py-4 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)]"
-                >
-                  Close Audit Report
-                </button>
-              </div>
-            </motion.div>
+            </div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div>
+            <h4 className="text-lg font-black text-slate-100 mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined text-emerald-400">insights</span>
+              Efficiency Metrics
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Save Rate</p>
+                <p className="text-xl font-black text-emerald-400">{analysis.saveRate.toFixed(1)}%</p>
+              </div>
+              <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Debt Ratio</p>
+                <p className="text-xl font-black text-emerald-300">{analysis.debtToAssetRatio.toFixed(1)}%</p>
+              </div>
+              <div className="p-5 bg-slate-950/40 rounded-2xl border border-slate-700/30 text-center">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Budget Usage</p>
+                <p className="text-xl font-black text-sky-400">{analysis.budgetUsage.toFixed(1)}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="text-lg font-black text-slate-100 mb-6">Strategic Recommendations</h4>
+            <div className="space-y-4">
+              {smartInsight.recommendations.map((rec, i) => (
+                <div key={i} className="p-5 bg-slate-950/40 border border-slate-700/30 rounded-2xl flex justify-between items-center gap-6">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-3 mb-1">
+                      <p className="font-black text-slate-100 tracking-tight">{rec.title}</p>
+                      <span className={`text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest ${rec.priority === 'high' ? 'bg-red-400/10 text-red-300' : 'bg-emerald-400/10 text-emerald-400'}`}>
+                        {rec.priority}
+                      </span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-500 leading-relaxed">{rec.description}</p>
+                  </div>
+                  <button onClick={() => rec.action === 'Add' ? onQuickAdd() : onNavigate(rec.action.toLowerCase().includes('budget') ? 'budget' : 'assets')} className="px-5 py-2 bg-slate-800 text-white rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all shrink-0">
+                    {rec.action}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Optimization Log Modal */}
+      <Modal isOpen={isLogModalOpen} onClose={() => setIsLogModalOpen(false)} title="Optimization Log" t={t}>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between p-4 bg-slate-950/40 border border-slate-700/30 rounded-2xl">
+            <div>
+              <p className="text-xs font-black text-slate-100 tracking-tight">System Initialization</p>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status: Success</p>
+            </div>
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Just Now</span>
+          </div>
+          {analysis.wealthScore < 60 && (
+            <div className="flex items-center justify-between p-4 bg-red-400/5 border border-red-500/20 rounded-2xl">
+              <div>
+                <p className="text-xs font-black text-red-300 tracking-tight">Low Wealth Score Detected</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Audit Required</p>
+              </div>
+              <span className="text-[10px] font-black text-red-400 uppercase tracking-widest">Warning</span>
+            </div>
+          )}
+          {analysis.saveRate > 20 && (
+            <div className="flex items-center justify-between p-4 bg-emerald-400/5 border border-emerald-400/20 rounded-2xl">
+              <div>
+                <p className="text-xs font-black text-emerald-400 tracking-tight">High Accumulation Signal</p>
+                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Status: Active</p>
+              </div>
+              <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Signal</span>
+            </div>
+          )}
+          <div className="p-8 text-center border-2 border-dashed border-slate-800 rounded-3xl opacity-50">
+            <span className="material-symbols-outlined text-4xl mb-3">history</span>
+            <p className="text-xs font-bold text-slate-500">No previous logs found. System history cleared.</p>
+          </div>
+        </div>
+      </Modal>
     </div>
+  );
+}
+
+// Reusable Modal Component
+function Modal({ isOpen, onClose, title, children, t }) {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-slate-950/80 backdrop-blur-xl" 
+            onClick={onClose}
+          ></motion.div>
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 15 }}
+            className="relative z-[201] w-full max-w-[640px] rounded-3xl border border-slate-700/30 bg-slate-900/90 shadow-2xl p-10 max-h-[90vh] overflow-y-auto no-scrollbar"
+          >
+            <div className="flex justify-between items-center mb-10">
+              <div>
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1">Intelligence Report</p>
+                <h2 className="text-3xl font-black text-slate-100 tracking-tight">{title}</h2>
+              </div>
+              <button 
+                onClick={onClose}
+                className="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-950/40 border border-slate-700/50 text-slate-400 hover:text-white transition-all"
+              >
+                <span className="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            {children}
+            <div className="mt-12 pt-8 border-t border-slate-800 text-center">
+              <button 
+                onClick={onClose}
+                className="px-10 py-4 bg-emerald-400 text-slate-950 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-300 transition-all shadow-[0_0_30px_rgba(74,222,128,0.2)] active:scale-[0.98]"
+              >
+                Close Report
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }
 

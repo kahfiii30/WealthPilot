@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDate } from '../utils/dateUtils';
 
 function Transactions({ transactions = [], onDelete, t, fm }) {
   const [filter, setFilter] = useState('all');
@@ -9,7 +10,8 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
   const filtered = transactions.filter(t_data => {
     const matchesFilter = filter === 'all' ? true : t_data.type === filter;
     const matchesSearch = 
-      (t_data.note || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t_data.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t_data.note || t_data.notes || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.method || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.date || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -95,8 +97,8 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
                       <span className="material-symbols-outlined font-bold">{t_data.type === 'income' ? 'payments' : 'receipt_long'}</span>
                     </div>
                     <div>
-                      <p className="font-bold text-slate-100 text-sm line-clamp-1 tracking-tight">{t_data.note || t_data.category}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{new Date(t_data.date).toLocaleDateString()}</p>
+                      <p className="font-bold text-slate-100 text-sm line-clamp-1 tracking-tight">{t_data.title}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(t_data.date)}</p>
                     </div>
                   </div>
                   <p className={`text-lg font-black tracking-tighter ${t_data.type === 'income' ? 'text-emerald-400' : 'text-red-300'}`}>
@@ -127,7 +129,7 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
           <thead>
             <tr className="bg-slate-950/35 border-b border-slate-700/30">
               <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Date</th>
-              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Note</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Transaction</th>
               <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Category</th>
               <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Method</th>
               <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Amount</th>
@@ -150,10 +152,19 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
               filtered.map((t_data) => (
                 <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors group">
                   <td className="px-8 py-5 text-xs font-bold text-slate-500 tracking-tight">
-                    {new Date(t_data.date).toLocaleDateString()}
+                    {formatDate(t_data.date)}
                   </td>
-                  <td className="px-8 py-5 font-bold text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">
-                    {t_data.note || t_data.category}
+                  <td className="px-8 py-5 group-hover:text-emerald-400 transition-colors tracking-tight">
+                    <div>
+                      <p className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
+                        {t_data.title}
+                      </p>
+                      {t_data.notes && (
+                        <p className="text-xs text-slate-500 font-medium">
+                          {t_data.notes}
+                        </p>
+                      )}
+                    </div>
                   </td>
                   <td className="px-8 py-5">
                     <span className="px-3 py-1 bg-slate-800/50 text-slate-400 rounded-lg text-[9px] uppercase font-black tracking-widest border border-white/5">{t_data.category}</span>

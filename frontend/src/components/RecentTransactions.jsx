@@ -16,7 +16,7 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
         <table className="w-full text-left">
           <thead>
             <tr className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-slate-700/30">
-              <th className="pb-4 font-black">{t('note')} / {t('category')}</th>
+              <th className="pb-4 font-black">TRANSACTION / {t('category')}</th>
               <th className="pb-4 font-black">{t('date')}</th>
               <th className="pb-4 font-black text-right">{t('amount')}</th>
               <th className="pb-4 font-black text-center">Action</th>
@@ -40,7 +40,7 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
                         <span className="material-symbols-outlined font-bold">{t_data.type === 'income' ? 'payments' : 'receipt_long'}</span>
                       </div>
                       <div>
-                        <p className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{t_data.note || t_data.category}</p>
+                        <p className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{t_data.title}</p>
                         <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{t_data.category}</p>
                       </div>
                     </div>

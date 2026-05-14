@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDate } from '../utils/dateUtils';
 
 function AssetsDebt({ 
   assets = [], 
@@ -16,9 +17,24 @@ function AssetsDebt({
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
 
-  const totalAssets = assets.reduce((acc, a) => acc + a.amount, 0);
-  const totalDebts = debts.reduce((acc, d) => acc + d.amount, 0);
+  useEffect(() => {
+    const shouldOpenAsset = localStorage.getItem("openAssetModalOnLoad");
+    if (shouldOpenAsset === "true") {
+      setIsAssetModalOpen(true);
+      localStorage.removeItem("openAssetModalOnLoad");
+    }
+    const shouldOpenDebt = localStorage.getItem("openDebtModalOnLoad");
+    if (shouldOpenDebt === "true") {
+      setIsDebtModalOpen(true);
+      localStorage.removeItem("openDebtModalOnLoad");
+    }
+  }, []);
+
+  const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+  const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
   const netWorth = totalAssets - totalDebts;
 
   const assetCategories = ['Cash', 'Bank', 'E-Wallet', 'Crypto', 'Stocks', 'Business Inventory', 'Receivables', 'Others'];
@@ -204,7 +220,7 @@ function AssetsDebt({
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <p className="text-lg font-black text-emerald-400 tracking-tighter">{fm(asset.amount)}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {new Date(asset.updatedAt).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                       <button onClick={() => handleEditAsset(asset)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all">
@@ -259,13 +275,13 @@ function AssetsDebt({
                     </div>
                     <div>
                       <h4 className="font-bold text-slate-100 group-hover:text-red-300 transition-colors tracking-tight">{debt.name}</h4>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {debt.dueDate}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
                     <div className="text-right">
                       <p className="text-lg font-black text-red-300 tracking-tighter">{fm(debt.amount)}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {new Date(debt.updatedAt).toLocaleDateString()}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
                       <button onClick={() => handleEditDebt(debt)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-all">
@@ -293,13 +309,24 @@ function AssetsDebt({
         <AssetForm 
           initialData={editingItem} 
           categories={assetCategories} 
-          onSave={(data) => {
-            if (editingItem) onUpdateAsset(editingItem.id, data);
-            else onAddAsset(data);
-            setIsAssetModalOpen(false);
+          onSave={async (data) => {
+            try {
+              setIsSaving(true);
+              setError(null);
+              if (editingItem) await onUpdateAsset(editingItem.id, data);
+              else await onAddAsset(data);
+              setIsAssetModalOpen(false);
+            } catch (err) {
+              console.error("Failed to save asset:", err);
+              setError(err.message || "Failed to save asset");
+            } finally {
+              setIsSaving(false);
+            }
           }} 
-          onCancel={() => setIsAssetModalOpen(false)}
+          onCancel={() => { setIsAssetModalOpen(false); setError(null); }}
           t={t}
+          isSaving={isSaving}
+          error={error}
         />
       </Modal>
 
@@ -313,13 +340,24 @@ function AssetsDebt({
         <DebtForm 
           initialData={editingItem} 
           categories={debtCategories} 
-          onSave={(data) => {
-            if (editingItem) onUpdateDebt(editingItem.id, data);
-            else onAddDebt(data);
-            setIsDebtModalOpen(false);
+          onSave={async (data) => {
+            try {
+              setIsSaving(true);
+              setError(null);
+              if (editingItem) await onUpdateDebt(editingItem.id, data);
+              else await onAddDebt(data);
+              setIsDebtModalOpen(false);
+            } catch (err) {
+              console.error("Failed to save liability:", err);
+              setError(err.message || "Failed to save liability");
+            } finally {
+              setIsSaving(false);
+            }
           }} 
-          onCancel={() => setIsDebtModalOpen(false)}
+          onCancel={() => { setIsDebtModalOpen(false); setError(null); }}
           t={t}
+          isSaving={isSaving}
+          error={error}
         />
       </Modal>
     </motion.div>
@@ -361,10 +399,16 @@ function Modal({ isOpen, onClose, title, children, t }) {
   );
 }
 
-function AssetForm({ initialData, categories, onSave, onCancel, t }) {
+function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', note: '' });
   return (
     <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
       <div className="w-full space-y-2">
         <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('assets')})</label>
         <input 
@@ -417,9 +461,14 @@ function AssetForm({ initialData, categories, onSave, onCancel, t }) {
         </button>
         <button 
           type="submit" 
-          className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2"
+          disabled={isSaving}
+          className={`h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <span className="material-symbols-outlined font-bold">save</span>
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <span className="material-symbols-outlined font-bold">save</span>
+          )}
           {t('save')}
         </button>
       </div>
@@ -427,10 +476,16 @@ function AssetForm({ initialData, categories, onSave, onCancel, t }) {
   );
 }
 
-function DebtForm({ initialData, categories, onSave, onCancel, t }) {
+function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', dueDate: '', note: '' });
   return (
     <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
       <div className="w-full space-y-2">
         <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('debts')})</label>
         <input 
@@ -493,9 +548,14 @@ function DebtForm({ initialData, categories, onSave, onCancel, t }) {
         </button>
         <button 
           type="submit" 
-          className="h-12 w-full rounded-xl bg-gradient-to-r from-red-400 to-red-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(248,113,113,0.20)] transition hover:from-red-300 hover:to-red-400 sm:w-auto flex items-center justify-center gap-2"
+          disabled={isSaving}
+          className={`h-12 w-full rounded-xl bg-gradient-to-r from-red-400 to-red-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(248,113,113,0.20)] transition hover:from-red-300 hover:to-red-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          <span className="material-symbols-outlined font-bold">save</span>
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <span className="material-symbols-outlined font-bold">save</span>
+          )}
           {t('save')}
         </button>
       </div>

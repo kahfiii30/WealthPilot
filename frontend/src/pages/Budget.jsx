@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '../components/EmptyState';
+import { getMonthKey, isValidDate } from '../services/financeService';
+import { formatDate } from '../utils/dateUtils';
 
 // Helper Functions
-const getMonthKey = (date) => {
-  const d = new Date(date);
-  if (isNaN(d.getTime())) return "";
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
-};
-
 const parseAmount = (value) => {
   const cleaned = String(value).replace(/[^\d]/g, "");
   return Number(cleaned || 0);
@@ -27,7 +23,7 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
+function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, onDeleteBudget, t, fm }) {
   // 1. State Management
   const [selectedMonthKey, setSelectedMonthKey] = useState(getMonthKey(new Date()));
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
@@ -35,27 +31,29 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Persist to localStorage
+  // 2. Flags from localStorage
   useEffect(() => {
-    localStorage.setItem("budgets", JSON.stringify(budgets));
-  }, [budgets]);
+    const shouldOpen = localStorage.getItem("openBudgetModalOnLoad");
+    if (shouldOpen === "true") {
+      setIsBudgetModalOpen(true);
+      localStorage.removeItem("openBudgetModalOnLoad");
+    }
+  }, []);
 
-  // 2. Calculations
+  // 3. Calculations
   const monthlyBudgets = budgets.filter(
     b => b.month === selectedMonthKey
   );
 
   const totalBudget = monthlyBudgets.reduce((sum, b) => {
-    const value = Number(b.limit);
-    return sum + (Number.isFinite(value) ? value : 0);
+    return sum + (Number.isFinite(b.limit) ? b.limit : 0);
   }, 0);
 
   const totalActual = transactions
     .filter(t_data => t_data.type === "expense")
     .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey)
     .reduce((sum, t_data) => {
-      const value = Number(t_data.amount);
-      return sum + (Number.isFinite(value) ? value : 0);
+      return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
     }, 0);
 
   const remainingBudget = totalBudget - totalActual;
@@ -79,8 +77,7 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
       .filter(t_data => t_data.category === b.category)
       .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey)
       .reduce((sum, t_data) => {
-        const value = Number(t_data.amount);
-        return sum + (Number.isFinite(value) ? value : 0);
+        return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
       }, 0);
 
     const percentage = b.limit > 0 ? (actualSpent / b.limit) * 100 : 0;
@@ -93,7 +90,7 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
   const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey);
   const highImpact = monthlyExpenses
     .filter(t_data => 
-      (t_data.note || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
+      (t_data.notes || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
       (t_data.category || '').toLowerCase().includes(searchTerm.toLowerCase())
     )
     .sort((a, b) => b.amount - a.amount)
@@ -122,29 +119,37 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
 
   const maxVal = Math.max(...chartData.map(d => Math.max(d.budgeted, d.actual)), 1);
 
-  // CRUD Handlers
-  const handleSaveBudget = (formData) => {
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleSaveBudget = async (formData) => {
     const numericLimit = parseAmount(formData.limit);
     if (!formData.category || numericLimit <= 0) return;
 
-    if (editingBudget) {
-      setBudgets(prev => prev.map(b => b.id === editingBudget.id ? { ...b, ...formData, limit: numericLimit, updatedAt: new Date().toISOString() } : b));
-    } else {
-      setBudgets(prev => [...prev, { 
-        id: crypto.randomUUID(), 
-        ...formData, 
-        limit: numericLimit, 
-        month: selectedMonthKey,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      }]);
+    try {
+      setIsSaving(true);
+      setError(null);
+      if (editingBudget) {
+        await onUpdateBudget(editingBudget.id, {
+          category: formData.category,
+          limit: numericLimit,
+          month: selectedMonthKey
+        });
+      } else {
+        await onAddBudget({
+          category: formData.category,
+          limit: numericLimit,
+          month: selectedMonthKey
+        });
+      }
+      setIsBudgetModalOpen(false);
+      setEditingBudget(null);
+    } catch (err) {
+      console.error("Failed to save budget:", err);
+      setError(err.message || "Failed to save budget");
+    } finally {
+      setIsSaving(false);
     }
-    setIsBudgetModalOpen(false);
-    setEditingBudget(null);
-  };
-
-  const handleDeleteBudget = (id) => {
-    setBudgets(prev => prev.filter(b => b.id !== id));
   };
 
   const containerVariants = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
@@ -314,8 +319,8 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
                               <span className="material-symbols-outlined font-bold text-[20px]">payments</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-100 truncate group-hover:text-emerald-400 transition-colors tracking-tight">{tItem.note || tItem.category}</p>
-                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{new Date(tItem.date).toLocaleDateString()} • {tItem.method}</p>
+                              <p className="text-sm font-bold text-slate-100 truncate group-hover:text-emerald-400 transition-colors tracking-tight">{tItem.notes || tItem.category}</p>
+                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(tItem.date)}</p>
                             </div>
                           </div>
                         </td>
@@ -336,13 +341,13 @@ function Budget({ transactions = [], budgets = [], setBudgets, t, fm }) {
         </motion.div>
       </div>
 
-      <BudgetModal isOpen={isBudgetModalOpen} onClose={() => { setIsBudgetModalOpen(false); setEditingBudget(null); }} initialData={editingBudget} onSave={handleSaveBudget} t={t} />
-      <ManageLimitsModal isOpen={isManageModalOpen} onClose={() => setIsManageModalOpen(false)} monthlyBudgets={monthlyBudgets} onEdit={(b) => { setEditingBudget(b); setIsBudgetModalOpen(true); }} onDelete={handleDeleteBudget} onAdd={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} t={t} />
+      <BudgetModal isOpen={isBudgetModalOpen} onClose={() => { setIsBudgetModalOpen(false); setEditingBudget(null); setError(null); }} initialData={editingBudget} onSave={handleSaveBudget} t={t} isSaving={isSaving} error={error} />
+      <ManageLimitsModal isOpen={isManageModalOpen} onClose={() => setIsManageModalOpen(false)} monthlyBudgets={monthlyBudgets} onEdit={(b) => { setEditingBudget(b); setIsBudgetModalOpen(true); }} onDelete={onDeleteBudget} onAdd={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} t={t} />
     </motion.div>
   );
 }
 
-function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
+function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error }) {
   const categories = ['Food & Dining', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Education', 'Other'];
   const [formData, setFormData] = useState({ category: categories[0], limit: '' });
 
@@ -378,6 +383,13 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
+
+        {error && (
+          <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+            <span className="material-symbols-outlined text-[18px]">error</span>
+            {error}
+          </div>
+        )}
 
         <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
           <div className="w-full space-y-2">
@@ -424,9 +436,14 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t }) {
             </button>
             <button 
               type="submit" 
-              className="h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-10 font-black text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2"
+              disabled={isSaving}
+              className={`h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-10 font-black text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              <span className="material-symbols-outlined font-bold">save</span>
+              {isSaving ? (
+                <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+              ) : (
+                <span className="material-symbols-outlined font-bold">save</span>
+              )}
               {initialData ? t('update') : t('save')}
             </button>
           </div>

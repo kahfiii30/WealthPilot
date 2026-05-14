@@ -3,34 +3,48 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency }) {
   const [type, setType] = useState('expense');
+  const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food & Dining');
   const [method, setMethod] = useState('Cash');
   const [note, setNote] = useState('');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleTypeChange = (newType) => {
     setType(newType);
     setCategory(newType === 'expense' ? 'Food & Dining' : 'Salary');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!amount) return;
     
-    onAddTransaction({
-      type,
-      amount: parseFloat(amount),
-      category,
-      method,
-      note,
-      date
-    });
-    
-    // Reset
-    setAmount('');
-    setNote('');
-    onClose();
+    try {
+      setIsSaving(true);
+      setError(null);
+      await onAddTransaction({
+        type,
+        title: title || (type === 'income' ? 'Income' : 'Expense'),
+        amount: parseFloat(amount),
+        category,
+        method,
+        note,
+        date
+      });
+      
+      // Reset
+      setAmount('');
+      setTitle('');
+      setNote('');
+      onClose();
+    } catch (err) {
+      console.error("Failed to add transaction:", err);
+      setError(err.message || "Failed to add transaction");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -65,6 +79,13 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
               </button>
             </div>
 
+            {error && (
+              <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+                <span className="material-symbols-outlined text-[18px]">error</span>
+                {error}
+              </div>
+            )}
+
             <form className="w-full space-y-6" onSubmit={handleSubmit}>
               {/* Type Switcher */}
               <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-950/50 rounded-2xl border border-slate-700/30">
@@ -84,6 +105,21 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                 </button>
               </div>
 
+              {/* Transaction Name Field */}
+              <div className="w-full space-y-2">
+                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                  TRANSACTION NAME
+                </label>
+                <input 
+                  type="text" 
+                  required
+                  value={title} 
+                  onChange={(e) => setTitle(e.target.value)} 
+                  className="block h-14 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-5 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold text-lg" 
+                  placeholder={type === 'income' ? "e.g., Salary from OG Store" : "e.g., Food at KFC"} 
+                />
+              </div>
+
               {/* Amount Field */}
               <div className="w-full space-y-2">
                 <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
@@ -100,7 +136,6 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                     onChange={(e) => setAmount(e.target.value)} 
                     className="flex-1 bg-transparent px-5 h-full text-slate-100 font-black text-xl outline-none w-full min-w-0 tracking-tight" 
                     placeholder="0" 
-                    autoFocus 
                   />
                 </div>
               </div>
@@ -190,10 +225,17 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency })
                 </button>
                 <button 
                   type="submit" 
-                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition active:scale-95 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'}`}
+                  disabled={isSaving}
+                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition active:scale-95 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
-                  <span className="material-symbols-outlined font-bold">save</span>
-                  Confirm
+                  {isSaving ? (
+                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <>
+                      <span className="material-symbols-outlined font-bold">save</span>
+                      Confirm
+                    </>
+                  )}
                 </button>
               </div>
             </form>

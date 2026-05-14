@@ -71,7 +71,7 @@ function Login() {
               exit={{ opacity: 0, y: -10 }}
               className="text-slate-400 text-base font-medium"
             >
-              {isRegister ? 'Begin your legacy here' : 'Welcome back, Commander'}
+              {isRegister ? 'Begin your legacy here' : 'Welcome back to your financial dashboard'}
             </motion.p>
           </AnimatePresence>
         </div>
@@ -121,28 +121,28 @@ function Login() {
           </AnimatePresence>
 
           <div className="space-y-2">
-            <label className="block text-slate-300 text-[10px] font-black uppercase tracking-[0.3em] ml-2 mb-2">Credential</label>
+            <label className="block text-slate-300 text-[10px] font-black uppercase tracking-[0.3em] ml-2 mb-2">EMAIL ADDRESS</label>
             <input 
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
               className="rounded-xl border border-slate-700/40 bg-slate-950/55 px-4 py-3 w-full text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10"
-              placeholder="Email address"
+              placeholder="Enter your email"
               required 
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between items-center ml-2 mb-2">
-              <label className="block text-slate-300 text-[10px] font-black uppercase tracking-[0.3em]">Access Key</label>
-              {!isRegister && <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest cursor-pointer">Forgot?</span>}
+              <label className="block text-slate-300 text-[10px] font-black uppercase tracking-[0.3em]">PASSWORD</label>
+              {!isRegister && <span className="text-emerald-400 text-[10px] font-black uppercase tracking-widest cursor-pointer">Forgot password?</span>}
             </div>
             <input 
               type="password" 
               value={password} 
               onChange={e => setPassword(e.target.value)} 
               className="rounded-xl border border-slate-700/40 bg-slate-950/55 px-4 py-3 w-full text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10"
-              placeholder="Password"
+              placeholder="Enter your password"
               required 
             />
           </div>
@@ -152,18 +152,18 @@ function Login() {
             disabled={loading}
             className="rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-4 py-4 w-full font-semibold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] active:scale-[0.98] disabled:opacity-50 mt-4"
           >
-            {loading ? 'Processing...' : (isRegister ? 'Authorize Account' : 'Initiate Session')}
+            {loading ? 'Processing...' : (isRegister ? 'Authorize Account' : 'Sign In')}
           </button>
         </form>
 
         <div className="mt-12 pt-8 border-t border-white/5 text-center">
           <p className="text-slate-400 font-semibold text-sm">
-            {isRegister ? 'Already part of the fleet?' : "Need a new command center?"}
+            {isRegister ? 'Already have an account?' : "Don't have an account?"}
             <button 
               onClick={() => setIsRegister(!isRegister)}
               className="ml-3 text-emerald-400 font-black uppercase tracking-widest hover:text-emerald-300 transition-all border-b-2 border-emerald-500/20 hover:border-emerald-500"
             >
-              {isRegister ? 'Login' : 'Register'}
+              {isRegister ? 'Login' : 'Create account'}
             </button>
           </p>
         </div>

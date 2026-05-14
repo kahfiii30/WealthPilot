@@ -15,6 +15,12 @@ import AnimatedPage from './components/AnimatedPage';
 import TransactionForm from './components/TransactionForm';
 import { translate } from './utils/translations';
 import { formatMoney } from './utils/formatMoney';
+import { 
+  fetchTransactions, createTransaction, deleteTransaction,
+  fetchAssets, createAsset, updateAsset as apiUpdateAsset, deleteAsset as apiDeleteAsset,
+  fetchDebts, createDebt, updateDebt as apiUpdateDebt, deleteDebt as apiDeleteDebt,
+  fetchBudgets, createBudget as apiCreateBudget, updateBudget as apiUpdateBudget, deleteBudget as apiDeleteBudget
+} from './services/financeService';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -111,24 +117,18 @@ function App() {
         setNotifications(settings.notifications);
       }
 
-      const { data: transData } = await supabase.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
-      if (transData) setTransactions(transData);
+      // Fetch financial data using services
+      const [transData, assetsData, debtsData, budgetsData] = await Promise.all([
+        fetchTransactions(userId),
+        fetchAssets(userId),
+        fetchDebts(userId),
+        fetchBudgets(userId)
+      ]);
 
-      const { data: assetsData } = await supabase.from('assets').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (assetsData) setAssets(assetsData);
-
-      const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
-      if (debtsData) setDebts(debtsData);
-
-      const { data: budgetsData } = await supabase.from('budgets').select('*').eq('user_id', userId);
-      if (budgetsData) {
-        setBudgets(budgetsData);
-        localStorage.setItem("budgets", JSON.stringify(budgetsData));
-      } else {
-        // Fallback to local if Supabase empty but local has something (for migration/offline)
-        const local = localStorage.getItem("budgets");
-        if (local) setBudgets(JSON.parse(local));
-      }
+      setTransactions(transData);
+      setAssets(assetsData);
+      setDebts(debtsData);
+      setBudgets(budgetsData);
 
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -145,13 +145,27 @@ function App() {
   };
 
   const handleAddTransaction = async (t_data) => {
-    const { data, error } = await supabase.from('transactions').insert([{ ...t_data, user_id: session.user.id }]).select();
-    if (!error && data) setTransactions(prev => [data[0], ...prev]);
+    if (!session?.user) {
+      alert("Please sign in with Supabase before saving data.");
+      return;
+    }
+    try {
+      const created = await createTransaction(session.user.id, t_data);
+      setTransactions(prev => [created, ...prev]);
+      return created;
+    } catch (error) {
+      console.error("Error adding transaction:", error);
+      throw error;
+    }
   };
 
   const handleDeleteTransaction = async (id) => {
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
-    if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
+    try {
+      await deleteTransaction(id);
+      setTransactions(prev => prev.filter(t => t.id !== id));
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    }
   };
 
   // Helpers
@@ -159,59 +173,102 @@ function App() {
   const fm = (amount) => formatMoney(amount, preferences);
 
   const addAsset = async (a) => {
-    const { data, error } = await supabase.from('assets').insert([{
-      user_id: session.user.id,
-      name: a.name,
-      category: a.category,
-      amount: a.amount,
-      note: a.note
-    }]).select();
-    if (!error && data) setAssets(prev => [{ ...data[0], updatedAt: data[0].updated_at }, ...prev]);
+    if (!session?.user) {
+      alert("Please sign in with Supabase before saving data.");
+      return;
+    }
+    try {
+      const created = await createAsset(session.user.id, a);
+      setAssets(prev => [created, ...prev]);
+      return created;
+    } catch (error) {
+      console.error("Error adding asset:", error);
+      throw error;
+    }
   };
 
   const updateAsset = async (id, updated) => {
-    const { data, error } = await supabase.from('assets').update({
-      name: updated.name,
-      category: updated.category,
-      amount: updated.amount,
-      note: updated.note,
-      updated_at: new Date().toISOString()
-    }).eq('id', id).select();
-    if (!error && data) setAssets(prev => prev.map(a => a.id === id ? { ...data[0], updatedAt: data[0].updated_at } : a));
+    try {
+      const res = await apiUpdateAsset(id, updated);
+      setAssets(prev => prev.map(a => a.id === id ? res : a));
+    } catch (error) {
+      console.error("Error updating asset:", error);
+    }
   };
 
   const deleteAsset = async (id) => {
-    const { error } = await supabase.from('assets').delete().eq('id', id);
-    if (!error) setAssets(prev => prev.filter(a => a.id !== id));
+    try {
+      await apiDeleteAsset(id);
+      setAssets(prev => prev.filter(a => a.id !== id));
+    } catch (error) {
+      console.error("Error deleting asset:", error);
+    }
   };
 
   const addDebt = async (d) => {
-    const { data, error } = await supabase.from('debts').insert([{
-      user_id: session.user.id,
-      name: d.name,
-      category: d.category,
-      amount: d.amount,
-      note: d.note,
-      due_date: d.dueDate
-    }]).select();
-    if (!error && data) setDebts(prev => [{ ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at }, ...prev]);
+    if (!session?.user) {
+      alert("Please sign in with Supabase before saving data.");
+      return;
+    }
+    try {
+      const created = await createDebt(session.user.id, d);
+      setDebts(prev => [created, ...prev]);
+      return created;
+    } catch (error) {
+      console.error("Error adding debt:", error);
+      throw error;
+    }
   };
 
   const updateDebt = async (id, updated) => {
-    const { data, error } = await supabase.from('debts').update({
-      name: updated.name,
-      category: updated.category,
-      amount: updated.amount,
-      note: updated.note,
-      due_date: updated.dueDate,
-      updated_at: new Date().toISOString()
-    }).eq('id', id).select();
-    if (!error && data) setDebts(prev => prev.map(d => d.id === id ? { ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at } : d));
+    try {
+      const res = await apiUpdateDebt(id, updated);
+      setDebts(prev => prev.map(d => d.id === id ? res : d));
+    } catch (error) {
+      console.error("Error updating debt:", error);
+    }
   };
 
   const deleteDebt = async (id) => {
-    const { error } = await supabase.from('debts').delete().eq('id', id);
-    if (!error) setDebts(prev => prev.filter(d => d.id !== id));
+    try {
+      await apiDeleteDebt(id);
+      setDebts(prev => prev.filter(d => d.id !== id));
+    } catch (error) {
+      console.error("Error deleting debt:", error);
+    }
+  };
+
+  const addBudget = async (b) => {
+    if (!session?.user) {
+      alert("Please sign in with Supabase before saving data.");
+      return;
+    }
+    try {
+      const created = await apiCreateBudget(session.user.id, b);
+      setBudgets(prev => [created, ...prev]);
+      return created;
+    } catch (error) {
+      console.error("Error adding budget:", error);
+      throw error;
+    }
+  };
+
+  const updateBudget = async (id, updated) => {
+    try {
+      const res = await apiUpdateBudget(id, updated);
+      setBudgets(prev => prev.map(b => b.id === id ? res : b));
+    } catch (error) {
+      console.error("Error updating budget:", error);
+    }
+  };
+
+  const deleteBudget = async (id) => {
+    try {
+      await apiDeleteBudget(id);
+      setBudgets(prev => prev.filter(b => b.id !== id));
+    } catch (error) {
+      console.error("Error deleting budget:", error);
+    }
   };
 
 
@@ -239,10 +296,12 @@ function App() {
 
   const handleResetFinanceData = async () => {
     if (window.confirm("Are you sure you want to reset all financial data? This will delete all transactions, assets, debts, and budgets from the cloud.")) {
-      await supabase.from('transactions').delete().eq('user_id', session.user.id);
-      await supabase.from('assets').delete().eq('user_id', session.user.id);
-      await supabase.from('debts').delete().eq('user_id', session.user.id);
-      await supabase.from('budgets').delete().eq('user_id', session.user.id);
+      await Promise.all([
+        supabase.from('transactions').delete().eq('user_id', session.user.id),
+        supabase.from('assets').delete().eq('user_id', session.user.id),
+        supabase.from('debts').delete().eq('user_id', session.user.id),
+        supabase.from('budgets').delete().eq('user_id', session.user.id)
+      ]);
       resetLocalState();
     }
   };
@@ -303,7 +362,9 @@ function App() {
               <Budget 
                 transactions={transactions} 
                 budgets={budgets}
-                setBudgets={setBudgets}
+                onAddBudget={addBudget}
+                onUpdateBudget={updateBudget}
+                onDeleteBudget={deleteBudget}
                 t={t}
                 fm={fm}
               />
@@ -332,6 +393,8 @@ function App() {
                 assets={assets}
                 debts={debts}
                 budgets={budgets}
+                onNavigate={setActivePage}
+                onQuickAdd={() => setIsQuickAddOpen(true)}
                 t={t} 
                 fm={fm} 
               />

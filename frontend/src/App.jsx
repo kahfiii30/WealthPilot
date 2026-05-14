@@ -36,7 +36,7 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [assets, setAssets] = useState([]);
   const [debts, setDebts] = useState([]);
-  const [budgets, setBudgets] = useState([]);
+
 
   // Auth State Listener
   useEffect(() => {
@@ -66,12 +66,12 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+
   const resetLocalState = () => {
     setUserProfile({ firstName: "Pilot", lastName: "", email: "", avatarUrl: "" });
     setTransactions([]);
     setAssets([]);
     setDebts([]);
-    setBudgets([]);
   };
 
   const fetchUserData = async (userId) => {
@@ -107,8 +107,8 @@ function App() {
       const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
       if (debtsData) setDebts(debtsData);
 
-      const { data: budgetsData } = await supabase.from('budgets').select('*').eq('user_id', userId);
-      if (budgetsData) setBudgets(budgetsData);
+      const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
+      if (debtsData) setDebts(debtsData);
 
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -122,8 +122,8 @@ function App() {
     resetLocalState();
   };
 
-  const handleAddTransaction = async (t) => {
-    const { data, error } = await supabase.from('transactions').insert([{ ...t, user_id: session.user.id }]).select();
+  const handleAddTransaction = async (t_data) => {
+    const { data, error } = await supabase.from('transactions').insert([{ ...t_data, user_id: session.user.id }]).select();
     if (!error && data) setTransactions(prev => [data[0], ...prev]);
   };
 
@@ -135,6 +135,95 @@ function App() {
   // Helpers
   const t = (key) => translate(key, 'en');
   const fm = (amount) => formatMoney(amount, preferences);
+
+  const addAsset = async (a) => {
+    const { data, error } = await supabase.from('assets').insert([{
+      user_id: session.user.id,
+      name: a.name,
+      category: a.category,
+      amount: a.amount,
+      note: a.note
+    }]).select();
+    if (!error && data) setAssets(prev => [{ ...data[0], updatedAt: data[0].updated_at }, ...prev]);
+  };
+
+  const updateAsset = async (id, updated) => {
+    const { data, error } = await supabase.from('assets').update({
+      name: updated.name,
+      category: updated.category,
+      amount: updated.amount,
+      note: updated.note,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select();
+    if (!error && data) setAssets(prev => prev.map(a => a.id === id ? { ...data[0], updatedAt: data[0].updated_at } : a));
+  };
+
+  const deleteAsset = async (id) => {
+    const { error } = await supabase.from('assets').delete().eq('id', id);
+    if (!error) setAssets(prev => prev.filter(a => a.id !== id));
+  };
+
+  const addDebt = async (d) => {
+    const { data, error } = await supabase.from('debts').insert([{
+      user_id: session.user.id,
+      name: d.name,
+      category: d.category,
+      amount: d.amount,
+      note: d.note,
+      due_date: d.dueDate
+    }]).select();
+    if (!error && data) setDebts(prev => [{ ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at }, ...prev]);
+  };
+
+  const updateDebt = async (id, updated) => {
+    const { data, error } = await supabase.from('debts').update({
+      name: updated.name,
+      category: updated.category,
+      amount: updated.amount,
+      note: updated.note,
+      due_date: updated.dueDate,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select();
+    if (!error && data) setDebts(prev => prev.map(d => d.id === id ? { ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at } : d));
+  };
+
+  const deleteDebt = async (id) => {
+    const { error } = await supabase.from('debts').delete().eq('id', id);
+    if (!error) setDebts(prev => prev.filter(d => d.id !== id));
+  };
+
+
+  const handleSetUserProfile = async (updated) => {
+    const nextProfile = typeof updated === 'function' ? updated(userProfile) : updated;
+    const { error } = await supabase.from('profiles').update({
+      first_name: nextProfile.firstName,
+      last_name: nextProfile.lastName,
+      avatar_url: nextProfile.avatarUrl,
+      updated_at: new Date().toISOString()
+    }).eq('id', session.user.id);
+    
+    if (!error) setUserProfile(nextProfile);
+  };
+
+  const handleSetPreferences = async (prefs) => {
+    const { error } = await supabase.from('user_settings').update({ preferences: prefs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
+    if (!error) setPreferences(prefs);
+  };
+
+  const handleSetNotifications = async (notifs) => {
+    const { error } = await supabase.from('user_settings').update({ notifications: notifs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
+    if (!error) setNotifications(notifs);
+  };
+
+  const handleResetFinanceData = async () => {
+    if (window.confirm("Are you sure you want to reset all financial data? This will delete all transactions, assets, debts, and budgets from the cloud.")) {
+      await supabase.from('transactions').delete().eq('user_id', session.user.id);
+      await supabase.from('assets').delete().eq('user_id', session.user.id);
+      await supabase.from('debts').delete().eq('user_id', session.user.id);
+      await supabase.from('budgets').delete().eq('user_id', session.user.id);
+      resetLocalState();
+    }
+  };
 
   if (loading) {
     return (
@@ -176,7 +265,7 @@ function App() {
         t={t}
       />
 
-      <main className="md:ml-[240px] pt-[72px] pb-[100px] md:pb-lg min-h-screen overflow-y-auto overflow-x-hidden relative">
+      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen overflow-y-auto overflow-x-hidden relative bg-[#0b0f19]">
         <AnimatePresence mode="wait">
           {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
           {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
@@ -184,19 +273,6 @@ function App() {
             <AnimatedPage key="budget">
               <Budget 
                 transactions={transactions} 
-                budgets={budgets} 
-                onAddBudget={async (b) => {
-                  const { data } = await supabase.from('budgets').insert([{ ...b, user_id: session.user.id }]).select();
-                  if (data) setBudgets(prev => [...prev, data[0]]);
-                }}
-                onUpdateBudget={async (id, updated) => {
-                  const { data } = await supabase.from('budgets').update(updated).eq('id', id).select();
-                  if (data) setBudgets(prev => prev.map(b => b.id === id ? data[0] : b));
-                }}
-                onDeleteBudget={async (id) => {
-                  await supabase.from('budgets').delete().eq('id', id);
-                  setBudgets(prev => prev.filter(b => b.id !== id));
-                }}
                 t={t}
                 fm={fm}
               />
@@ -207,22 +283,12 @@ function App() {
               <AssetsDebt 
                 assets={assets} 
                 debts={debts}
-                onAddAsset={async (a) => {
-                  const { data } = await supabase.from('assets').insert([{ ...a, user_id: session.user.id }]).select();
-                  if (data) setAssets(prev => [data[0], ...prev]);
-                }}
-                onDeleteAsset={async (id) => {
-                  await supabase.from('assets').delete().eq('id', id);
-                  setAssets(prev => prev.filter(a => a.id !== id));
-                }}
-                onAddDebt={async (d) => {
-                  const { data } = await supabase.from('debts').insert([{ ...d, user_id: session.user.id }]).select();
-                  if (data) setDebts(prev => [data[0], ...prev]);
-                }}
-                onDeleteDebt={async (id) => {
-                  await supabase.from('debts').delete().eq('id', id);
-                  setDebts(prev => prev.filter(d => d.id !== id));
-                }}
+                onAddAsset={addAsset}
+                onUpdateAsset={updateAsset}
+                onDeleteAsset={deleteAsset}
+                onAddDebt={addDebt}
+                onUpdateDebt={updateDebt}
+                onDeleteDebt={deleteDebt}
                 t={t}
                 fm={fm}
               />
@@ -233,19 +299,13 @@ function App() {
             <AnimatedPage key="settings">
               <Settings 
                 userProfile={userProfile} 
-                setUserProfile={async (p) => {
-                  await supabase.from('profiles').update(p).eq('id', session.user.id);
-                  setUserProfile(p);
-                }}
+                setUserProfile={handleSetUserProfile}
                 preferences={preferences}
-                setPreferences={setPreferences}
+                setPreferences={handleSetPreferences}
                 notifications={notifications}
-                setNotifications={setNotifications}
+                setNotifications={handleSetNotifications}
                 onLogout={handleLogout}
-                onResetData={async () => {
-                  await supabase.from('transactions').delete().eq('user_id', session.user.id);
-                  resetLocalState();
-                }}
+                onResetData={handleResetFinanceData}
                 t={t}
                 fm={fm}
               />

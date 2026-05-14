@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { supabase } from './lib/supabaseClient';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
@@ -14,224 +15,238 @@ import AnimatedPage from './components/AnimatedPage';
 import TransactionForm from './components/TransactionForm';
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem('wealthpilot_auth') === 'true';
-  });
+  const [session, setSession] = useState(null);
   const [activePage, setActivePage] = useState('dashboard');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-  const [currentUserEmail, setCurrentUserEmail] = useState(() => {
-    return localStorage.getItem('wealthpilot_current_user') || '';
-  });
+  const [loading, setLoading] = useState(true);
 
-  // User Profile State
-  const [userProfile, setUserProfile] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_user_profile');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') return parsed;
-      }
-    } catch (e) { console.error("Profile parse error", e); }
-    return {
-      firstName: "Alexander",
-      lastName: "Pilot",
-      email: "alexander@wealthpilot.local",
-      avatarUrl: ""
-    };
-  });
+  // Core Data States
+  const [userProfile, setUserProfile] = useState({ firstName: "", lastName: "", email: "", avatarUrl: "" });
+  const [preferences, setPreferences] = useState({ currency: "IDR", theme: "Dark", dashboardPeriod: "This Month", numberFormat: "Indonesian" });
+  const [notifications, setNotifications] = useState({ budgetWarning: true, monthlyReport: true, debtReminder: true, goalProgress: false, largeExpenseAlert: true });
+  const [transactions, setTransactions] = useState([]);
+  const [assets, setAssets] = useState([]);
+  const [debts, setDebts] = useState([]);
+  const [budgets, setBudgets] = useState([]);
 
-  // Helper to sync profile changes back to master users list
-  const updateGlobalUser = (updatedProfile) => {
-    try {
-      const users = JSON.parse(localStorage.getItem('wealthpilot_users') || '[]');
-      const updatedUsers = users.map(u => 
-        u.email === updatedProfile.email ? { ...u, ...updatedProfile } : u
-      );
-      localStorage.setItem('wealthpilot_users', JSON.stringify(updatedUsers));
-    } catch (e) { console.error("Global user update error", e); }
-  };
-
-  const handleSetUserProfile = (updated) => {
-    if (typeof updated === 'function') {
-      setUserProfile(prev => {
-        const next = updated(prev);
-        updateGlobalUser(next);
-        return next;
-      });
-    } else {
-      setUserProfile(updated);
-      updateGlobalUser(updated);
-    }
-  };
-
-  // Preferences State
-  const [preferences, setPreferences] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_preferences');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed) return parsed;
-      }
-    } catch (e) {}
-    return { currency: "IDR", theme: "Dark", dashboardPeriod: "This Month", numberFormat: "Indonesian" };
-  });
-
-  // Notifications State
-  const [notifications, setNotifications] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_notifications');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed) return parsed;
-      }
-    } catch (e) {}
-    return { budgetWarning: true, monthlyReport: true, debtReminder: true, goalProgress: false, largeExpenseAlert: true };
-  });
-
-  // Transactions State
-  const [transactions, setTransactions] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_transactions');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { id: '1', type: 'expense', amount: 65000, category: 'Food & Dining', method: 'Cash', note: 'Starbucks Reserve', date: new Date().toISOString().split('T')[0] },
-      { id: '2', type: 'income', amount: 5200000, category: 'Salary', method: 'Bank Transfer', note: 'Salary Deposit', date: new Date().toISOString().split('T')[0] },
-      { id: '3', type: 'expense', amount: 450000, category: 'Shopping', method: 'E-Wallet', note: 'Tokopedia', date: new Date().toISOString().split('T')[0] }
-    ];
-  });
-
-  // Assets State
-  const [assets, setAssets] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_assets');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { id: 'a1', name: 'Emergency Fund', category: 'Bank', amount: 10000000, note: 'BCA Savings', updatedAt: new Date().toISOString() }
-    ];
-  });
-
-  // Debts State
-  const [debts, setDebts] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_debts');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { id: 'd1', name: 'Credit Card', category: 'Kartu Kredit', amount: 1500000, note: 'Visa Platinum', dueDate: '2026-06-15', updatedAt: new Date().toISOString() }
-    ];
-  });
-
-  // Budgets State
-  const [budgets, setBudgets] = useState(() => {
-    try {
-      const saved = localStorage.getItem('wealthpilot_budgets');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [
-      { id: 'b1', category: 'Food & Dining', limit: 1000000, month: new Date().toISOString().slice(0, 7) },
-      { id: 'b2', category: 'Transportation', limit: 500000, month: new Date().toISOString().slice(0, 7) },
-      { id: 'b3', category: 'Shopping', limit: 700000, month: new Date().toISOString().slice(0, 7) }
-    ];
-  });
-
+  // Auth State Listener
   useEffect(() => {
-    localStorage.setItem('wealthpilot_user_profile', JSON.stringify(userProfile));
-  }, [userProfile]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_preferences', JSON.stringify(preferences));
-  }, [preferences]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_notifications', JSON.stringify(notifications));
-  }, [notifications]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_transactions', JSON.stringify(transactions));
-  }, [transactions]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_assets', JSON.stringify(assets));
-  }, [assets]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_debts', JSON.stringify(debts));
-  }, [debts]);
-
-  useEffect(() => {
-    localStorage.setItem('wealthpilot_budgets', JSON.stringify(budgets));
-  }, [budgets]);
-
-  const handleLogin = (user) => {
-    localStorage.setItem('wealthpilot_auth', 'true');
-    localStorage.setItem('wealthpilot_current_user', user.email);
-    localStorage.setItem('wealthpilot_user_profile', JSON.stringify({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      avatarUrl: user.avatarUrl || ""
-    }));
-    
-    setIsAuthenticated(true);
-    setCurrentUserEmail(user.email);
-    setUserProfile({
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      avatarUrl: user.avatarUrl || ""
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) fetchUserData(session.user.id);
+      else setLoading(false);
     });
-    setActivePage('dashboard');
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) fetchUserData(session.user.id);
+      else {
+        resetLocalState();
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const resetLocalState = () => {
+    setUserProfile({ firstName: "", lastName: "", email: "", avatarUrl: "" });
+    setTransactions([]);
+    setAssets([]);
+    setDebts([]);
+    setBudgets([]);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('wealthpilot_auth');
-    localStorage.removeItem('wealthpilot_current_user');
-    setIsAuthenticated(false);
-    setCurrentUserEmail('');
-  };
+  const fetchUserData = async (userId) => {
+    setLoading(true);
+    try {
+      // 1. Fetch Profile
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', userId).single();
+      if (profile) {
+        setUserProfile({
+          firstName: profile.first_name || "",
+          lastName: profile.last_name || "",
+          email: profile.email || "",
+          avatarUrl: profile.avatar_url || ""
+        });
+      }
 
-  const handleResetFinanceData = () => {
-    if (window.confirm("Are you sure you want to reset all financial data? This will delete all transactions, assets, and debts. Profile settings will remain.")) {
-      localStorage.removeItem('wealthpilot_transactions');
-      localStorage.removeItem('wealthpilot_assets');
-      localStorage.removeItem('wealthpilot_debts');
-      localStorage.removeItem('wealthpilot_budgets');
-      setTransactions([]);
-      setAssets([]);
-      setDebts([]);
-      setBudgets([]);
+      // 2. Fetch Settings
+      const { data: settings } = await supabase.from('user_settings').select('*').eq('user_id', userId).single();
+      if (settings) {
+        setPreferences(settings.preferences);
+        setNotifications(settings.notifications);
+      }
+
+      // 3. Fetch Transactions
+      const { data: transData } = await supabase.from('transactions').select('*').eq('user_id', userId).order('date', { ascending: false });
+      if (transData) setTransactions(transData);
+
+      // 4. Fetch Assets
+      const { data: assetsData } = await supabase.from('assets').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
+      if (assetsData) {
+        setAssets(assetsData.map(a => ({
+          ...a,
+          updatedAt: a.updated_at
+        })));
+      }
+
+      // 5. Fetch Debts
+      const { data: debtsData } = await supabase.from('debts').select('*').eq('user_id', userId).order('updated_at', { ascending: false });
+      if (debtsData) {
+        setDebts(debtsData.map(d => ({
+          ...d,
+          dueDate: d.due_date,
+          updatedAt: d.updated_at
+        })));
+      }
+
+      // 6. Fetch Budgets
+      const { data: budgetsData } = await supabase.from('budgets').select('*').eq('user_id', userId);
+      if (budgetsData) setBudgets(budgetsData);
+
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleAddTransaction = (t) => {
-    setTransactions(prev => [t, ...prev]);
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    resetLocalState();
   };
 
-  const handleDeleteTransaction = (id) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
+  // --- CRUD FUNCTIONS (SUPABASE MIGRATED) ---
+
+  const handleAddTransaction = async (t) => {
+    const { data, error } = await supabase.from('transactions').insert([{ ...t, user_id: session.user.id }]).select();
+    if (!error && data) setTransactions(prev => [data[0], ...prev]);
   };
 
-  // Asset CRUD
-  const addAsset = (a) => setAssets(prev => [...prev, { ...a, id: Date.now().toString(), updatedAt: new Date().toISOString() }]);
-  const updateAsset = (id, updated) => setAssets(prev => prev.map(a => a.id === id ? { ...updated, updatedAt: new Date().toISOString() } : a));
-  const deleteAsset = (id) => setAssets(prev => prev.filter(a => a.id !== id));
+  const handleDeleteTransaction = async (id) => {
+    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    if (!error) setTransactions(prev => prev.filter(t => t.id !== id));
+  };
 
-  // Debt CRUD
-  const addDebt = (d) => setDebts(prev => [...prev, { ...d, id: Date.now().toString(), updatedAt: new Date().toISOString() }]);
-  const updateDebt = (id, updated) => setDebts(prev => prev.map(d => d.id === id ? { ...updated, updatedAt: new Date().toISOString() } : d));
-  const deleteDebt = (id) => setDebts(prev => prev.filter(d => d.id !== id));
+  const addAsset = async (a) => {
+    const { data, error } = await supabase.from('assets').insert([{
+      user_id: session.user.id,
+      name: a.name,
+      category: a.category,
+      amount: a.amount,
+      note: a.note
+    }]).select();
+    if (!error && data) setAssets(prev => [{ ...data[0], updatedAt: data[0].updated_at }, ...prev]);
+  };
 
-  // Budget CRUD
-  const addBudget = (b) => setBudgets(prev => [...prev, { ...b, id: Date.now().toString() }]);
-  const updateBudget = (id, updated) => setBudgets(prev => prev.map(b => b.id === id ? { ...updated } : b));
-  const deleteBudget = (id) => setBudgets(prev => prev.filter(b => b.id !== id));
+  const updateAsset = async (id, updated) => {
+    const { data, error } = await supabase.from('assets').update({
+      name: updated.name,
+      category: updated.category,
+      amount: updated.amount,
+      note: updated.note,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select();
+    if (!error && data) setAssets(prev => prev.map(a => a.id === id ? { ...data[0], updatedAt: data[0].updated_at } : a));
+  };
 
-  if (!isAuthenticated) {
+  const deleteAsset = async (id) => {
+    const { error } = await supabase.from('assets').delete().eq('id', id);
+    if (!error) setAssets(prev => prev.filter(a => a.id !== id));
+  };
+
+  const addDebt = async (d) => {
+    const { data, error } = await supabase.from('debts').insert([{
+      user_id: session.user.id,
+      name: d.name,
+      category: d.category,
+      amount: d.amount,
+      note: d.note,
+      due_date: d.dueDate
+    }]).select();
+    if (!error && data) setDebts(prev => [{ ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at }, ...prev]);
+  };
+
+  const updateDebt = async (id, updated) => {
+    const { data, error } = await supabase.from('debts').update({
+      name: updated.name,
+      category: updated.category,
+      amount: updated.amount,
+      note: updated.note,
+      due_date: updated.dueDate,
+      updated_at: new Date().toISOString()
+    }).eq('id', id).select();
+    if (!error && data) setDebts(prev => prev.map(d => d.id === id ? { ...data[0], dueDate: data[0].due_date, updatedAt: data[0].updated_at } : d));
+  };
+
+  const deleteDebt = async (id) => {
+    const { error } = await supabase.from('debts').delete().eq('id', id);
+    if (!error) setDebts(prev => prev.filter(d => d.id !== id));
+  };
+
+  const addBudget = async (b) => {
+    const { data, error } = await supabase.from('budgets').insert([{ ...b, user_id: session.user.id }]).select();
+    if (!error && data) setBudgets(prev => [...prev, data[0]]);
+  };
+
+  const updateBudget = async (id, updated) => {
+    const { data, error } = await supabase.from('budgets').update(updated).eq('id', id).select();
+    if (!error && data) setBudgets(prev => prev.map(b => b.id === id ? data[0] : b));
+  };
+
+  const deleteBudget = async (id) => {
+    const { error } = await supabase.from('budgets').delete().eq('id', id);
+    if (!error) setBudgets(prev => prev.filter(b => b.id !== id));
+  };
+
+  const handleSetUserProfile = async (updated) => {
+    const nextProfile = typeof updated === 'function' ? updated(userProfile) : updated;
+    const { error } = await supabase.from('profiles').update({
+      first_name: nextProfile.firstName,
+      last_name: nextProfile.lastName,
+      avatar_url: nextProfile.avatarUrl,
+      updated_at: new Date().toISOString()
+    }).eq('id', session.user.id);
+    
+    if (!error) setUserProfile(nextProfile);
+  };
+
+  const handleSetPreferences = async (prefs) => {
+    const { error } = await supabase.from('user_settings').update({ preferences: prefs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
+    if (!error) setPreferences(prefs);
+  };
+
+  const handleSetNotifications = async (notifs) => {
+    const { error } = await supabase.from('user_settings').update({ notifications: notifs, updated_at: new Date().toISOString() }).eq('user_id', session.user.id);
+    if (!error) setNotifications(notifs);
+  };
+
+  const handleResetFinanceData = async () => {
+    if (window.confirm("Are you sure you want to reset all financial data? This will delete all transactions, assets, debts, and budgets from the cloud.")) {
+      await supabase.from('transactions').delete().eq('user_id', session.user.id);
+      await supabase.from('assets').delete().eq('user_id', session.user.id);
+      await supabase.from('debts').delete().eq('user_id', session.user.id);
+      await supabase.from('budgets').delete().eq('user_id', session.user.id);
+      resetLocalState();
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-on-surface-variant font-label-md uppercase tracking-widest animate-pulse">Initializing Flight Systems...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
     return (
       <AnimatePresence mode="wait">
-        <Login key="login" onLogin={handleLogin} />
+        <Login key="login" />
       </AnimatePresence>
     );
   }
@@ -296,9 +311,9 @@ function App() {
                   userProfile={userProfile} 
                   setUserProfile={handleSetUserProfile}
                   preferences={preferences}
-                  setPreferences={setPreferences}
+                  setPreferences={handleSetPreferences}
                   notifications={notifications}
-                  setNotifications={setNotifications}
+                  setNotifications={handleSetNotifications}
                   onLogout={handleLogout}
                   onResetData={handleResetFinanceData}
                 />

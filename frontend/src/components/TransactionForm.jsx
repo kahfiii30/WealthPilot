@@ -19,7 +19,6 @@ function TransactionForm({ isOpen, onClose, onAddTransaction }) {
     if (!amount) return;
     
     onAddTransaction({
-      id: Date.now().toString(),
       type,
       amount: parseFloat(amount),
       category,

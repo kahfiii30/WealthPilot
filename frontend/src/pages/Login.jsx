@@ -1,36 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../lib/supabaseClient';
 
-function Login({ onLogin }) {
+function Login() {
   const [mode, setMode] = useState('login'); // 'login', 'register', 'forgot'
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
     email: '',
     password: '',
-    confirmPassword: '',
-    newPassword: '',
-    confirmNewPassword: ''
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-
-  // Initialize master users list if empty
-  useEffect(() => {
-    const users = localStorage.getItem('wealthpilot_users');
-    if (!users) {
-      localStorage.setItem('wealthpilot_users', JSON.stringify([{
-        id: '1',
-        firstName: 'Alexander',
-        lastName: 'Pilot',
-        email: 'alexander@wealthpilot.local',
-        password: 'password123', // NOTE: Plain text for local demo only
-        avatarUrl: '',
-        createdAt: new Date().toISOString()
-      }]));
-    }
-  }, []);
 
   const handleInputChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,54 +22,52 @@ function Login({ onLogin }) {
 
   const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    
-    const users = JSON.parse(localStorage.getItem('wealthpilot_users') || '[]');
+    setLoading(true);
 
-    if (mode === 'login') {
-      const user = users.find(u => u.email === formData.email && u.password === formData.password);
-      if (user) {
-        onLogin(user);
-      } else {
-        setError('Invalid email or password');
+    try {
+      if (mode === 'login') {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+        if (error) throw error;
+      } 
+      else if (mode === 'register') {
+        if (!formData.firstName || !formData.email || !formData.password) {
+          throw new Error('Please fill all required fields');
+        }
+        if (!validateEmail(formData.email)) throw new Error('Invalid email format');
+        if (formData.password.length < 6) throw new Error('Password must be at least 6 characters');
+        if (formData.password !== formData.confirmPassword) throw new Error('Passwords do not match');
+
+        const { error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            data: {
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+            }
+          }
+        });
+        if (error) throw error;
+        setSuccess('Registration successful! Please check your email for verification.');
+      } 
+      else if (mode === 'forgot') {
+        const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+          redirectTo: window.location.origin,
+        });
+        if (error) throw error;
+        setSuccess('Password reset link sent to your email.');
       }
-    } 
-    else if (mode === 'register') {
-      if (!formData.firstName || !formData.email || !formData.password) {
-        return setError('Please fill all required fields');
-      }
-      if (!validateEmail(formData.email)) return setError('Invalid email format');
-      if (formData.password.length < 6) return setError('Password must be at least 6 characters');
-      if (formData.password !== formData.confirmPassword) return setError('Passwords do not match');
-      if (users.some(u => u.email === formData.email)) return setError('Email already registered');
-
-      const newUser = {
-        id: Date.now().toString(),
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        password: formData.password,
-        avatarUrl: '',
-        createdAt: new Date().toISOString()
-      };
-      
-      localStorage.setItem('wealthpilot_users', JSON.stringify([...users, newUser]));
-      onLogin(newUser);
-    } 
-    else if (mode === 'forgot') {
-      const userIndex = users.findIndex(u => u.email === formData.email);
-      if (userIndex === -1) return setError('Email not found');
-      if (formData.newPassword.length < 6) return setError('Password must be at least 6 characters');
-      if (formData.newPassword !== formData.confirmNewPassword) return setError('Passwords do not match');
-
-      users[userIndex].password = formData.newPassword;
-      localStorage.setItem('wealthpilot_users', JSON.stringify(users));
-      setSuccess('Password updated successfully! You can now log in.');
-      setMode('login');
-      setFormData({ ...formData, password: '', confirmPassword: '' });
+    } catch (err) {
+      setError(err.message || 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -176,30 +157,27 @@ function Login({ onLogin }) {
                   </div>
                 </div>
               )}
-
-              {mode === 'forgot' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-2">New Password</label>
-                    <input name="newPassword" required type="password" value={formData.newPassword} onChange={handleInputChange} className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface outline-none focus:border-primary" placeholder="••••••••" />
-                  </div>
-                  <div>
-                    <label className="font-label-md text-label-md text-on-surface-variant block mb-2">Confirm New</label>
-                    <input name="confirmNewPassword" required type="password" value={formData.confirmNewPassword} onChange={handleInputChange} className="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface outline-none focus:border-primary" placeholder="••••••••" />
-                  </div>
-                </div>
-              )}
             </motion.div>
           </AnimatePresence>
 
-          <button className="w-full bg-primary text-background font-bold py-4 rounded-lg shadow-lg shadow-primary/10 hover:scale-[0.98] transition-all mt-4 cursor-pointer">
-            {mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Update Password'}
+          <button 
+            disabled={loading}
+            className="w-full bg-primary text-background font-bold py-4 rounded-lg shadow-lg shadow-primary/10 hover:scale-[0.98] transition-all mt-4 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-background border-t-transparent rounded-full animate-spin"></div>
+                Processing...
+              </>
+            ) : (
+              mode === 'login' ? 'Sign In' : mode === 'register' ? 'Create Account' : 'Send Reset Link'
+            )}
           </button>
         </form>
 
         <div className="relative flex items-center gap-4 my-lg">
           <div className="flex-grow h-[1px] bg-outline-variant/30"></div>
-          <span className="font-label-md text-label-md text-on-surface-variant/40 uppercase text-[10px] font-bold">Local Auth Only</span>
+          <span className="font-label-md text-label-md text-on-surface-variant/40 uppercase text-[10px] font-bold">Cloud Authentication</span>
           <div className="flex-grow h-[1px] bg-outline-variant/30"></div>
         </div>
 
@@ -211,7 +189,7 @@ function Login({ onLogin }) {
             <span className="font-label-md text-label-md text-on-surface">Apple</span>
           </button>
         </div>
-        <p className="text-center text-[10px] text-on-surface-variant mt-2">Google/Apple login requires OAuth setup.</p>
+        <p className="text-center text-[10px] text-on-surface-variant mt-2">Social login requires additional Supabase setup.</p>
 
         <div className="mt-lg text-center">
           <p className="font-body-md text-body-md text-on-surface-variant">

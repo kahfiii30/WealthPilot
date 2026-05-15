@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { supabase } from '../lib/supabaseClient';
 
 function Login() {
@@ -18,52 +18,73 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center p-4">
+    <div className="min-h-screen w-full bg-slate-950 flex items-center justify-center px-4 py-8 overflow-x-hidden relative">
+      {/* Auth Debug Helper */}
+      <div className="auth-debug-banner">AUTH DEBUG ACTIVE</div>
+
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="glass-card w-full max-w-md p-8 rounded-2xl border border-outline-variant/20 shadow-2xl bg-surface-dim"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md rounded-3xl border border-slate-800 bg-slate-900/80 p-8 shadow-2xl backdrop-blur-xl"
       >
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary tracking-tight mb-2">WealthPilot</h1>
-          <p className="text-on-surface-variant text-sm">Sign in to your financial command center</p>
+        <div className="text-center mb-10">
+          <h1 className="text-4xl font-bold text-emerald-400 tracking-tight mb-3">WealthPilot</h1>
+          <p className="text-slate-400 text-base">Sign in to your financial command center</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-error/10 border border-error/20 rounded-xl text-error text-sm text-center">
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl text-red-400 text-sm text-center"
+          >
             {error}
-          </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleLogin} className="space-y-6">
-          <div>
-            <label className="block text-on-surface-variant text-xs font-bold uppercase tracking-wider mb-2">Email Address</label>
+        <form onSubmit={handleLogin} className="w-full space-y-6">
+          <div className="w-full">
+            <label className="block text-slate-400 text-xs font-bold uppercase tracking-widest mb-3 ml-1">Email Address</label>
             <input 
               type="email" 
               value={email} 
               onChange={e => setEmail(e.target.value)} 
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl h-12 px-4 text-on-surface focus:border-primary/50 transition-all outline-none"
+              placeholder="name@example.com"
+              className="block w-full min-w-0 rounded-2xl bg-slate-950 border border-slate-700 px-5 py-4 text-white outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all"
               required 
             />
           </div>
-          <div>
-            <label className="block text-on-surface-variant text-xs font-bold uppercase tracking-wider mb-2">Password</label>
+          <div className="w-full">
+            <label className="block text-slate-400 text-xs font-bold uppercase tracking-widest mb-3 ml-1">Password</label>
             <input 
               type="password" 
               value={password} 
               onChange={e => setPassword(e.target.value)} 
-              className="w-full bg-surface-container-lowest border border-outline-variant/30 rounded-xl h-12 px-4 text-on-surface focus:border-primary/50 transition-all outline-none"
+              placeholder="••••••••"
+              className="block w-full min-w-0 rounded-2xl bg-slate-950 border border-slate-700 px-5 py-4 text-white outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400/20 transition-all"
               required 
             />
           </div>
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-primary text-background h-12 rounded-xl font-bold hover:scale-[0.98] active:scale-[0.95] transition-all disabled:opacity-50"
+            className="block w-full rounded-2xl bg-emerald-500 py-4 font-bold text-slate-950 hover:bg-emerald-400 hover:scale-[0.99] active:scale-[0.97] transition-all disabled:opacity-50 shadow-lg shadow-emerald-500/20 mt-4"
           >
-            {loading ? 'Authenticating...' : 'Sign In'}
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="w-4 h-4 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></span>
+                Authenticating...
+              </span>
+            ) : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-10 pt-8 border-t border-slate-800 text-center">
+          <p className="text-slate-500 text-sm">
+            Don't have an account? <span className="text-emerald-400 font-semibold cursor-pointer hover:underline">Request access</span>
+          </p>
+        </div>
       </motion.div>
     </div>
   );

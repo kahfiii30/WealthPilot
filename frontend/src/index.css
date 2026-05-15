@@ -381,3 +381,44 @@
   box-shadow: 0 6px 20px rgba(255, 180, 171, 0.3);
 }
 
+
+/* Global Reset and Mobile Viewport Fixes */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  width: 100%;
+  margin: 0;
+  background-color: #0b0f19;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Auth Debug Helper */
+.auth-debug-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #22c55e;
+  color: #000;
+  text-align: center;
+  font-size: 10px;
+  font-weight: bold;
+  z-index: 9999;
+  padding: 2px 0;
+  pointer-events: none;
+}

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDate } from '../utils/dateUtils';
 
 function AssetsDebt({ 
   assets = [], 
@@ -16,9 +17,24 @@ function AssetsDebt({
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
   const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
 
-  const totalAssets = assets.reduce((acc, a) => acc + a.amount, 0);
-  const totalDebts = debts.reduce((acc, d) => acc + d.amount, 0);
+  useEffect(() => {
+    const shouldOpenAsset = localStorage.getItem("openAssetModalOnLoad");
+    if (shouldOpenAsset === "true") {
+      setIsAssetModalOpen(true);
+      localStorage.removeItem("openAssetModalOnLoad");
+    }
+    const shouldOpenDebt = localStorage.getItem("openDebtModalOnLoad");
+    if (shouldOpenDebt === "true") {
+      setIsDebtModalOpen(true);
+      localStorage.removeItem("openDebtModalOnLoad");
+    }
+  }, []);
+
+  const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+  const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
   const netWorth = totalAssets - totalDebts;
 
   const assetCategories = ['Cash', 'Bank', 'E-Wallet', 'Crypto', 'Stocks', 'Business Inventory', 'Receivables', 'Others'];
@@ -90,68 +106,68 @@ function AssetsDebt({
       variants={container}
       initial="hidden"
       animate="show"
-      className="max-w-[1400px] mx-auto p-lg"
+      className="max-w-[1400px] mx-auto p-8"
     >
       {/* Header / Summary Section */}
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-lg mb-lg">
-        <div className="lg:col-span-2 glass-card p-lg rounded-xl flex flex-col justify-between overflow-hidden relative group shadow-lg border border-outline-variant/20">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
-          <div>
-            <h2 className="text-on-surface-variant font-label-md text-label-md mb-2">{t('totalNetWorth')} (Portfolio)</h2>
-            <div className="flex items-end gap-3 mb-6">
-              <span className={`font-display-sm text-display-sm font-bold ${netWorth >= 0 ? 'text-primary' : 'text-error'}`}>
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="lg:col-span-2 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between overflow-hidden relative group shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+          <div className="relative z-10">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">{t('totalNetWorth')} (Portfolio)</h2>
+            <div className="flex items-end gap-3 mb-8">
+              <span className={`text-6xl font-black tracking-tighter ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
                 {fm(netWorth)}
               </span>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4">
-            <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-              <p className="text-[10px] uppercase text-on-surface-variant mb-1">{t('assets')}</p>
-              <p className="font-bold text-primary">{fm(totalAssets)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4 relative z-10">
+            <div className="p-4 bg-emerald-400/10 rounded-2xl border border-emerald-400/20">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/70 mb-2">{t('assets')}</p>
+              <p className="text-xl font-black text-emerald-400 tracking-tight">{fm(totalAssets)}</p>
             </div>
-            <div className="p-3 bg-error/5 rounded-lg border border-error/10">
-              <p className="text-[10px] uppercase text-on-surface-variant mb-1">{t('debts')}</p>
-              <p className="font-bold text-error">{fm(totalDebts)}</p>
+            <div className="p-4 bg-red-400/10 rounded-2xl border border-red-500/20">
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-300/70 mb-2">{t('debts')}</p>
+              <p className="text-xl font-black text-red-300 tracking-tight">{fm(totalDebts)}</p>
             </div>
-            <div className="p-3 bg-surface-container rounded-lg border border-outline-variant/10">
-              <p className="text-[10px] uppercase text-on-surface-variant mb-1">Debt-to-Asset</p>
-              <p className="font-bold text-on-surface">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
+            <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Debt-to-Asset</p>
+              <p className="text-xl font-black text-slate-100 tracking-tight">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
             </div>
           </div>
         </div>
 
-        <div className="glass-card p-lg rounded-xl flex flex-col gap-6 shadow-lg border border-outline-variant/20">
+        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col gap-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div>
-            <h3 className="text-on-surface-variant font-label-md text-label-md mb-2 uppercase tracking-widest">Asset Ratio</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Asset Ratio</h3>
             <div className="flex items-center justify-between">
-              <span className="font-headline-lg text-headline-lg font-bold text-primary truncate mr-2">{fm(totalAssets)}</span>
-              <span className="text-on-surface-variant font-mono-data text-mono-data text-xs shrink-0">
+              <span className="text-2xl font-black text-emerald-400 tracking-tight truncate mr-4">{fm(totalAssets)}</span>
+              <span className="text-[10px] font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
-            <div className="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+            <div className="w-full h-3 bg-slate-700/45 rounded-full mt-4 overflow-hidden border border-slate-700/20 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalAssets / (totalAssets + totalDebts)) * 100 : 100}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-primary"
+                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]"
               ></motion.div>
             </div>
           </div>
           <div>
-            <h3 className="text-on-surface-variant font-label-md text-label-md mb-2 uppercase tracking-widest">Debt Exposure</h3>
+            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Debt Exposure</h3>
             <div className="flex items-center justify-between">
-              <span className="font-headline-lg text-headline-lg font-bold text-error truncate mr-2">{fm(totalDebts)}</span>
-              <span className="text-on-surface-variant font-mono-data text-mono-data text-xs shrink-0">
+              <span className="text-2xl font-black text-red-300 tracking-tight truncate mr-4">{fm(totalDebts)}</span>
+              <span className="text-[10px] font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
-            <div className="w-full h-1.5 bg-surface-container rounded-full mt-3 overflow-hidden">
+            <div className="w-full h-3 bg-slate-700/45 rounded-full mt-4 overflow-hidden border border-slate-700/20 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalDebts / (totalAssets + totalDebts)) * 100 : 0}%` }}
-                transition={{ duration: 1, ease: "easeOut" }}
-                className="h-full bg-error"
+                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full bg-gradient-to-r from-red-400 to-red-500 shadow-[0_0_15px_rgba(248,113,113,0.3)]"
               ></motion.div>
             </div>
           </div>
@@ -159,29 +175,29 @@ function AssetsDebt({
       </motion.div>
 
       {/* Bento Grid: Assets vs Liabilities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-lg">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* Assets Section */}
-        <motion.section variants={item} className="space-y-md">
+        <motion.section variants={item} className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-headline-lg text-headline-lg text-primary flex items-center gap-2">
-              <span className="material-symbols-outlined">account_balance_wallet</span>
+            <h3 className="text-2xl font-black text-emerald-400 tracking-tight flex items-center gap-3">
+              <span className="material-symbols-outlined font-bold">account_balance_wallet</span>
               Assets Portfolio
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsAssetModalOpen(true); }}
-              className="bg-primary/10 text-primary hover:bg-primary/20 px-4 py-2 rounded-lg font-bold text-sm transition-all cursor-pointer flex items-center gap-2 premium-button-active"
+              className="bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hover:bg-emerald-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined font-bold text-[18px]">add</span>
               {t('addAsset')}
             </button>
           </div>
-          <div className="space-y-sm">
+          <div className="space-y-4">
             {assets.length === 0 ? (
               <EmptyState 
                 title="No assets listed" 
                 desc="Start tracking your wealth by adding your first asset today." 
                 icon="account_balance" 
-                colorClass="text-primary"
+                colorClass="text-emerald-400"
               />
             ) : (
               assets.map((asset, i) => (
@@ -190,28 +206,28 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="glass-card p-md rounded-xl flex items-center justify-between group hover:border-primary/50 transition-all border border-outline-variant/10 hover:shadow-lg hover:translate-y-[-2px]"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                      <span className="material-symbols-outlined">{getAssetIcon(asset.category)}</span>
+                  <div className="flex items-center gap-5">
+                    <div className="w-11 h-11 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 transition-colors duration-200">
+                      <span className="material-symbols-outlined font-bold">{getAssetIcon(asset.category)}</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-on-surface group-hover:text-primary transition-colors">{asset.name}</h4>
-                      <p className="text-on-surface-variant text-[11px] uppercase tracking-wider">{asset.category} • {asset.note || 'No notes'}</p>
+                      <h4 className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{asset.name}</h4>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{asset.category} • {asset.note || 'No notes'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="font-mono-data text-mono-data font-bold text-primary">{fm(asset.amount)}</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">Updated {new Date(asset.updatedAt).toLocaleDateString()}</p>
+                      <p className="text-lg font-black text-emerald-400 tracking-tighter">{fm(asset.amount)}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleEditAsset(asset)} className="p-1.5 hover:bg-primary/10 text-primary rounded-lg transition-colors cursor-pointer premium-button-active">
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                      <button onClick={() => handleEditAsset(asset)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteAsset(asset.id)} className="p-1.5 hover:bg-error/10 text-error rounded-lg transition-colors cursor-pointer premium-button-active">
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
                       </button>
                     </div>
                   </div>
@@ -222,27 +238,27 @@ function AssetsDebt({
         </motion.section>
 
         {/* Debt Section */}
-        <motion.section variants={item} className="space-y-md">
+        <motion.section variants={item} className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="font-headline-lg text-headline-lg text-error flex items-center gap-2">
-              <span className="material-symbols-outlined">credit_card_off</span>
+            <h3 className="text-2xl font-black text-red-300 tracking-tight flex items-center gap-3">
+              <span className="material-symbols-outlined font-bold">credit_card_off</span>
               Total Liabilities
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsDebtModalOpen(true); }}
-              className="bg-error/10 text-error hover:bg-error/20 px-4 py-2 rounded-lg font-bold text-sm transition-all cursor-pointer flex items-center gap-2 premium-button-active"
+              className="bg-red-400/10 text-red-300 border border-red-500/20 hover:bg-red-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined font-bold text-[18px]">add</span>
               {t('addDebt')}
             </button>
           </div>
-          <div className="space-y-sm">
+          <div className="space-y-4">
             {debts.length === 0 ? (
               <EmptyState 
                 title="No liabilities listed" 
                 desc="Good job! You currently have no debts to track." 
                 icon="credit_card_off" 
-                colorClass="text-error"
+                colorClass="text-red-300"
               />
             ) : (
               debts.map((debt, i) => (
@@ -251,28 +267,28 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="glass-card p-md rounded-xl border-l-4 border-l-error flex items-center justify-between group hover:border-error/50 transition-all border border-outline-variant/10 hover:shadow-lg hover:translate-y-[-2px]"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg border-l-4 border-l-red-400"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-error/10 flex items-center justify-center text-error group-hover:scale-110 transition-transform">
-                      <span className="material-symbols-outlined">{getDebtIcon(debt.category)}</span>
+                  <div className="flex items-center gap-5">
+                    <div className="w-11 h-11 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 transition-colors duration-200">
+                      <span className="material-symbols-outlined font-bold">{getDebtIcon(debt.category)}</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-on-surface group-hover:text-error transition-colors">{debt.name}</h4>
-                      <p className="text-on-surface-variant text-[11px] uppercase tracking-wider">{debt.category} • Due: {debt.dueDate}</p>
+                      <h4 className="font-bold text-slate-100 group-hover:text-red-300 transition-colors tracking-tight">{debt.name}</h4>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-6">
                     <div className="text-right">
-                      <p className="font-mono-data text-mono-data font-bold text-error">{fm(debt.amount)}</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-tighter">Updated {new Date(debt.updatedAt).toLocaleDateString()}</p>
+                      <p className="text-lg font-black text-red-300 tracking-tighter">{fm(debt.amount)}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => handleEditDebt(debt)} className="p-1.5 hover:bg-primary/10 text-primary rounded-lg transition-colors cursor-pointer premium-button-active">
-                        <span className="material-symbols-outlined text-[18px]">edit</span>
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
+                      <button onClick={() => handleEditDebt(debt)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteDebt(debt.id)} className="p-1.5 hover:bg-error/10 text-error rounded-lg transition-colors cursor-pointer premium-button-active">
-                        <span className="material-symbols-outlined text-[18px]">delete</span>
+                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
                       </button>
                     </div>
                   </div>
@@ -293,13 +309,24 @@ function AssetsDebt({
         <AssetForm 
           initialData={editingItem} 
           categories={assetCategories} 
-          onSave={(data) => {
-            if (editingItem) onUpdateAsset(editingItem.id, data);
-            else onAddAsset(data);
-            setIsAssetModalOpen(false);
+          onSave={async (data) => {
+            try {
+              setIsSaving(true);
+              setError(null);
+              if (editingItem) await onUpdateAsset(editingItem.id, data);
+              else await onAddAsset(data);
+              setIsAssetModalOpen(false);
+            } catch (err) {
+              console.error("Failed to save asset:", err);
+              setError(err.message || "Failed to save asset");
+            } finally {
+              setIsSaving(false);
+            }
           }} 
-          onCancel={() => setIsAssetModalOpen(false)}
+          onCancel={() => { setIsAssetModalOpen(false); setError(null); }}
           t={t}
+          isSaving={isSaving}
+          error={error}
         />
       </Modal>
 
@@ -313,13 +340,24 @@ function AssetsDebt({
         <DebtForm 
           initialData={editingItem} 
           categories={debtCategories} 
-          onSave={(data) => {
-            if (editingItem) onUpdateDebt(editingItem.id, data);
-            else onAddDebt(data);
-            setIsDebtModalOpen(false);
+          onSave={async (data) => {
+            try {
+              setIsSaving(true);
+              setError(null);
+              if (editingItem) await onUpdateDebt(editingItem.id, data);
+              else await onAddDebt(data);
+              setIsDebtModalOpen(false);
+            } catch (err) {
+              console.error("Failed to save liability:", err);
+              setError(err.message || "Failed to save liability");
+            } finally {
+              setIsSaving(false);
+            }
           }} 
-          onCancel={() => setIsDebtModalOpen(false)}
+          onCancel={() => { setIsDebtModalOpen(false); setError(null); }}
           t={t}
+          isSaving={isSaving}
+          error={error}
         />
       </Modal>
     </motion.div>
@@ -331,25 +369,27 @@ function Modal({ isOpen, onClose, title, children, t }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+          <div className="absolute inset-0" onClick={onClose}></div>
           <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/80 backdrop-blur-md" 
-            onClick={onClose}
-          ></motion.div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="asset-modal relative z-[101] shadow-2xl overflow-hidden"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
+            style={{
+              width: "100%",
+              maxWidth: "560px",
+              minWidth: "320px"
+            }}
           >
-            <div className="asset-modal-header border-b border-outline-variant/30 pb-4 mb-6">
-              <h2 className="text-2xl font-bold">{title}</h2>
-              <button onClick={onClose} className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-variant transition-colors cursor-pointer text-on-surface-variant">
-                <span className="material-symbols-outlined text-[24px]">close</span>
+            <div className="mb-8 flex items-start justify-between gap-4">
+              <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">{title}</h2>
+              <button 
+                onClick={onClose} 
+                className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+              >
+                <span className="material-symbols-outlined font-bold text-[24px]">close</span>
               </button>
             </div>
             {children}
@@ -360,32 +400,76 @@ function Modal({ isOpen, onClose, title, children, t }) {
   );
 }
 
-function AssetForm({ initialData, categories, onSave, onCancel, t }) {
+function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', note: '' });
   return (
-    <form className="asset-form space-y-5" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('note')} ({t('assets')})</label>
-        <input required className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Bank Account" />
+    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('assets')})</label>
+        <input 
+          required 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          value={formData.name} 
+          onChange={e => setFormData({...formData, name: e.target.value})} 
+          placeholder="e.g. Bank Account" 
+        />
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('category')}</label>
-        <select className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-          {categories.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+          <select 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            value={formData.category} 
+            onChange={e => setFormData({...formData, category: e.target.value})}
+          >
+            {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+          </select>
+        </div>
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+          <input 
+            required 
+            type="number" 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            value={formData.amount} 
+            onChange={e => setFormData({...formData, amount: e.target.value})} 
+            placeholder="0" 
+          />
+        </div>
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('amount')}</label>
-        <input required type="number" className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} placeholder="0" />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+        <textarea 
+          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          value={formData.note} 
+          onChange={e => setFormData({...formData, note: e.target.value})} 
+          placeholder="Description..." 
+        />
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('note')} (Optional)</label>
-        <textarea className="w-full bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-on-surface outline-none transition-all resize-none h-24" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} placeholder="Description..." />
-      </div>
-      <div className="asset-actions flex gap-4 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 h-12 text-on-surface-variant bg-surface-container hover:bg-surface-variant rounded-xl font-bold transition-all cursor-pointer">{t('cancel')}</button>
-        <button type="submit" className="flex-[2] h-12 bg-primary text-background rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[0.98] active:scale-[0.95] transition-all cursor-pointer shadow-lg shadow-primary/20">
-          <span className="material-symbols-outlined text-[20px]">save</span>
+      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+        >
+          {t('cancel')}
+        </button>
+        <button 
+          type="submit" 
+          disabled={isSaving}
+          className={`h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <span className="material-symbols-outlined font-bold">save</span>
+          )}
           {t('save')}
         </button>
       </div>
@@ -393,36 +477,86 @@ function AssetForm({ initialData, categories, onSave, onCancel, t }) {
   );
 }
 
-function DebtForm({ initialData, categories, onSave, onCancel, t }) {
+function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', dueDate: '', note: '' });
   return (
-    <form className="asset-form space-y-5" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('note')} ({t('debts')})</label>
-        <input required className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Credit Card" />
+    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+      {error && (
+        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+          <span className="material-symbols-outlined text-[18px]">error</span>
+          {error}
+        </div>
+      )}
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('debts')})</label>
+        <input 
+          required 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          value={formData.name} 
+          onChange={e => setFormData({...formData, name: e.target.value})} 
+          placeholder="e.g. Credit Card" 
+        />
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('category')}</label>
-        <select className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all cursor-pointer" value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})}>
-          {categories.map(c => <option key={c} value={c}>{c}</option>)}
-        </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+          <select 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            value={formData.category} 
+            onChange={e => setFormData({...formData, category: e.target.value})}
+          >
+            {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+          </select>
+        </div>
+        <div className="w-full space-y-2">
+          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+          <input 
+            required 
+            type="number" 
+            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            value={formData.amount} 
+            onChange={e => setFormData({...formData, amount: e.target.value})} 
+            placeholder="0" 
+          />
+        </div>
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('amount')}</label>
-        <input required type="number" className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all" value={formData.amount} onChange={e => setFormData({...formData, amount: e.target.value})} placeholder="0" />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('date')}</label>
+        <input 
+          required 
+          type="date" 
+          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer [color-scheme:dark] font-bold" 
+          value={formData.dueDate} 
+          onChange={e => setFormData({...formData, dueDate: e.target.value})} 
+        />
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('date')}</label>
-        <input required type="date" className="w-full h-12 bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 text-on-surface outline-none transition-all cursor-pointer [color-scheme:dark]" value={formData.dueDate} onChange={e => setFormData({...formData, dueDate: e.target.value})} />
+      <div className="w-full space-y-2">
+        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+        <textarea 
+          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          value={formData.note} 
+          onChange={e => setFormData({...formData, note: e.target.value})} 
+          placeholder="Description..." 
+        />
       </div>
-      <div className="asset-field focus-ring">
-        <label className="text-on-surface-variant text-sm font-medium mb-1 block">{t('note')} (Optional)</label>
-        <textarea className="w-full bg-surface-container-lowest border border-outline-variant/50 focus:border-primary focus:ring-1 focus:ring-primary rounded-xl px-4 py-3 text-on-surface outline-none transition-all resize-none h-24" value={formData.note} onChange={e => setFormData({...formData, note: e.target.value})} placeholder="Description..." />
-      </div>
-      <div className="asset-actions flex gap-4 pt-2">
-        <button type="button" onClick={onCancel} className="flex-1 h-12 text-on-surface-variant bg-surface-container hover:bg-surface-variant rounded-xl font-bold transition-all cursor-pointer">{t('cancel')}</button>
-        <button type="submit" className="flex-[2] h-12 bg-error text-background rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[0.98] active:scale-[0.95] transition-all cursor-pointer shadow-lg shadow-error/20">
-          <span className="material-symbols-outlined text-[20px]">save</span>
+      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <button 
+          type="button" 
+          onClick={onCancel} 
+          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+        >
+          {t('cancel')}
+        </button>
+        <button 
+          type="submit" 
+          disabled={isSaving}
+          className={`h-12 w-full rounded-xl bg-gradient-to-r from-red-400 to-red-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(248,113,113,0.20)] transition hover:from-red-300 hover:to-red-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <span className="material-symbols-outlined font-bold">save</span>
+          )}
           {t('save')}
         </button>
       </div>

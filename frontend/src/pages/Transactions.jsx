@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDate } from '../utils/dateUtils';
 
 function Transactions({ transactions = [], onDelete, t, fm }) {
   const [filter, setFilter] = useState('all');
@@ -9,7 +10,8 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
   const filtered = transactions.filter(t_data => {
     const matchesFilter = filter === 'all' ? true : t_data.type === filter;
     const matchesSearch = 
-      (t_data.note || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t_data.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (t_data.note || t_data.notes || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.method || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.date || "").toLowerCase().includes(searchTerm.toLowerCase());
@@ -49,29 +51,29 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
   );
 
   return (
-    <div className="p-container-margin pb-[100px]">
+    <div className="p-8 pb-[100px]">
       {/* Header & Search */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-lg mb-lg">
-        <div className="flex flex-wrap gap-sm">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+        <div className="flex flex-wrap gap-2">
           {['all', 'expense', 'income'].map((f) => (
             <button 
               key={f}
               onClick={() => setFilter(f)} 
-              className={`px-4 py-2 font-bold rounded-full font-label-md text-label-md cursor-pointer transition-all premium-button-active ${filter === f ? (f === 'expense' ? 'bg-error text-background shadow-lg shadow-error/10' : 'bg-primary text-background shadow-lg shadow-primary/10') : 'bg-surface-container-highest border border-outline-variant text-on-surface-variant hover:text-on-surface hover:bg-surface-variant/50'}`}
+              className={`px-6 py-2.5 font-black rounded-xl text-xs uppercase tracking-widest cursor-pointer transition-colors duration-200 ${filter === f ? (f === 'expense' ? 'bg-red-400 text-slate-950 shadow-[0_0_20px_rgba(248,113,113,0.3)]' : 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]') : 'bg-slate-900/50 border border-slate-700/40 text-slate-400 hover:text-slate-100 hover:bg-slate-800/60'}`}
             >
-              {f.charAt(0).toUpperCase() + f.slice(1)}
+              {f}
             </button>
           ))}
         </div>
 
-        <div className="relative w-full md:w-64 group focus-within:w-72 transition-all duration-300">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant group-focus-within:text-primary transition-colors">search</span>
+        <div className="relative w-full md:w-64 group transition-colors duration-300">
+          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
           <input 
             type="text" 
-            placeholder="Search transactions..." 
+            placeholder="Search fleet data..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 bg-surface-container-highest border border-outline-variant/30 rounded-xl pl-10 pr-4 text-on-surface outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all text-sm shadow-inner"
+            className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-colors duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner"
           />
         </div>
       </div>
@@ -88,31 +90,31 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
             className="space-y-4"
           >
             {filtered.map((t_data) => (
-              <motion.div key={t_data.id} variants={item} className="glass-card p-md rounded-xl border border-outline-variant/20 shadow-sm active:scale-[0.98] transition-transform">
-                <div className="flex justify-between items-start mb-3">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${t_data.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-error/10 text-error'}`}>
-                      <span className="material-symbols-outlined">{t_data.type === 'income' ? 'south_west' : 'north_east'}</span>
+              <motion.div key={t_data.id} variants={item} className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 shadow-xl backdrop-blur-xl transition-colors duration-200">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 border ${t_data.type === 'income' ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20' : 'bg-red-400/10 text-red-300 border-red-500/20'}`}>
+                      <span className="material-symbols-outlined font-bold">{t_data.type === 'income' ? 'payments' : 'receipt_long'}</span>
                     </div>
                     <div>
-                      <p className="font-bold text-on-surface text-sm line-clamp-1">{t_data.note || t_data.category}</p>
-                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider">{new Date(t_data.date).toLocaleDateString()}</p>
+                      <p className="font-bold text-slate-100 text-sm line-clamp-1 tracking-tight">{t_data.title}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(t_data.date)}</p>
                     </div>
                   </div>
-                  <p className={`font-mono-data text-sm font-bold ${t_data.type === 'income' ? 'text-primary' : 'text-error'}`}>
+                  <p className={`text-lg font-black tracking-tighter ${t_data.type === 'income' ? 'text-emerald-400' : 'text-red-300'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </p>
                 </div>
-                <div className="flex justify-between items-center pt-3 border-t border-outline-variant/10">
+                <div className="flex justify-between items-center pt-4 border-t border-slate-800/50">
                   <div className="flex items-center gap-4">
-                    <span className="px-2 py-0.5 bg-surface-container-highest text-on-surface-variant rounded text-[9px] uppercase font-bold">{t_data.category}</span>
-                    <div className="flex items-center gap-1 text-[10px] text-on-surface-variant">
-                      <span className="material-symbols-outlined text-[14px]">wallet</span>
+                    <span className="px-3 py-1 bg-slate-800/50 text-slate-400 rounded-lg text-[9px] uppercase font-black tracking-widest border border-white/5">{t_data.category}</span>
+                    <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <span className="material-symbols-outlined text-[16px]">wallet</span>
                       {t_data.method}
                     </div>
                   </div>
-                  <button onClick={() => onDelete && onDelete(t_data.id)} className="text-error p-1 hover:bg-error/10 rounded-full transition-colors cursor-pointer premium-button-active">
-                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                  <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 p-2 hover:bg-red-500/10 rounded-xl transition-colors duration-200">
+                    <span className="material-symbols-outlined font-bold">delete</span>
                   </button>
                 </div>
               </motion.div>
@@ -122,54 +124,63 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block glass-card rounded-xl overflow-hidden border border-outline-variant/20 shadow-xl">
+      <div className="hidden md:block rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-colors duration-200 hover:border-emerald-400/30">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-surface-container-low/50 border-b border-outline-variant/30">
-              <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Date</th>
-              <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Note</th>
-              <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Category</th>
-              <th className="px-lg py-md font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Method</th>
-              <th className="px-lg py-md text-right font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Amount</th>
-              <th className="px-lg py-md text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-widest"></th>
+            <tr className="bg-slate-950/35 border-b border-slate-700/30">
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Date</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Transaction</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Category</th>
+              <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Method</th>
+              <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Amount</th>
+              <th className="px-8 py-5 text-center text-[10px] font-black uppercase tracking-[0.2em] text-slate-500"></th>
             </tr>
           </thead>
           <motion.tbody 
             variants={container}
             initial="hidden"
             animate="show"
-            className="divide-y divide-outline-variant/10"
+            className="divide-y divide-slate-800/50"
           >
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan="6" className="px-lg py-xl">
+                <td colSpan="6" className="px-8 py-16">
                   <EmptyState />
                 </td>
               </tr>
             ) : (
               filtered.map((t_data) => (
-                <motion.tr key={t_data.id} variants={item} className="hover:bg-surface-variant/20 transition-colors group">
-                  <td className="px-lg py-md font-mono-data text-mono-data text-on-surface-variant">
-                    {new Date(t_data.date).toLocaleDateString()}
+                <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors duration-200 group">
+                  <td className="px-8 py-5 text-xs font-bold text-slate-500 tracking-tight">
+                    {formatDate(t_data.date)}
                   </td>
-                  <td className="px-lg py-md font-bold text-on-surface group-hover:text-primary transition-colors">
-                    {t_data.note || t_data.category}
+                  <td className="px-8 py-5 group-hover:text-emerald-400 transition-colors tracking-tight">
+                    <div>
+                      <p className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
+                        {t_data.title}
+                      </p>
+                      {t_data.notes && (
+                        <p className="text-xs text-slate-500 font-medium">
+                          {t_data.notes}
+                        </p>
+                      )}
+                    </div>
                   </td>
-                  <td className="px-lg py-md">
-                    <span className="px-3 py-1 bg-surface-container-highest text-on-surface-variant rounded-full font-label-md text-[10px] uppercase tracking-wider">{t_data.category}</span>
+                  <td className="px-8 py-5">
+                    <span className="px-3 py-1 bg-slate-800/50 text-slate-400 rounded-lg text-[9px] uppercase font-black tracking-widest border border-white/5">{t_data.category}</span>
                   </td>
-                  <td className="px-lg py-md">
-                    <div className="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant">
-                      <span className="material-symbols-outlined text-[16px]">wallet</span>
+                  <td className="px-8 py-5">
+                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
+                      <span className="material-symbols-outlined text-[18px]">wallet</span>
                       {t_data.method}
                     </div>
                   </td>
-                  <td className={`px-lg py-md text-right font-mono-data text-mono-data font-bold ${t_data.type === 'income' ? 'text-primary' : 'text-error'}`}>
+                  <td className={`px-8 py-5 text-right font-black tracking-tighter text-lg transition-colors duration-200 ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </td>
-                  <td className="px-lg py-md text-center">
-                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-error hover:bg-error/10 p-2 rounded-full transition-colors cursor-pointer premium-button-active">
-                      <span className="material-symbols-outlined text-[20px]">delete</span>
+                  <td className="px-8 py-5 text-center">
+                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 hover:bg-red-500/10 p-2 rounded-xl transition-colors duration-200">
+                      <span className="material-symbols-outlined font-bold">delete</span>
                     </button>
                   </td>
                 </motion.tr>

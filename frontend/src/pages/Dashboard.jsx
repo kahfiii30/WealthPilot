@@ -3,7 +3,11 @@ import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
 
-function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm }) {
+function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm, userProfile }) {
+  const displayName = [userProfile?.firstName, userProfile?.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim() || "Pilot";
   // calculate metrics
   const totalIncome = transactions.filter(t_data => t_data.type === 'income').reduce((acc, t_data) => acc + t_data.amount, 0);
   const totalExpense = transactions.filter(t_data => t_data.type === 'expense').reduce((acc, t_data) => acc + t_data.amount, 0);
@@ -43,73 +47,77 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
       variants={container}
       initial="hidden"
       animate="show"
-      className="p-container-margin"
+      className="p-8"
     >
       {/* Welcome Header */}
-      <motion.section variants={item} className="mb-xl flex flex-col gap-sm">
-        <h2 className="font-headline-lg text-headline-lg text-on-surface">{t('welcome')}</h2>
-        <div className="flex items-center gap-md">
-          <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-          <p className="font-body-lg text-body-lg text-on-surface-variant">{t('healthStatus')}</p>
+      <motion.section variants={item} className="mb-10 flex flex-col gap-2">
+        <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
+          {t('welcome')}, {displayName}.
+        </h2>
+        <div className="flex items-center gap-3">
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
+          <p className="text-base font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>
         </div>
       </motion.section>
 
       {/* Primary Metrics */}
-      <div className="grid grid-cols-12 gap-lg mb-lg">
+      <div className="grid grid-cols-12 gap-8 mb-8">
         {/* Total Net Worth Card */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 glass-card rounded-xl p-lg flex flex-col justify-between shadow-lg border border-outline-variant/20">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
           <div>
-            <div className="flex justify-between items-start mb-sm">
-              <span className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">{t('totalNetWorth')}</span>
-              <span className="material-symbols-outlined text-primary">account_balance_wallet</span>
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
+              <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 transition-colors duration-200">
+                <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
+              </div>
             </div>
-            <p className="font-display-sm text-display-sm font-bold text-on-surface line-clamp-1">{fm(netWorth)}</p>
-            <div className="flex items-center gap-sm mt-sm flex-wrap">
-              <span className={`flex items-center font-mono-data text-mono-data px-2 py-0.5 rounded ${savings >= 0 ? 'text-primary bg-primary/10' : 'text-error bg-error/10'}`}>
-                <span className="material-symbols-outlined text-[16px]">{savings >= 0 ? 'trending_up' : 'trending_down'}</span>
+            <p className="text-5xl font-black text-slate-100 tracking-tighter line-clamp-1">{fm(netWorth)}</p>
+            <div className="flex items-center gap-3 mt-6 flex-wrap">
+              <span className={`flex items-center gap-1.5 font-bold text-sm px-3 py-1.5 rounded-xl border ${savings >= 0 ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' : 'text-red-300 bg-red-500/10 border-red-500/20'}`}>
+                <span className="material-symbols-outlined text-lg font-bold">{savings >= 0 ? 'trending_up' : 'trending_down'}</span>
                 {savings >= 0 ? '+' : ''}{fm(savings)}
               </span>
-              <span className="text-on-surface-variant text-sm">this month</span>
+              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">this cycle</span>
             </div>
           </div>
-          <div className="mt-xl grid grid-cols-2 gap-md border-t border-outline-variant/30 pt-lg">
+          <div className="mt-10 grid grid-cols-2 gap-8 border-t border-slate-700/30 pt-8">
             <div>
-              <p className="text-xs text-on-surface-variant mb-1">{t('savingsRate')}</p>
-              <p className="font-headline-lg text-headline-lg text-on-surface">{savingsRate}%</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t('savingsRate')}</p>
+              <p className="text-3xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
             </div>
             <div>
-              <p className="text-xs text-on-surface-variant mb-1">{t('savings')}</p>
-              <p className={`font-headline-lg text-headline-lg ${savings >= 0 ? 'text-primary' : 'text-error'}`}>{fm(savings)}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t('savings')}</p>
+              <p className={`text-3xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
             </div>
           </div>
         </motion.div>
 
         {/* Income vs Expense Dashboard */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 glass-card rounded-xl p-lg flex flex-col justify-between shadow-lg border border-outline-variant/20">
-          <div className="mb-lg">
-            <h3 className="font-headline-lg text-headline-lg">{t('cashflowOverview')}</h3>
-            <p className="text-sm text-on-surface-variant">Real-time breakdown of your income vs expenses.</p>
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
+          <div className="mb-8">
+            <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-2">{t('cashflowOverview')}</h3>
+            <p className="text-sm font-bold text-slate-500 tracking-tight">Real-time breakdown of your income vs expenses.</p>
           </div>
           
-          <div className="grid grid-cols-2 gap-4 md:gap-lg my-auto border-outline-variant/30 border-y py-lg mb-lg">
+          <div className="grid grid-cols-2 gap-6 my-auto border-slate-700/30 border-y py-8 mb-8">
             <StatCard title={t('totalIncome')} amount={fm(totalIncome)} icon="south_west" isError={false} />
             <StatCard title={t('totalExpense')} amount={fm(totalExpense)} icon="north_east" isError={true} />
           </div>
           
           {/* Progress bar visual for Income vs Expense */}
           <div>
-            <div className="flex justify-between text-xs text-on-surface-variant mb-2 font-mono-data">
-              <span className="truncate mr-2">{t('totalIncome')} {fm(totalIncome)}</span>
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+              <span className="truncate mr-4">{t('totalIncome')} {fm(totalIncome)}</span>
               <span className="truncate">{t('totalExpense')} {fm(totalExpense)}</span>
             </div>
-            <div className="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden flex border border-outline-variant/10">
+            <div className="w-full h-4 bg-slate-700/45 rounded-full overflow-hidden flex border border-slate-700/20 shadow-inner">
               {totalIncome > 0 ? (
                 <>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, 100 - (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: "easeOut" }} className="h-full bg-primary"></motion.div>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: "easeOut", delay: 0.2 }} className="h-full bg-error"></motion.div>
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, 100 - (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]"></motion.div>
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }} className="h-full bg-gradient-to-r from-red-400 to-red-500 shadow-[0_0_15px_rgba(248,113,113,0.3)]"></motion.div>
                 </>
               ) : (
-                <div className="h-full bg-error/20 w-full"></div>
+                <div className="h-full bg-red-500/20 w-full"></div>
               )}
             </div>
           </div>
@@ -117,29 +125,31 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
       </div>
 
       {/* Bento Grid: Spending & Transactions */}
-      <div className="grid grid-cols-12 gap-lg">
+      <div className="grid grid-cols-12 gap-8">
         {/* Spending Breakdown */}
-        <motion.div variants={item} className="col-span-12 lg:col-span-4 glass-card rounded-xl p-lg shadow-lg border border-outline-variant/20">
-          <h3 className="font-headline-lg text-headline-lg mb-lg">{t('spendingBreakdown')}</h3>
-          <div className="space-y-lg">
+        <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
+          <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
+          <div className="space-y-6">
             {categories.map((cat) => {
                const catTotal = transactions.filter(t_data => t_data.type === 'expense' && t_data.category === cat.name).reduce((acc, t_data) => acc + t_data.amount, 0);
                const percent = totalExpense > 0 ? Math.round((catTotal / totalExpense) * 100) : 0;
                return (
                 <div key={cat.name}>
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`material-symbols-outlined ${cat.text} text-[20px]`}>{cat.icon}</span>
-                      <span className="text-sm font-medium">{cat.name}</span>
+                  <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-lg ${cat.color.replace('bg-', 'bg-')}/10 border border-white/5`}>
+                        <span className={`material-symbols-outlined ${cat.text} text-[18px] font-bold`}>{cat.icon}</span>
+                      </div>
+                      <span className="text-sm font-bold text-slate-300">{cat.name}</span>
                     </div>
-                    <span className="font-mono-data text-mono-data text-sm">{percent}%</span>
+                    <span className="text-xs font-black text-slate-500 tracking-widest">{percent}%</span>
                   </div>
-                  <div className="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                  <div className="h-2 w-full bg-slate-700/45 rounded-full overflow-hidden border border-white/5 shadow-inner">
                     <motion.div 
                       initial={{ width: 0 }} 
                       animate={{ width: `${percent}%` }} 
-                      transition={{ duration: 0.8, ease: "easeOut", delay: 0.5 }}
-                      className={`h-full ${cat.color} rounded-full`}
+                      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1], delay: 0.5 }}
+                      className={`h-full bg-gradient-to-r from-emerald-400 to-sky-400 rounded-full shadow-[0_0_10px_rgba(74,222,128,0.2)]`}
                     ></motion.div>
                   </div>
                 </div>

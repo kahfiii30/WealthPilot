@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '../components/EmptyState';
 import { getMonthKey, isValidDate } from '../services/financeService';
@@ -26,19 +26,17 @@ const formatRupiah = (value) => {
 function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, onDeleteBudget, t, fm }) {
   // 1. State Management
   const [selectedMonthKey, setSelectedMonthKey] = useState(getMonthKey(new Date()));
-  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(() => {
+    const flag = localStorage.getItem("openBudgetModalOnLoad");
+    if (flag === "true") {
+      localStorage.removeItem("openBudgetModalOnLoad");
+      return true;
+    }
+    return false;
+  });
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  // 2. Flags from localStorage
-  useEffect(() => {
-    const shouldOpen = localStorage.getItem("openBudgetModalOnLoad");
-    if (shouldOpen === "true") {
-      setIsBudgetModalOpen(true);
-      localStorage.removeItem("openBudgetModalOnLoad");
-    }
-  }, []);
 
   // 3. Calculations
   const monthlyBudgets = budgets.filter(
@@ -351,10 +349,24 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
   const categories = ['Food & Dining', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Education', 'Other'];
   const [formData, setFormData] = useState({ category: categories[0], limit: '' });
 
-  useEffect(() => {
-    if (initialData) setFormData({ category: initialData.category, limit: initialData.limit.toString() });
-    else setFormData({ category: categories[0], limit: '' });
-  }, [initialData, isOpen]);
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+
+  if (initialData !== prevInitialData || isOpen !== prevIsOpen) {
+    setPrevInitialData(initialData);
+    setPrevIsOpen(isOpen);
+    if (initialData) {
+      setFormData({ 
+        category: initialData.category, 
+        limit: initialData.limit.toString() 
+      });
+    } else {
+      setFormData({ 
+        category: categories[0], 
+        limit: '' 
+      });
+    }
+  }
 
   if (!isOpen) return null;
 

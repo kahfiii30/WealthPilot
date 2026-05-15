@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate } from '../utils/dateUtils';
 
@@ -14,24 +14,27 @@ function AssetsDebt({
   t,
   fm
 }) {
-  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
-  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(() => {
+    const flag = localStorage.getItem("openAssetModalOnLoad");
+    if (flag === "true") {
+      localStorage.removeItem("openAssetModalOnLoad");
+      return true;
+    }
+    return false;
+  });
+
+  const [isDebtModalOpen, setIsDebtModalOpen] = useState(() => {
+    const flag = localStorage.getItem("openDebtModalOnLoad");
+    if (flag === "true") {
+      localStorage.removeItem("openDebtModalOnLoad");
+      return true;
+    }
+    return false;
+  });
+
   const [editingItem, setEditingItem] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const shouldOpenAsset = localStorage.getItem("openAssetModalOnLoad");
-    if (shouldOpenAsset === "true") {
-      setIsAssetModalOpen(true);
-      localStorage.removeItem("openAssetModalOnLoad");
-    }
-    const shouldOpenDebt = localStorage.getItem("openDebtModalOnLoad");
-    if (shouldOpenDebt === "true") {
-      setIsDebtModalOpen(true);
-      localStorage.removeItem("openDebtModalOnLoad");
-    }
-  }, []);
 
   const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
   const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
@@ -84,22 +87,6 @@ function AssetsDebt({
     hidden: { opacity: 0, y: 15 },
     show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } }
   };
-
-  const EmptyState = ({ title, desc, icon, colorClass }) => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center py-16 px-6 glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 text-center"
-    >
-      <div className={`w-14 h-14 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner`}>
-        <span className={`material-symbols-outlined ${colorClass} text-[28px] opacity-50`}>{icon}</span>
-      </div>
-      <h3 className="text-on-surface font-headline-lg text-lg mb-2">{title}</h3>
-      <p className="text-on-surface-variant text-sm max-w-[240px] opacity-70">
-        {desc}
-      </p>
-    </motion.div>
-  );
 
   return (
     <motion.div 
@@ -363,6 +350,22 @@ function AssetsDebt({
     </motion.div>
   );
 }
+
+const EmptyState = ({ title, desc, icon, colorClass }) => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex flex-col items-center justify-center py-16 px-6 glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 text-center"
+  >
+    <div className={`w-14 h-14 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner`}>
+      <span className={`material-symbols-outlined ${colorClass} text-[28px] opacity-50`}>{icon}</span>
+    </div>
+    <h3 className="text-on-surface font-headline-lg text-lg mb-2">{title}</h3>
+    <p className="text-on-surface-variant text-sm max-w-[240px] opacity-70">
+      {desc}
+    </p>
+  </motion.div>
+);
 
 // Sub-components for better organization
 function Modal({ isOpen, onClose, title, children, t }) {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';

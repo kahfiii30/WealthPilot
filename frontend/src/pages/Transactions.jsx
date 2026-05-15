@@ -34,21 +34,6 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
     show: { opacity: 1, x: 0, transition: { duration: 0.2 } }
   };
 
-  const EmptyState = () => (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col items-center justify-center p-xl glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 min-h-[300px]"
-    >
-      <div className="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner">
-        <span className="material-symbols-outlined text-primary text-[32px] opacity-50">receipt_long</span>
-      </div>
-      <h3 className="text-on-surface font-headline-lg text-lg mb-2">No transactions yet</h3>
-      <p className="text-on-surface-variant text-sm text-center max-w-[280px] mb-lg">
-        Keep track of your spending and income by adding your first transaction today.
-      </p>
-    </motion.div>
-  );
 
   return (
     <div className="p-8 pb-[100px]">
@@ -194,3 +179,19 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
 }
 
 export default Transactions;
+
+const EmptyState = () => (
+  <motion.div 
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    className="flex flex-col items-center justify-center p-xl glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 min-h-[300px]"
+  >
+    <div className="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner">
+      <span className="material-symbols-outlined text-primary text-[32px] opacity-50">receipt_long</span>
+    </div>
+    <h3 className="text-on-surface font-headline-lg text-lg mb-2">No transactions yet</h3>
+    <p className="text-on-surface-variant text-sm text-center max-w-[280px] mb-lg">
+      Keep track of your spending and income by adding your first transaction today.
+    </p>
+  </motion.div>
+);

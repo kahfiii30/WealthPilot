@@ -29,12 +29,15 @@ function Settings({
     email: ""
   });
 
-  // Sync local state when props change
-  React.useEffect(() => {
+  const [prevPrefs, setPrevPrefs] = useState(preferences);
+  if (preferences !== prevPrefs) {
+    setPrevPrefs(preferences);
     setLocalPrefs(preferences);
-  }, [preferences]);
+  }
 
-  React.useEffect(() => {
+  const [prevProfile, setPrevProfile] = useState(userProfile);
+  if (userProfile !== prevProfile) {
+    setPrevProfile(userProfile);
     if (userProfile) {
       setForm({
         firstName: userProfile.firstName || "",
@@ -42,7 +45,7 @@ function Settings({
         email: userProfile.email || ""
       });
     }
-  }, [userProfile]);
+  }
 
   const showFeedback = (msg) => {
     setFeedback(msg);

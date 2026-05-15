@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EmptyState from '../components/EmptyState';
-import { getMonthKey, isValidDate } from '../services/financeService';
+import { getMonthKey } from '../services/financeService';
 import { formatDate } from '../utils/dateUtils';
 
 // Helper Functions
@@ -23,9 +23,8 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, onDeleteBudget, t, fm }) {
+function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, onDeleteBudget, t, fm, selectedMonth, setSelectedMonth }) {
   // 1. State Management
-  const [selectedMonthKey, setSelectedMonthKey] = useState(getMonthKey(new Date()));
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(() => {
     const flag = localStorage.getItem("openBudgetModalOnLoad");
     if (flag === "true") {
@@ -40,7 +39,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 
   // 3. Calculations
   const monthlyBudgets = budgets.filter(
-    b => b.month === selectedMonthKey
+    b => b.month === selectedMonth
   );
 
   const totalBudget = monthlyBudgets.reduce((sum, b) => {
@@ -49,7 +48,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 
   const totalActual = transactions
     .filter(t_data => t_data.type === "expense")
-    .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey)
+    .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonth)
     .reduce((sum, t_data) => {
       return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
     }, 0);
@@ -58,7 +57,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 
   const getRemainingDaysInMonth = () => {
     const now = new Date();
-    const [year, month] = selectedMonthKey.split("-").map(Number);
+    const [year, month] = selectedMonth.split("-").map(Number);
     const lastDay = new Date(year, month, 0).getDate();
     const isCurrentMonth = now.getFullYear() === year && now.getMonth() + 1 === month;
     return isCurrentMonth ? Math.max(lastDay - now.getDate() + 1, 1) : lastDay;
@@ -73,7 +72,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
     const actualSpent = transactions
       .filter(t_data => t_data.type === "expense")
       .filter(t_data => t_data.category === b.category)
-      .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey)
+      .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonth)
       .reduce((sum, t_data) => {
         return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
       }, 0);
@@ -85,7 +84,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   const overBudgetItemsCount = cStats.filter(s => s.actualSpent > s.limit).length;
 
   // High Impact Spending
-  const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonthKey);
+  const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonth);
   const highImpact = monthlyExpenses
     .filter(t_data => 
       (t_data.notes || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -97,7 +96,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   // Chart Data
   const getLastThreeMonths = () => {
     const monthsArr = [];
-    const [year, month] = selectedMonthKey.split('-').map(Number);
+    const [year, month] = selectedMonth.split('-').map(Number);
     for (let idx = 2; idx >= 0; idx--) {
       const d = new Date(year, month - 1 - idx, 1);
       monthsArr.push(getMonthKey(d));
@@ -131,13 +130,13 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         await onUpdateBudget(editingBudget.id, {
           category: formData.category,
           limit: numericLimit,
-          month: selectedMonthKey
+          month: selectedMonth
         });
       } else {
         await onAddBudget({
           category: formData.category,
           limit: numericLimit,
-          month: selectedMonthKey
+          month: selectedMonth
         });
       }
       setIsBudgetModalOpen(false);
@@ -159,14 +158,14 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 ml-1">Strategy Center</p>
           <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
-            {t('monthlyBudget')} {new Date(selectedMonthKey + "-01").toLocaleString('default', { month: 'long', year: 'numeric' })}
+            {t('monthlyBudget')} {new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
         </div>
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
           <input 
             type="month" 
-            value={selectedMonthKey} 
-            onChange={(e) => setSelectedMonthKey(e.target.value)} 
+            value={selectedMonth} 
+            onChange={(e) => setSelectedMonth(e.target.value)} 
             className="rounded-xl border border-slate-700/40 bg-slate-950/55 px-6 py-3 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer [color-scheme:dark]" 
           />
           <button 

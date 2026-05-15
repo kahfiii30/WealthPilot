@@ -1,20 +1,27 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { formatDate } from '../utils/dateUtils';
+import { getMonthKey } from '../services/financeService';
 
-function Transactions({ transactions = [], onDelete, t, fm }) {
+function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelectedMonth }) {
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Filter Logic
-  const filtered = transactions.filter(t_data => {
+  // 1. Filter by Month
+  const monthlyTransactions = transactions.filter((transaction) => {
+    if (!transaction.date) return false;
+    const transactionMonth = getMonthKey(transaction.date);
+    return transactionMonth === selectedMonth;
+  });
+
+  // 2. Apply Type and Search Filters
+  const filtered = monthlyTransactions.filter(t_data => {
     const matchesFilter = filter === 'all' ? true : t_data.type === filter;
     const matchesSearch = 
       (t_data.title || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.note || t_data.notes || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (t_data.category || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (t_data.method || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (t_data.date || "").toLowerCase().includes(searchTerm.toLowerCase());
+      (t_data.method || "").toLowerCase().includes(searchTerm.toLowerCase());
     
     return matchesFilter && matchesSearch;
   });
@@ -51,15 +58,23 @@ function Transactions({ transactions = [], onDelete, t, fm }) {
           ))}
         </div>
 
-        <div className="relative w-full md:w-64 group transition-colors duration-300">
-          <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
           <input 
-            type="text" 
-            placeholder="Search fleet data..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-colors duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner"
+            type="month" 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl px-4 text-slate-100 font-bold outline-none focus:border-emerald-400/70 transition-colors [color-scheme:dark]"
           />
+          <div className="relative w-full md:w-64 group transition-colors duration-300">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
+            <input 
+              type="text" 
+              placeholder="Search fleet data..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-colors duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner"
+            />
+          </div>
         </div>
       </div>
 

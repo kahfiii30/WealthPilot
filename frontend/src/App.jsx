@@ -45,6 +45,10 @@ function App() {
   const [assets, setAssets] = useState([]);
   const [debts, setDebts] = useState([]);
   const [budgets, setBudgets] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  });
 
 
   // Auth State Listener
@@ -364,8 +368,8 @@ function App() {
 
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative">
         <AnimatePresence mode="wait">
-          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} /></AnimatedPage>}
-          {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} /></AnimatedPage>}
+          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
+          {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
           {activePage === 'budget' && (
             <AnimatedPage key="budget">
               <Budget 
@@ -376,6 +380,8 @@ function App() {
                 onDeleteBudget={deleteBudget}
                 t={t}
                 fm={fm}
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
               />
             </AnimatedPage>
           )}
@@ -406,6 +412,8 @@ function App() {
                 onQuickAdd={() => setIsQuickAddOpen(true)}
                 t={t} 
                 fm={fm} 
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
               />
             </AnimatedPage>
           )}

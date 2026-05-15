@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function TransactionForm({ isOpen, onClose, onAddTransaction, t, fm, currency }) {
+function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency }) {
   const [type, setType] = useState('expense');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');

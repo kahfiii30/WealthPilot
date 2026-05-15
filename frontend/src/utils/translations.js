@@ -56,6 +56,6 @@ export const translations = {
   }
 };
 
-export const translate = (key, lang = 'en') => {
+export const translate = (key) => {
   return translations['en']?.[key] || key;
 };

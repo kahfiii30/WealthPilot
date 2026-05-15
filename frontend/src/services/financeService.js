@@ -2,10 +2,7 @@ import { supabase } from "../lib/supabaseClient";
 
 // --- Normalizers ---
 
-const toNumber = (val) => {
-  const n = parseFloat(val);
-  return isNaN(n) ? 0 : n;
-};
+
 
 export const isValidDate = (value) => {
   if (!value) return false;

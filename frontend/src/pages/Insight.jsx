@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMonthKey } from '../services/financeService';
-import { formatDate } from '../utils/dateUtils';
+
 
 // Helper Functions
 const toNumber = (value) => {
@@ -19,13 +19,18 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Insight({ transactions = [], assets = [], debts = [], budgets = [], onNavigate, onQuickAdd, t, fm }) {
+function Insight({ transactions = [], assets = [], debts = [], budgets = [], onNavigate, onQuickAdd, t, selectedMonth, setSelectedMonth }) {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isInsightDismissed, setIsInsightDismissed] = useState(localStorage.getItem("smartInsightDismissed") === "true");
 
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(ti => (ti.date || ti.createdAt) && getMonthKey(ti.date || ti.createdAt) === selectedMonth);
+  }, [transactions, selectedMonth]);
+
+  
+
   // Current Context
-  const currentMonthKey = useMemo(() => getMonthKey(new Date()), []);
 
   // 1. Core Calculations
   const analysis = useMemo(() => {
@@ -33,12 +38,12 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     const totalLiabilities = debts.reduce((sum, d) => sum + toNumber(d.amount), 0);
     const netWorth = totalAssets - totalLiabilities;
 
-    const monthlyIncome = transactions
-      .filter(t_item => t_item.type === 'income' && getMonthKey(t_item.date || t_item.createdAt) === currentMonthKey)
+    const monthlyIncome = filteredTransactions
+      .filter(t_item => t_item.type === 'income')
       .reduce((sum, t_item) => sum + toNumber(t_item.amount), 0);
 
-    const monthlyExpense = transactions
-      .filter(t_item => t_item.type === 'expense' && getMonthKey(t_item.date || t_item.createdAt) === currentMonthKey)
+    const monthlyExpense = filteredTransactions
+      .filter(t_item => t_item.type === 'expense')
       .reduce((sum, t_item) => sum + toNumber(t_item.amount), 0);
 
     const monthlySavings = monthlyIncome - monthlyExpense;
@@ -46,7 +51,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     const debtToAssetRatio = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
     const expenseRatio = monthlyIncome > 0 ? (monthlyExpense / monthlyIncome) * 100 : 0;
 
-    const currentBudgets = budgets.filter(b => b.month === currentMonthKey);
+    const currentBudgets = budgets.filter(b => b.month === selectedMonth);
     const monthlyBudget = currentBudgets.reduce((sum, b) => sum + toNumber(b.limit), 0);
     const budgetUsage = monthlyBudget > 0 ? (monthlyExpense / monthlyBudget) * 100 : 0;
 
@@ -67,8 +72,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
 
     // Biggest Category
     const categoryTotals = {};
-    transactions
-      .filter(t_item => t_item.type === 'expense' && getMonthKey(t_item.date || t_item.createdAt) === currentMonthKey)
+    filteredTransactions
+      .filter(t_item => t_item.type === 'expense')
       .forEach(t_item => {
         categoryTotals[t_item.category] = (categoryTotals[t_item.category] || 0) + toNumber(t_item.amount);
       });
@@ -107,12 +112,12 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
       effectiveLiquid, emergencyFundMonths, biggestCategory, wealthScore, status, statusColor,
       currentBudgets
     };
-  }, [transactions, assets, debts, budgets, currentMonthKey]);
+  }, [filteredTransactions, assets, debts, budgets, selectedMonth, transactions]);
 
   // 3. Smart Insight AI Logic (Rule-based)
   const smartInsight = useMemo(() => {
     const { 
-      totalAssets, totalLiabilities, monthlyIncome, monthlyExpense, monthlySavings, 
+      totalAssets, totalLiabilities, monthlyIncome, monthlyExpense, 
       saveRate, debtToAssetRatio, budgetUsage, biggestCategory, netWorth 
     } = analysis;
 
@@ -123,10 +128,11 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     let mainInsight = "Add transactions, assets, debts, and budgets to unlock personalized financial insights.";
 
     if (transactions.length > 0 || assets.length > 0) {
-      mainInsight = `Financial analysis for ${new Date().toLocaleString('default', { month: 'long' })} initialized.`;
+      const monthName = new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long' });
+      mainInsight = `Financial analysis for ${monthName} initialized.`;
       
       if (biggestCategory[0]) {
-        mainInsight = `Your biggest spending category this month is ${biggestCategory[0]} at ${formatRupiah(biggestCategory[1])}.`;
+        mainInsight = `Your biggest spending category in ${monthName} is ${biggestCategory[0]} at ${formatRupiah(biggestCategory[1])}.`;
       }
 
       if (monthlyExpense > monthlyIncome && monthlyIncome > 0) {
@@ -174,7 +180,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
   // 4. Strategic Tasks Logic
   const strategicTasks = useMemo(() => {
     const tasks = [];
-    const { totalAssets, emergencyFundMonths, debtToAssetRatio, saveRate, monthlyBudget, budgetUsage, monthlyIncome } = analysis;
+    const { emergencyFundMonths, debtToAssetRatio, saveRate, monthlyBudget, budgetUsage, monthlyIncome } = analysis;
 
     if (assets.length === 0) tasks.push({ icon: 'add_card', color: 'text-emerald-400', bg: 'bg-emerald-400/10', title: 'Add your first asset', desc: 'Required for net worth calculation.', priority: 'high', target: 'assets', flag: 'openAssetModalOnLoad' });
     if (debts.length === 0 && assets.length > 0) tasks.push({ icon: 'fact_check', color: 'text-sky-400', bg: 'bg-sky-400/10', title: 'Review debt position', desc: 'Ensure all liabilities are recorded.', priority: 'low', target: 'assets', flag: 'openDebtModalOnLoad' });
@@ -247,14 +253,25 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
           <h2 className="text-4xl font-black text-slate-100 tracking-tighter">{t('insight')}</h2>
           <p className="text-sm font-bold text-slate-500 tracking-tight mt-1">Real-time intelligence based on your command center data.</p>
         </div>
-        {isInsightDismissed && (
-          <button 
-            onClick={handleResetInsight}
-            className="px-5 py-2 bg-slate-900/55 border border-slate-700/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-400/10 transition-colors duration-200"
-          >
-            Show Smart Insight
-          </button>
-        )}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-4 w-full md:w-auto">
+          <div className="flex flex-col gap-1.5 min-w-[160px]">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Analysis Period</label>
+            <input 
+              type="month" 
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="bg-slate-900/55 border border-slate-700/30 rounded-xl px-4 py-2 text-slate-100 font-bold outline-none focus:border-emerald-400/50 transition-colors [color-scheme:dark]"
+            />
+          </div>
+          {isInsightDismissed && (
+            <button 
+              onClick={handleResetInsight}
+              className="px-5 py-2 mt-auto bg-slate-900/55 border border-slate-700/30 rounded-xl text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:bg-emerald-400/10 transition-colors duration-200"
+            >
+              Show Smart Insight
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Bento Grid Layout */}
@@ -652,7 +669,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
 }
 
 // Reusable Modal Component
-function Modal({ isOpen, onClose, title, children, t }) {
+function Modal({ isOpen, onClose, title, children }) {
   return (
     <AnimatePresence>
       {isOpen && (

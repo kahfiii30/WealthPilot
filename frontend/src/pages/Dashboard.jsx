@@ -1,21 +1,46 @@
 import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
+import { getMonthKey } from '../services/financeService';
 
-function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm, userProfile }) {
+function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
   const displayName = [userProfile?.firstName, userProfile?.lastName]
     .filter(Boolean)
     .join(" ")
     .trim() || "Pilot";
-  // calculate metrics
-  const totalIncome = transactions.filter(t_data => t_data.type === 'income').reduce((acc, t_data) => acc + t_data.amount, 0);
-  const totalExpense = transactions.filter(t_data => t_data.type === 'expense').reduce((acc, t_data) => acc + t_data.amount, 0);
+
+  // 1. Filter transactions by selected month
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (!transaction.date) return false;
+    const transactionMonth = getMonthKey(transaction.date);
+    return transactionMonth === selectedMonth;
+  });
+
+  // 2. Metrics for selected month
+  const totalIncome = filteredTransactions.filter(t_data => t_data.type === 'income').reduce((acc, t_data) => acc + t_data.amount, 0);
+  const totalExpense = filteredTransactions.filter(t_data => t_data.type === 'expense').reduce((acc, t_data) => acc + t_data.amount, 0);
   const savings = totalIncome - totalExpense;
   const savingsRate = totalIncome > 0 ? ((savings / totalIncome) * 100).toFixed(1) : 0;
   
   const totalAssets = assets.reduce((acc, a) => acc + a.amount, 0);
   const totalDebts = debts.reduce((acc, d) => acc + d.amount, 0);
-  const netWorth = totalAssets + savings - totalDebts;
+  const netWorth = totalAssets + (filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) - filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)) - totalDebts;
+
+  // 3. Monthly History (from ALL transactions)
+  const monthlySummary = transactions.reduce((acc, transaction) => {
+    if (!transaction.date) return acc;
+    const month = getMonthKey(transaction.date);
+    if (!acc[month]) {
+      acc[month] = { month, income: 0, expense: 0, balance: 0 };
+    }
+    const amount = Number(transaction.amount) || 0;
+    if (transaction.type === "income") acc[month].income += amount;
+    if (transaction.type === "expense") acc[month].expense += amount;
+    acc[month].balance = acc[month].income - acc[month].expense;
+    return acc;
+  }, {});
+
+  const monthlySummaryList = Object.values(monthlySummary).sort((a, b) => b.month.localeCompare(a.month));
 
   // Spending Breakdown Categories
   const categories = [
@@ -49,13 +74,25 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
       className="p-8"
     >
       {/* Welcome Header */}
-      <motion.section variants={item} className="mb-10 flex flex-col gap-2">
-        <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
-          {t('welcome')}, {displayName}.
-        </h2>
-        <div className="flex items-center gap-3">
-          <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
-          <p className="text-base font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>
+      <motion.section variants={item} className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col gap-2">
+          <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
+            {t('welcome')}, {displayName}.
+          </h2>
+          <div className="flex items-center gap-3">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
+            <p className="text-base font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Analysis Period</label>
+          <input 
+            type="month" 
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(e.target.value)}
+            className="bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-100 font-bold outline-none focus:border-emerald-400/50 transition-colors [color-scheme:dark]"
+          />
         </div>
       </motion.section>
 
@@ -130,7 +167,7 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
           <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
           <div className="space-y-6">
             {categories.map((cat) => {
-               const catTotal = transactions.filter(t_data => t_data.type === 'expense' && t_data.category === cat.name).reduce((acc, t_data) => acc + t_data.amount, 0);
+               const catTotal = filteredTransactions.filter(t_data => t_data.type === 'expense' && t_data.category === cat.name).reduce((acc, t_data) => acc + t_data.amount, 0);
                const percent = totalExpense > 0 ? Math.round((catTotal / totalExpense) * 100) : 0;
                return (
                 <div key={cat.name}>
@@ -158,9 +195,45 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
         </motion.div>
 
         <motion.div variants={item} className="col-span-12 lg:col-span-8">
-          <RecentTransactions transactions={transactions} onDelete={onDeleteTransaction} t={t} fm={fm} />
+          <RecentTransactions transactions={filteredTransactions} onDelete={onDeleteTransaction} t={t} fm={fm} />
         </motion.div>
       </div>
+
+      {/* Monthly History Tracking */}
+      <motion.section variants={item} className="mt-12">
+        <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8 flex items-center gap-3">
+          <span className="material-symbols-outlined text-emerald-400">history</span>
+          Monthly History
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {monthlySummaryList.map((summary) => (
+            <div key={summary.month} className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 shadow-lg backdrop-blur-xl hover:border-emerald-400/30 transition-all duration-200 group">
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">{summary.month}</p>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-bold text-slate-400">Income</span>
+                  <span className="text-sm font-black text-emerald-400 tracking-tight">{fm(summary.income)}</span>
+                </div>
+                <div className="flex justify-between items-center text-red-300">
+                  <span className="text-xs font-bold text-slate-400">Expense</span>
+                  <span className="text-sm font-black tracking-tight">{fm(summary.expense)}</span>
+                </div>
+                <div className="pt-3 border-t border-slate-700/30 flex justify-between items-center">
+                  <span className="text-xs font-black uppercase tracking-widest text-slate-500">Balance</span>
+                  <span className={`text-sm font-black tracking-tight ${summary.balance >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
+                    {fm(summary.balance)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {monthlySummaryList.length === 0 && (
+            <div className="col-span-full py-12 text-center rounded-2xl border border-dashed border-slate-700/30 text-slate-500 font-bold uppercase tracking-widest text-xs">
+              No historical data available
+            </div>
+          )}
+        </div>
+      </motion.section>
     </motion.div>
   );
 }

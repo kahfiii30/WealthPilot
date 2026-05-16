@@ -3,7 +3,7 @@ import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
 import { getMonthKey } from '../services/financeService';
 
-function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
+function Dashboard({ transactions, assets = [], debts = [], receivables = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
   const displayName = [userProfile?.firstName, userProfile?.lastName]
     .filter(Boolean)
     .join(" ")
@@ -24,6 +24,16 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
   
   const totalAssets = assets.reduce((acc, a) => acc + a.amount, 0);
   const totalDebts = debts.reduce((acc, d) => acc + d.amount, 0);
+
+  // Receivables Metrics
+  const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
+  const totalReceivablesActive = activeReceivables.reduce((acc, r) => acc + r.amount, 0);
+  const outstandingReceivables = activeReceivables.reduce((acc, r) => acc + r.remainingAmount, 0);
+  const paidThisMonth = (receivables || []).reduce((acc, r) => {
+    const isPaidThisMonth = r.status === 'paid' && getMonthKey(r.updatedAt) === selectedMonth;
+    return isPaidThisMonth ? acc + r.paidAmount : acc;
+  }, 0);
+
   const netWorth = totalAssets + (filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) - filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)) - totalDebts;
 
   // 3. Monthly History (from ALL transactions)
@@ -140,7 +150,6 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
             <StatCard title={t('totalExpense')} amount={fm(totalExpense)} icon="north_east" isError={true} />
           </div>
           
-          {/* Progress bar visual for Income vs Expense */}
           <div>
             <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
               <span className="truncate mr-4">{t('totalIncome')} {fm(totalIncome)}</span>
@@ -160,9 +169,39 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
         </motion.div>
       </div>
 
+      {/* Receivables Summary Row */}
+      <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-emerald-400/30 transition-all group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-emerald-400/10 group-hover:bg-emerald-400/20 transition-colors">
+              <span className="material-symbols-outlined text-emerald-400 font-bold">payments</span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Active Receivables</span>
+          </div>
+          <div className="text-2xl font-black text-slate-100">{fm(totalReceivablesActive)}</div>
+        </div>
+        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-blue-400/30 transition-all group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-blue-400/10 group-hover:bg-blue-400/20 transition-colors">
+              <span className="material-symbols-outlined text-blue-400 font-bold">check_circle</span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Paid This Month</span>
+          </div>
+          <div className="text-2xl font-black text-slate-100">{fm(paidThisMonth)}</div>
+        </div>
+        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-amber-400/30 transition-all group">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 rounded-lg bg-amber-400/10 group-hover:bg-amber-400/20 transition-colors">
+              <span className="material-symbols-outlined text-amber-400 font-bold">pending</span>
+            </div>
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Outstanding</span>
+          </div>
+          <div className="text-2xl font-black text-slate-100">{fm(outstandingReceivables)}</div>
+        </div>
+      </motion.div>
+
       {/* Bento Grid: Spending & Transactions */}
       <div className="grid grid-cols-12 gap-8">
-        {/* Spending Breakdown */}
         <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
           <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
           <div className="space-y-6">
@@ -199,7 +238,6 @@ function Dashboard({ transactions, assets = [], debts = [], onDeleteTransaction,
         </motion.div>
       </div>
 
-      {/* Monthly History Tracking */}
       <motion.section variants={item} className="mt-12">
         <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8 flex items-center gap-3">
           <span className="material-symbols-outlined text-emerald-400">history</span>

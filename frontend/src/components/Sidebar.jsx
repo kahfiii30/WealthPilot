@@ -7,6 +7,7 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
     { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },
     { id: 'budget', label: t('budget'), icon: 'account_balance_wallet' },
     { id: 'assets', label: t('assetsDebt'), icon: 'account_balance' },
+    { id: 'receivables', label: t('receivables'), icon: 'payments' },
     { id: 'insight', label: t('insight'), icon: 'insights' },
   ];
 

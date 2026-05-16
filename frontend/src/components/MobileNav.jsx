@@ -5,7 +5,7 @@ function MobileNav({ activePage, setActivePage, onQuickAdd, t }) {
     { id: 'dashboard', label: t('dashboard'), icon: 'dashboard' },
     { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },
     { id: 'budget', label: t('budget'), icon: 'account_balance_wallet' },
-    { id: 'assets', label: t('assetsDebt'), icon: 'account_balance' },
+    { id: 'receivables', label: t('receivables'), icon: 'payments' },
     { id: 'settings', label: t('settings'), icon: 'settings' },
   ];
 

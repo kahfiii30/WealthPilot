@@ -2,8 +2,6 @@ import { supabase } from "../lib/supabaseClient";
 
 // --- Normalizers ---
 
-
-
 export const isValidDate = (value) => {
   if (!value) return false;
   const date = new Date(value);
@@ -68,6 +66,21 @@ export const normalizeBudget = (item) => ({
   updatedAt: item.updated_at || null
 });
 
+export const normalizeReceivable = (item) => ({
+  id: item.id,
+  userId: item.user_id,
+  debtorName: item.debtor_name || "Unknown",
+  amount: Number(item.amount || 0),
+  paidAmount: Number(item.paid_amount || 0),
+  remainingAmount: Number(item.remaining_amount || 0),
+  debtDate: item.debt_date || null,
+  dueDate: item.due_date || null,
+  status: item.status || "unpaid",
+  notes: item.notes || "",
+  createdAt: item.created_at || null,
+  updatedAt: item.updated_at || null
+});
+
 export const normalizeProfile = (profile, user) => ({
   id: profile?.id || null,
   userId: profile?.user_id || user?.id || null,
@@ -99,7 +112,6 @@ export const fetchTransactions = async (userId) => {
 export const createTransaction = async (userId, payload) => {
   console.log("SAVE CLICKED (Transaction)");
   
-  // Ensure we have a valid user
   let finalUserId = userId;
   if (!finalUserId) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -118,9 +130,6 @@ export const createTransaction = async (userId, payload) => {
     note: payload.note || payload.notes || ""
   };
   
-  console.log("USER:", finalUserId);
-  console.log("PAYLOAD:", dbPayload);
-
   const { data, error } = await supabase
     .from('transactions')
     .insert([dbPayload])
@@ -132,7 +141,6 @@ export const createTransaction = async (userId, payload) => {
     throw error;
   }
   
-  console.log("SUPABASE DATA:", data);
   return normalizeTransaction(data);
 };
 
@@ -157,8 +165,6 @@ export const fetchAssets = async (userId) => {
 };
 
 export const createAsset = async (userId, payload) => {
-  console.log("SAVE CLICKED (Asset)");
-  
   let finalUserId = userId;
   if (!finalUserId) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -174,26 +180,17 @@ export const createAsset = async (userId, payload) => {
     note: payload.note || payload.notes || ""
   };
   
-  console.log("USER:", finalUserId);
-  console.log("PAYLOAD:", dbPayload);
-
   const { data, error } = await supabase
     .from('assets')
     .insert([dbPayload])
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase insert error (Asset):", error);
-    throw error;
-  }
-  
-  console.log("SUPABASE DATA:", data);
+  if (error) throw error;
   return normalizeAsset(data);
 };
 
 export const updateAsset = async (id, payload) => {
-  console.log("Updating asset:", id, "payload:", payload);
   const dbPayload = {
     name: payload.name,
     category: payload.category,
@@ -209,44 +206,30 @@ export const updateAsset = async (id, payload) => {
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase updateAsset error:", error);
-    throw error;
-  }
+  if (error) throw error;
   return normalizeAsset(data);
 };
 
 export const deleteAsset = async (id) => {
-  console.log("Deleting asset:", id);
   const { error } = await supabase
     .from('assets')
     .delete()
     .eq('id', id);
-  
-  if (error) {
-    console.error("Supabase deleteAsset error:", error);
-    throw error;
-  }
+  if (error) throw error;
 };
 
 export const fetchDebts = async (userId) => {
-  console.log("Fetching liabilities for user:", userId);
   const { data, error } = await supabase
     .from('debts')
     .select('*')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false });
   
-  if (error) {
-    console.error("Supabase fetchDebts error:", error);
-    throw error;
-  }
+  if (error) throw error;
   return (data || []).map(normalizeDebt);
 };
 
 export const createDebt = async (userId, payload) => {
-  console.log("SAVE CLICKED (Debt)");
-  
   let finalUserId = userId;
   if (!finalUserId) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -263,26 +246,17 @@ export const createDebt = async (userId, payload) => {
     due_date: payload.dueDate || payload.due_date || null
   };
   
-  console.log("USER:", finalUserId);
-  console.log("PAYLOAD:", dbPayload);
-
   const { data, error } = await supabase
     .from('debts')
     .insert([dbPayload])
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase insert error (Debt):", error);
-    throw error;
-  }
-  
-  console.log("SUPABASE DATA:", data);
+  if (error) throw error;
   return normalizeDebt(data);
 };
 
 export const updateDebt = async (id, payload) => {
-  console.log("Updating liability:", id, "payload:", payload);
   const dbPayload = {
     name: payload.name,
     category: payload.category,
@@ -299,24 +273,16 @@ export const updateDebt = async (id, payload) => {
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase updateDebt error:", error);
-    throw error;
-  }
+  if (error) throw error;
   return normalizeDebt(data);
 };
 
 export const deleteDebt = async (id) => {
-  console.log("Deleting liability:", id);
   const { error } = await supabase
     .from('debts')
     .delete()
     .eq('id', id);
-  
-  if (error) {
-    console.error("Supabase deleteDebt error:", error);
-    throw error;
-  }
+  if (error) throw error;
 };
 
 export const fetchBudgets = async (userId) => {
@@ -330,8 +296,6 @@ export const fetchBudgets = async (userId) => {
 };
 
 export const createBudget = async (userId, payload) => {
-  console.log("SAVE CLICKED (Budget)");
-  
   let finalUserId = userId;
   if (!finalUserId) {
     const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -346,26 +310,17 @@ export const createBudget = async (userId, payload) => {
     month: payload.month
   };
   
-  console.log("USER:", finalUserId);
-  console.log("PAYLOAD:", dbPayload);
-
   const { data, error } = await supabase
     .from('budgets')
     .insert([dbPayload])
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase insert error (Budget):", error);
-    throw error;
-  }
-  
-  console.log("SUPABASE DATA:", data);
+  if (error) throw error;
   return normalizeBudget(data);
 };
 
 export const updateBudget = async (id, payload) => {
-  console.log("Updating budget:", id, "payload:", payload);
   const dbPayload = {
     category: payload.category,
     limit_amount: payload.limit || payload.limitAmount || 0,
@@ -380,33 +335,109 @@ export const updateBudget = async (id, payload) => {
     .select()
     .single();
   
-  if (error) {
-    console.error("Supabase updateBudget error:", error);
-    throw error;
-  }
+  if (error) throw error;
   return normalizeBudget(data);
 };
 
 export const deleteBudget = async (id) => {
-  console.log("Deleting budget:", id);
   const { error } = await supabase
     .from('budgets')
     .delete()
     .eq('id', id);
+  if (error) throw error;
+};
+
+// --- Receivables ---
+
+export const fetchReceivables = async (userId) => {
+  const { data, error } = await supabase
+    .from('receivables')
+    .select('*')
+    .eq('user_id', userId)
+    .order('debt_date', { ascending: false });
   
-  if (error) {
-    console.error("Supabase deleteBudget error:", error);
-    throw error;
+  if (error) throw error;
+  return (data || []).map(normalizeReceivable);
+};
+
+export const createReceivable = async (userId, payload) => {
+  let finalUserId = userId;
+  if (!finalUserId) {
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) throw new Error("Please sign in first before saving data.");
+    finalUserId = user.id;
   }
+
+  const dbPayload = {
+    user_id: finalUserId,
+    debtor_name: payload.debtorName,
+    amount: payload.amount,
+    paid_amount: payload.paidAmount || 0,
+    debt_date: payload.debtDate || new Date().toISOString().slice(0, 10),
+    due_date: payload.dueDate || null,
+    notes: payload.notes || ""
+  };
+  
+  const { data, error } = await supabase
+    .from('receivables')
+    .insert([dbPayload])
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return normalizeReceivable(data);
+};
+
+export const updateReceivable = async (id, payload) => {
+  const dbPayload = {
+    debtor_name: payload.debtorName,
+    amount: payload.amount,
+    paid_amount: payload.paidAmount,
+    debt_date: payload.debtDate,
+    due_date: payload.dueDate,
+    notes: payload.notes,
+    updated_at: new Date().toISOString()
+  };
+
+  const { data, error } = await supabase
+    .from('receivables')
+    .update(dbPayload)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return normalizeReceivable(data);
+};
+
+export const deleteReceivable = async (id) => {
+  const { error } = await supabase
+    .from('receivables')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+};
+
+export const markReceivablePayment = async (id, currentPaid, paymentAmount) => {
+  const newPaid = Number(currentPaid) + Number(paymentAmount);
+  
+  const { data, error } = await supabase
+    .from('receivables')
+    .update({ 
+      paid_amount: newPaid,
+      updated_at: new Date().toISOString()
+    })
+    .eq('id', id)
+    .select()
+    .single();
+    
+  if (error) throw error;
+  return normalizeReceivable(data);
 };
 
 export const fetchProfile = async () => {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    console.error("No Supabase user:", userError);
-    return null;
-  }
+  if (userError || !user) return null;
 
   const { data, error } = await supabase
     .from("profiles")
@@ -414,10 +445,7 @@ export const fetchProfile = async () => {
     .eq("user_id", user.id)
     .maybeSingle();
 
-  if (error) {
-    console.error("Failed to fetch profile:", error);
-    throw error;
-  }
+  if (error) throw error;
 
   if (!data) {
     const { data: created, error: createError } = await supabase
@@ -432,11 +460,7 @@ export const fetchProfile = async () => {
       .select()
       .single();
 
-    if (createError) {
-      console.error("Failed to create profile:", createError);
-      throw createError;
-    }
-
+    if (createError) throw createError;
     return created;
   }
 
@@ -445,10 +469,7 @@ export const fetchProfile = async () => {
 
 export const updateProfile = async (payload) => {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
-
-  if (userError || !user) {
-    throw new Error("Please sign in before updating profile.");
-  }
+  if (userError || !user) throw new Error("Please sign in before updating profile.");
 
   const dbPayload = {
     user_id: user.id,
@@ -459,22 +480,13 @@ export const updateProfile = async (payload) => {
     updated_at: new Date().toISOString()
   };
 
-  console.log("Profile payload:", dbPayload);
-
   const { data, error } = await supabase
     .from("profiles")
-    .upsert([dbPayload], {
-      onConflict: "user_id"
-    })
+    .upsert([dbPayload], { onConflict: "user_id" })
     .select()
     .single();
 
-  if (error) {
-    console.error("Failed to save profile:", error);
-    throw error;
-  }
-
-  console.log("Profile save result:", data);
+  if (error) throw error;
   return normalizeProfile(data, user);
 };
 
@@ -487,15 +499,9 @@ export const uploadAvatar = async (file) => {
 
   const { error: uploadError } = await supabase.storage
     .from("avatars")
-    .upload(filePath, file, {
-      cacheControl: "3600",
-      upsert: true
-    });
+    .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
-  if (uploadError) {
-    console.error("Avatar upload error:", uploadError);
-    throw uploadError;
-  }
+  if (uploadError) throw uploadError;
 
   const { data: publicUrlData } = supabase.storage
     .from("avatars")

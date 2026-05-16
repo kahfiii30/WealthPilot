@@ -5,6 +5,7 @@ export const translations = {
     budget: "Budget",
     assetsDebt: "Assets & Debt",
     insight: "Insight",
+    receivables: "Receivables",
     settings: "Settings",
     logout: "Logout",
     totalNetWorth: "Total Net Worth",

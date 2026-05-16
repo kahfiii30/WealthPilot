@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, t }) {
+function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t }) {
   const navItems = [
     { id: 'dashboard', label: t('dashboard'), icon: 'dashboard' },
     { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },

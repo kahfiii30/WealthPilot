@@ -30,6 +30,7 @@ function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
   const [activePage, setActivePage] = useState('dashboard');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Core Data States
@@ -338,9 +339,9 @@ function App() {
   return (
     <div className="relative min-h-screen text-slate-100 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(74,222,128,0.08),transparent_26%),linear-gradient(135deg,#020617_0%,#07111f_45%,#0b1628_100%)]">
       <div className="hidden md:block">
-        <Sidebar activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} t={t} />
+        <Sidebar activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} t={t} onUpgrade={() => setIsProModalOpen(true)} />
       </div>
-      <Header onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} />
+      <Header activePage={activePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} onUpgrade={() => setIsProModalOpen(true)} />
 
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative">
         <AnimatePresence mode="wait">
@@ -353,7 +354,7 @@ function App() {
           )}
           {activePage === 'assets' && (
             <AnimatedPage key="assets">
-              <AssetsDebt assets={assets} debts={debts} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} />
+              <AssetsDebt assets={assets} debts={debts} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} />
             </AnimatedPage>
           )}
           {activePage === 'receivables' && (
@@ -363,7 +364,7 @@ function App() {
           )}
           {activePage === 'insight' && (
             <AnimatedPage key="insight">
-              <Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} onNavigate={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
+              <Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} receivables={receivables} onNavigate={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
             </AnimatedPage>
           )}
           {activePage === 'settings' && (
@@ -376,6 +377,55 @@ function App() {
       
       <MobileNav activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} />
       <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} t={t} fm={fm} currency={preferences.currency} />
+      <ProModal isOpen={isProModalOpen} onClose={() => setIsProModalOpen(false)} />
+    </div>
+  );
+}
+
+function ProModal({ isOpen, onClose }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="absolute inset-0" onClick={onClose}></div>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative z-10 w-full max-w-md bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl overflow-hidden"
+      >
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl -mr-16 -mt-16"></div>
+        
+        <div className="text-center mb-8">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-500/20">
+            <span className="material-symbols-outlined text-slate-950 font-bold text-3xl">workspace_premium</span>
+          </div>
+          <h2 className="text-3xl font-black text-slate-100 tracking-tight">WealthPilot Pro</h2>
+          <p className="text-slate-400 mt-2 text-sm">Unlock the full power of your financial intelligence.</p>
+        </div>
+
+        <div className="space-y-4 mb-8">
+          {[
+            { icon: 'auto_awesome', text: 'AI Financial Insights' },
+            { icon: 'file_export', text: 'Monthly Report Export' },
+            { icon: 'payments', text: 'Advanced Receivables Tracking' },
+            { icon: 'notifications_active', text: 'Debt Due Date Reminders' },
+            { icon: 'description', text: 'CSV/PDF Data Export' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 bg-slate-800/40 p-3 rounded-xl border border-slate-700/30">
+              <span className="material-symbols-outlined text-emerald-400 text-sm">{item.icon}</span>
+              <span className="text-sm font-bold text-slate-200">{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <button className="w-full py-4 bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all">
+            Coming Soon
+          </button>
+          <button onClick={onClose} className="w-full py-4 text-slate-400 font-bold hover:text-slate-200 transition-colors">
+            Close
+          </button>
+        </div>
+      </motion.div>
     </div>
   );
 }

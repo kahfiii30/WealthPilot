@@ -5,6 +5,7 @@ import { formatDate } from '../utils/dateUtils';
 function AssetsDebt({ 
   assets = [], 
   debts = [], 
+  transactions = [],
   onAddAsset, 
   onUpdateAsset, 
   onDeleteAsset, 
@@ -38,7 +39,14 @@ function AssetsDebt({
 
   const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
   const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
-  const netWorth = totalAssets - totalDebts;
+  
+  const cashBalance = transactions.reduce((acc, t_item) => {
+    if (t_item.type === 'income') return acc + Number(t_item.amount || 0);
+    if (t_item.type === 'expense') return acc - Number(t_item.amount || 0);
+    return acc;
+  }, 0);
+
+  const netWorth = cashBalance + totalAssets - totalDebts;
 
   const assetCategories = ['Cash', 'Bank', 'E-Wallet', 'Crypto', 'Stocks', 'Business Inventory', 'Receivables', 'Others'];
   const debtCategories = ['Paylater', 'Installment', 'Loan', 'Credit Card', 'Personal Debt', 'Others'];
@@ -93,32 +101,33 @@ function AssetsDebt({
       variants={container}
       initial="hidden"
       animate="show"
-      className="max-w-[1400px] mx-auto p-8"
+      className="max-w-[1400px] mx-auto p-4 md:p-8"
     >
       {/* Header / Summary Section */}
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-        <div className="lg:col-span-2 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between overflow-hidden relative group shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-400/5 rounded-full blur-[100px] -mr-32 -mt-32"></div>
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+        <div className="lg:col-span-2 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 flex flex-col justify-between overflow-hidden relative group shadow-2xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/5 rounded-full blur-[120px] -mr-40 -mt-40 group-hover:bg-emerald-400/10 transition-colors duration-500"></div>
           <div className="relative z-10">
-            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">{t('totalNetWorth')} (Portfolio)</h2>
-            <div className="flex items-end gap-3 mb-8">
-              <span className={`text-6xl font-black tracking-tighter ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
+            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mb-6">Total Net Worth</h2>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10">
+              <span className={`text-6xl md:text-7xl font-black tracking-tighter leading-none ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
                 {fm(netWorth)}
               </span>
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Liquid + Portfolio</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mt-4 relative z-10">
-            <div className="p-4 bg-emerald-400/10 rounded-2xl border border-emerald-400/20">
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/70 mb-2">{t('assets')}</p>
-              <p className="text-xl font-black text-emerald-400 tracking-tight">{fm(totalAssets)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 relative z-10">
+            <div className="p-5 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md">
+              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/70 mb-2">Cash Balance</p>
+              <p className="text-xl font-black text-emerald-400 tracking-tight">{fm(cashBalance)}</p>
             </div>
-            <div className="p-4 bg-red-400/10 rounded-2xl border border-red-500/20">
-              <p className="text-[10px] font-black uppercase tracking-widest text-red-300/70 mb-2">{t('debts')}</p>
+            <div className="p-5 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md">
+              <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/70 mb-2">Portfolio Assets</p>
+              <p className="text-xl font-black text-blue-400 tracking-tight">{fm(totalAssets)}</p>
+            </div>
+            <div className="p-5 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md">
+              <p className="text-[10px] font-black uppercase tracking-widest text-red-300/70 mb-2">Total Liabilities</p>
               <p className="text-xl font-black text-red-300 tracking-tight">{fm(totalDebts)}</p>
-            </div>
-            <div className="p-4 bg-slate-800/40 rounded-2xl border border-slate-700/30">
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">Debt-to-Asset</p>
-              <p className="text-xl font-black text-slate-100 tracking-tight">{totalAssets > 0 ? ((totalDebts / totalAssets) * 100).toFixed(1) : 0}%</p>
             </div>
           </div>
         </div>

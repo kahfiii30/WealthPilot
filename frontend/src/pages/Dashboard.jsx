@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
@@ -34,7 +35,12 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     return isPaidThisMonth ? acc + r.paidAmount : acc;
   }, 0);
 
-  const netWorth = totalAssets + (filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0) - filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0)) - totalDebts;
+  const allIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+  const allExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+  const cashBalance = allIncome - allExpense;
+  const netWorth = cashBalance + totalAssets - totalDebts;
+
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   // 3. Monthly History (from ALL transactions)
   const monthlySummary = transactions.reduce((acc, transaction) => {
@@ -95,45 +101,67 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           </div>
         </div>
 
-        <div className="flex flex-col gap-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Analysis Period</label>
-          <input 
-            type="month" 
-            value={selectedMonth}
-            onChange={(e) => setSelectedMonth(e.target.value)}
-            className="bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2.5 text-slate-100 font-bold outline-none focus:border-emerald-400/50 transition-colors [color-scheme:dark]"
-          />
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsReportOpen(true)}
+            className="h-11 px-6 bg-slate-800 border border-slate-700/50 rounded-xl text-slate-100 font-bold text-sm hover:bg-slate-700 transition-all flex items-center gap-2"
+          >
+            <span className="material-symbols-outlined text-emerald-400 text-[20px]">analytics</span>
+            Report
+          </button>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Period</label>
+            <input 
+              type="month" 
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+              className="bg-slate-900/50 border border-slate-700/50 rounded-xl px-4 py-2 text-slate-100 font-bold outline-none focus:border-emerald-400/50 transition-colors [color-scheme:dark] h-11"
+            />
+          </div>
         </div>
       </motion.section>
 
       {/* Primary Metrics */}
       <div className="grid grid-cols-12 gap-8 mb-8">
         {/* Total Net Worth Card */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
-          <div>
-            <div className="flex justify-between items-start mb-4">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
+          <div className="flex justify-between items-start mb-6">
+            <div>
               <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
-              <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20 transition-colors duration-200">
-                <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
-              </div>
+              <p className="text-5xl font-black text-slate-100 tracking-tighter mt-1">{fm(netWorth)}</p>
             </div>
-            <p className="text-5xl font-black text-slate-100 tracking-tighter line-clamp-1">{fm(netWorth)}</p>
-            <div className="flex items-center gap-3 mt-6 flex-wrap">
-              <span className={`flex items-center gap-1.5 font-bold text-sm px-3 py-1.5 rounded-xl border ${savings >= 0 ? 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20' : 'text-red-300 bg-red-500/10 border-red-500/20'}`}>
-                <span className="material-symbols-outlined text-lg font-bold">{savings >= 0 ? 'trending_up' : 'trending_down'}</span>
-                {savings >= 0 ? '+' : ''}{fm(savings)}
-              </span>
-              <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">this cycle</span>
+            <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20">
+              <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
             </div>
           </div>
-          <div className="mt-10 grid grid-cols-2 gap-8 border-t border-slate-700/30 pt-8">
+
+          <div className="space-y-4 mb-8">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-400 font-medium">Cash Balance</span>
+              <span className="text-slate-200 font-black">{fm(cashBalance)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-slate-400 font-medium">Assets</span>
+              <span className="text-emerald-400 font-black">+ {fm(totalAssets)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm pb-4 border-b border-slate-700/30">
+              <span className="text-slate-400 font-medium">Debts</span>
+              <span className="text-red-300 font-black">- {fm(totalDebts)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Formula</span>
+              <span className="text-[10px] font-bold text-slate-600">Cash + Assets - Debts</span>
+            </div>
+          </div>
+
+          <div className="mt-auto grid grid-cols-2 gap-4 border-t border-slate-700/30 pt-6">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t('savingsRate')}</p>
-              <p className="text-3xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">{t('savingsRate')}</p>
+              <p className="text-2xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2">{t('savings')}</p>
-              <p className={`text-3xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Monthly {t('savings')}</p>
+              <p className={`text-2xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
             </div>
           </div>
         </motion.div>
@@ -272,7 +300,86 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           )}
         </div>
       </motion.section>
+      <ReportModal 
+        isOpen={isReportOpen} 
+        onClose={() => setIsReportOpen(false)} 
+        data={{
+          income: totalIncome,
+          expense: totalExpense,
+          cashflow: savings,
+          cashBalance,
+          assets: totalAssets,
+          debts: totalDebts,
+          receivables: outstandingReceivables,
+          savingsRate
+        }}
+        fm={fm}
+        month={selectedMonth}
+      />
     </motion.div>
+  );
+}
+
+function ReportModal({ isOpen, onClose, data, fm, month }) {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="absolute inset-0" onClick={onClose}></div>
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative z-10 w-full max-w-2xl bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
+      >
+        <div className="flex justify-between items-center mb-8 border-b border-slate-700/30 pb-6">
+          <div>
+            <h2 className="text-3xl font-black text-slate-100 tracking-tight">Monthly Report</h2>
+            <p className="text-emerald-400 font-bold uppercase tracking-widest text-[10px] mt-1">{month}</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-slate-400 hover:text-slate-100 transition-colors">
+            <span className="material-symbols-outlined font-bold">close</span>
+          </button>
+        </div>
+
+        <div className="grid grid-cols-2 gap-8 mb-10">
+          <div className="space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 border-l-2 border-emerald-400 pl-3">Cashflow Analysis</h4>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center"><span className="text-slate-400 text-sm">Total Income</span><span className="text-emerald-400 font-black">{fm(data.income)}</span></div>
+              <div className="flex justify-between items-center"><span className="text-slate-400 text-sm">Total Expenses</span><span className="text-red-300 font-black">{fm(data.expense)}</span></div>
+              <div className="flex justify-between items-center pt-2 border-t border-slate-700/30"><span className="text-slate-100 font-bold">Net Cashflow</span><span className={`font-black ${data.cashflow >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fm(data.cashflow)}</span></div>
+              <div className="flex justify-between items-center"><span className="text-slate-100 font-bold">Savings Rate</span><span className="text-slate-100 font-black">{data.savingsRate}%</span></div>
+            </div>
+          </div>
+          <div className="space-y-6">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 border-l-2 border-sky-400 pl-3">Asset & Debt Summary</h4>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center"><span className="text-slate-400 text-sm">Cash Balance</span><span className="text-slate-200 font-black">{fm(data.cashBalance)}</span></div>
+              <div className="flex justify-between items-center"><span className="text-slate-400 text-sm">Total Assets</span><span className="text-slate-200 font-black">{fm(data.assets)}</span></div>
+              <div className="flex justify-between items-center"><span className="text-slate-400 text-sm">Total Debts</span><span className="text-red-300 font-black">{fm(data.debts)}</span></div>
+              <div className="flex justify-between items-center pt-2 border-t border-slate-700/30"><span className="text-slate-100 font-bold">Outstanding Piutang</span><span className="text-amber-400 font-black">{fm(data.receivables)}</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-800/40 border border-slate-700/30 rounded-2xl p-6 mb-8">
+           <div className="flex items-center gap-3 mb-4">
+             <span className="material-symbols-outlined text-sky-400">info</span>
+             <h5 className="text-xs font-black uppercase tracking-widest text-slate-300">Financial Risk Notes</h5>
+           </div>
+           <div className="space-y-3">
+             {data.debts > data.assets && <p className="text-xs text-red-300 font-medium">⚠️ Critical: Your total debts exceed your assets. Focus on debt reduction.</p>}
+             {data.cashflow < 0 && <p className="text-xs text-amber-300 font-medium">⚠️ Warning: Negative cashflow this month. Review your expenses.</p>}
+             {data.savingsRate < 20 && data.cashflow > 0 && <p className="text-xs text-blue-300 font-medium">💡 Tip: Your savings rate is below 20%. Try to optimize smaller expenses.</p>}
+             {data.cashflow > 0 && data.savingsRate >= 20 && <p className="text-xs text-emerald-300 font-medium">✅ Excellent: Your savings rate is healthy. Consider investing the surplus.</p>}
+           </div>
+        </div>
+
+        <button className="w-full py-4 bg-slate-800 text-slate-100 font-bold rounded-xl border border-slate-700/50 hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
+          <span className="material-symbols-outlined">download</span>
+          Export PDF (Pro)
+        </button>
+      </motion.div>
+    </div>
   );
 }
 

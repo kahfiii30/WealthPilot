@@ -83,53 +83,63 @@ function Receivables({
       animate="show"
       className="max-w-[1400px] mx-auto p-4 md:p-8"
     >
+      {/* Header section */}
+      <motion.div variants={item} className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h2 className="text-4xl font-black text-slate-100 tracking-tighter">Receivables</h2>
+          <p className="text-slate-400 font-bold mt-1">Track money you lent and repayment progress.</p>
+        </div>
+        <button 
+          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
+          className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 px-6 h-12 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all"
+        >
+          <span className="material-symbols-outlined font-black">add</span>
+          Add Receivable
+        </button>
+      </motion.div>
+
       {/* Summary Cards */}
-      <motion.div variants={item} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard title="Total Active" value={fm(totalReceivablesAmount)} icon="payments" color="text-emerald-400" />
+      <motion.div variants={item} className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <StatCard title="Active" value={fm(totalReceivablesAmount)} icon="payments" color="text-emerald-400" />
         <StatCard title="Total Paid" value={fm(totalPaidAmount)} icon="check_circle" color="text-blue-400" />
-        <StatCard title="Total Remaining" value={fm(totalRemainingAmount)} icon="pending" color="text-amber-400" />
-        <StatCard title="Active Debtors" value={activeDebtorsCount} icon="group" color="text-purple-400" />
+        <StatCard title="Remaining" value={fm(totalRemainingAmount)} icon="pending" color="text-amber-400" />
+        <StatCard title="Debtors" value={activeDebtorsCount} icon="group" color="text-purple-400" />
       </motion.div>
 
       {/* Toolbar */}
-      <motion.div variants={item} className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between">
-        <div className="flex flex-wrap gap-3 w-full md:w-auto">
-          <div className="relative flex-1 md:flex-none md:w-64">
+      <motion.div variants={item} className="flex flex-col md:flex-row gap-4 mb-6 items-center justify-between bg-slate-900/40 p-2 rounded-2xl border border-slate-700/30">
+        <div className="flex flex-wrap gap-2 w-full">
+          <div className="relative flex-1 md:min-w-[300px]">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">search</span>
             <input 
               type="text" 
-              placeholder="Search by name..." 
-              className="w-full pl-10 pr-4 h-11 bg-slate-900/50 border border-slate-700/30 rounded-xl text-sm focus:border-emerald-400/50 outline-none transition-colors"
+              placeholder="Search debtor name..." 
+              className="w-full pl-10 pr-4 h-11 bg-slate-950/50 border border-slate-700/30 rounded-xl text-sm focus:border-emerald-400/50 outline-none transition-colors font-bold"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select 
-            className="h-11 px-4 bg-slate-900/50 border border-slate-700/30 rounded-xl text-sm focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[120px]"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="all">All Status</option>
-            <option value="unpaid">Unpaid</option>
-            <option value="partial">Partial</option>
-            <option value="paid">Paid</option>
-          </select>
-          <select 
-            className="h-11 px-4 bg-slate-900/50 border border-slate-700/30 rounded-xl text-sm focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[120px]"
-            value={monthFilter}
-            onChange={(e) => setMonthFilter(e.target.value)}
-          >
-            <option value="all">All Months</option>
-            {uniqueMonths.map(m => <option key={m} value={m}>{m}</option>)}
-          </select>
+          <div className="flex gap-2">
+            <select 
+              className="h-11 px-4 bg-slate-950/50 border border-slate-700/30 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[140px]"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">Status: All</option>
+              <option value="unpaid">Unpaid</option>
+              <option value="partial">Partial</option>
+              <option value="paid">Paid</option>
+            </select>
+            <select 
+              className="h-11 px-4 bg-slate-950/50 border border-slate-700/30 rounded-xl text-xs font-black uppercase tracking-widest text-slate-400 focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[140px]"
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+            >
+              <option value="all">Month: All</option>
+              {uniqueMonths.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+          </div>
         </div>
-        <button 
-          onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-          className="w-full md:w-auto bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 px-6 h-11 rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all active:scale-95"
-        >
-          <span className="material-symbols-outlined font-bold">add</span>
-          Add Receivable
-        </button>
       </motion.div>
 
       {/* Table */}
@@ -138,12 +148,12 @@ function Receivables({
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-slate-700/30 bg-slate-800/30">
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Debtor</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Date / Due</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Amount</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Remaining</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</th>
-                <th className="p-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Actions</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Debtor</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Date / Due</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Amount</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Remaining</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Status</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -154,27 +164,27 @@ function Receivables({
               ) : (
                 filteredReceivables.map((r) => (
                   <tr key={r.id} className="border-b border-slate-700/20 hover:bg-slate-800/20 transition-colors group">
-                    <td className="p-4">
+                    <td className="px-6 py-3.5">
                       <div className="font-bold text-slate-100">{r.debtorName}</div>
-                      {r.notes && <div className="text-[10px] text-slate-500 truncate max-w-[150px]">{r.notes}</div>}
+                      {r.notes && <div className="text-[10px] text-slate-500 truncate max-w-[150px] font-medium">{r.notes}</div>}
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-3.5">
                       <div className="text-sm font-medium text-slate-300">{formatDate(r.debtDate)}</div>
-                      {r.dueDate && <div className="text-[10px] font-black text-red-400/70 uppercase">Due: {formatDate(r.dueDate)}</div>}
+                      {r.dueDate && <div className="text-[10px] font-black text-red-400/70 uppercase tracking-wider">Due: {formatDate(r.dueDate)}</div>}
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-3.5 text-right">
                       <div className="text-sm font-black text-slate-100">{fm(r.amount)}</div>
-                      <div className="text-[10px] text-emerald-400/70">Paid: {fm(r.paidAmount)}</div>
+                      <div className="text-[10px] text-emerald-400/70 font-bold">Paid: {fm(r.paidAmount)}</div>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-3.5 text-right">
                       <div className={`text-sm font-black ${r.remainingAmount > 0 ? 'text-amber-400' : 'text-slate-500'}`}>{fm(r.remainingAmount)}</div>
                     </td>
-                    <td className="p-4">
+                    <td className="px-6 py-3.5">
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border ${getStatusColor(r.status)}`}>
                         {r.status}
                       </span>
                     </td>
-                    <td className="p-4 text-right">
+                    <td className="px-6 py-3.5 text-right">
                       <div className="flex justify-end gap-2">
                         {r.status !== 'paid' && (
                           <button 

@@ -1,7 +1,16 @@
 import React from 'react';
 
-function Header({ onQuickAdd, userProfile, t }) {
+function Header({ activePage, onQuickAdd, userProfile, t, onUpgrade }) {
   const avatarSrc = userProfile?.avatarUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCZ_OXPH6lIRbjpy2ahFWztRDnU3cTGstfntAjv2D6IG_NKdZrO62xpA8NcAGNi0uNc9ZLNDHEiRnndTYwMkUq9OSq5o9VwFIpkelPTLkv5FJL3nM74iT8m2TZLfqHpDLKAVEfQta8DOCPbUphTDvrvBPQjAtK-3zRD7Gu7nIQ31brcMuTQUYCzfyzJSD3NpqsVKeAFbj34ER9D6vZxV0QrGTIDmHbpaE1E2eLcSQegXGD68q3xNxe41IYOnDGGGJZtG53q2gX8AQ";
+
+  const getSearchPlaceholder = () => {
+    switch(activePage) {
+      case 'transactions': return "Search transactions...";
+      case 'receivables': return "Search debtor name...";
+      case 'assets': return "Search assets or debts...";
+      default: return "Search financial data...";
+    }
+  };
 
   return (
     <header className="fixed top-0 right-0 left-0 md:left-[240px] z-40 bg-slate-950/35 backdrop-blur-xl border-b border-slate-700/30 h-[72px] flex justify-between items-center px-8">
@@ -15,7 +24,7 @@ function Header({ onQuickAdd, userProfile, t }) {
         <span className="material-symbols-outlined text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
         <input 
           className="bg-transparent border-none focus:ring-0 text-sm w-full text-slate-100 placeholder:text-slate-500 outline-none" 
-          placeholder="Search fleet data..." 
+          placeholder={getSearchPlaceholder()} 
           type="text" 
         />
       </div>
@@ -33,7 +42,10 @@ function Header({ onQuickAdd, userProfile, t }) {
             {t('addTransaction')}
           </button>
 
-          <button className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-2 font-bold text-sky-200 text-sm transition-all duration-200 hover:bg-sky-400/15 hover:border-sky-300/30 hover:scale-[0.98]">
+          <button 
+            onClick={onUpgrade}
+            className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-2 font-bold text-sky-200 text-sm transition-all duration-200 hover:bg-sky-400/15 hover:border-sky-300/30 hover:scale-[0.98]"
+          >
             Upgrade Pro
           </button>
         </div>

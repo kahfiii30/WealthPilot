@@ -7,9 +7,9 @@ export const isValidDate = (value) => {
 export const formatDate = (value, fallback = "-") => {
   if (!isValidDate(value)) return fallback;
 
-  return new Intl.DateTimeFormat("id-ID", {
-    day: "2-digit",
-    month: "short",
+  return new Intl.DateTimeFormat("en-US", {
+    day: "numeric",
+    month: "long",
     year: "numeric"
   }).format(new Date(value));
 };

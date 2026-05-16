@@ -150,37 +150,37 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
               </tr>
             ) : (
               filtered.map((t_data) => (
-                <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors duration-200 group">
-                  <td className="px-8 py-5 text-xs font-bold text-slate-500 tracking-tight">
+                <motion.tr key={t_data.id} variants={item} className="hover:bg-slate-800/30 transition-colors duration-200 group border-b border-slate-700/10 last:border-0">
+                  <td className="px-8 py-3.5 text-xs font-bold text-slate-500 tracking-tight">
                     {formatDate(t_data.date)}
                   </td>
-                  <td className="px-8 py-5 group-hover:text-emerald-400 transition-colors tracking-tight">
+                  <td className="px-8 py-3.5 group-hover:text-emerald-400 transition-colors tracking-tight">
                     <div>
                       <p className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
                         {t_data.title}
                       </p>
                       {t_data.notes && (
-                        <p className="text-xs text-slate-500 font-medium">
+                        <p className="text-[10px] text-slate-500 font-medium">
                           {t_data.notes}
                         </p>
                       )}
                     </div>
                   </td>
-                  <td className="px-8 py-5">
-                    <span className="px-3 py-1 bg-slate-800/50 text-slate-400 rounded-lg text-[9px] uppercase font-black tracking-widest border border-white/5">{t_data.category}</span>
+                  <td className="px-8 py-3.5">
+                    <span className="px-2.5 py-0.5 bg-slate-800/50 text-slate-400 rounded-lg text-[9px] uppercase font-black tracking-widest border border-white/5">{t_data.category}</span>
                   </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-500">
-                      <span className="material-symbols-outlined text-[18px]">wallet</span>
+                  <td className="px-8 py-3.5">
+                    <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                      <span className="material-symbols-outlined text-[16px]">wallet</span>
                       {t_data.method}
                     </div>
                   </td>
-                  <td className={`px-8 py-5 text-right font-black tracking-tighter text-lg transition-colors duration-200 ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
+                  <td className={`px-8 py-3.5 text-right font-black tracking-tighter text-lg transition-colors duration-200 ${t_data.type === 'income' ? 'text-emerald-400' : 'text-slate-100'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </td>
-                  <td className="px-8 py-5 text-center">
-                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-300 hover:bg-red-500/10 p-2 rounded-xl transition-colors duration-200">
-                      <span className="material-symbols-outlined font-bold">delete</span>
+                  <td className="px-8 py-3.5 text-center">
+                    <button onClick={() => onDelete && onDelete(t_data.id)} className="text-red-400/50 hover:text-red-400 hover:bg-red-400/10 p-2 rounded-xl transition-all duration-200">
+                      <span className="material-symbols-outlined font-bold text-[20px]">delete</span>
                     </button>
                   </td>
                 </motion.tr>
@@ -201,12 +201,12 @@ const EmptyState = () => (
     animate={{ opacity: 1, y: 0 }}
     className="flex flex-col items-center justify-center p-xl glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 min-h-[300px]"
   >
-    <div className="w-16 h-16 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner">
-      <span className="material-symbols-outlined text-primary text-[32px] opacity-50">receipt_long</span>
+    <div className="w-20 h-20 bg-slate-800/40 rounded-3xl flex items-center justify-center mb-6 border border-slate-700/50 shadow-inner group-hover:scale-110 transition-transform duration-500">
+      <span className="material-symbols-outlined text-emerald-400 text-4xl opacity-50">receipt_long</span>
     </div>
-    <h3 className="text-on-surface font-headline-lg text-lg mb-2">No transactions yet</h3>
-    <p className="text-on-surface-variant text-sm text-center max-w-[280px] mb-lg">
-      Keep track of your spending and income by adding your first transaction today.
+    <h3 className="text-slate-100 font-black text-xl mb-2 tracking-tight">No transactions recorded</h3>
+    <p className="text-slate-500 text-sm text-center max-w-[280px] mb-8 font-medium leading-relaxed">
+      Keep track of your spending and income by adding your first transaction today to unlock deep financial insights.
     </p>
   </motion.div>
 );

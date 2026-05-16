@@ -199,17 +199,17 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </div>
 
         <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Total Budget</p>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-emerald-400 transition-colors">Total Budget</p>
             <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalBudget)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Total Actual</p>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-sky-400 transition-colors">Actual Spending</p>
             <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalActual)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2">Over Budget</p>
-            <p className={`text-3xl font-black tracking-tighter ${overBudgetItemsCount > 0 ? 'text-red-300' : 'text-emerald-400'}`}>{overBudgetItemsCount} Category</p>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1 group">
+            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-red-400 transition-colors">Remaining Budget</p>
+            <p className={`text-3xl font-black tracking-tighter ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
           </div>
         </motion.div>
 
@@ -240,17 +240,27 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 
         <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
           <h4 className="text-2xl font-black text-slate-100 tracking-tight mb-10">Budget vs Actual</h4>
-          <div className="relative h-[220px] flex items-end justify-around gap-4 px-2">
-            {chartData.map((d, idx) => (
-              <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[50px]">
-                <div className="flex gap-2 w-full h-[150px] items-end justify-center">
-                  <div className="w-3.5 bg-slate-700/45 rounded-t-lg transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
-                  <div className={`w-3.5 rounded-t-lg shadow-[0_0_15px_rgba(74,222,128,0.2)] transition-all duration-500 ${d.actual > d.budgeted ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-emerald-400 to-emerald-600'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
+          {chartData.every(d => d.budgeted === 0 && d.actual === 0) ? (
+            <div className="flex flex-col items-center justify-center h-[220px] text-center px-4">
+              <span className="material-symbols-outlined text-slate-700 text-4xl mb-3">query_stats</span>
+              <p className="text-sm font-bold text-slate-400 tracking-tight leading-relaxed">
+                Not enough budget history yet.<br/>
+                <span className="text-emerald-400/70 text-[11px] uppercase tracking-widest">Track at least 2 months to unlock budget trend analysis.</span>
+              </p>
+            </div>
+          ) : (
+            <div className="relative h-[220px] flex items-end justify-around gap-4 px-2">
+              {chartData.map((d, idx) => (
+                <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[50px]">
+                  <div className="flex gap-2 w-full h-[150px] items-end justify-center">
+                    <div className="w-3.5 bg-slate-700/45 rounded-t-lg transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
+                    <div className={`w-3.5 rounded-t-lg shadow-[0_0_15px_rgba(74,222,128,0.2)] transition-all duration-500 ${d.actual > d.budgeted ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-emerald-400 to-emerald-600'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
+                  </div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{d.monthLabel}</p>
                 </div>
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{d.monthLabel}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </motion.div>
 
         {/* High Impact Spending */}

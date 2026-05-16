@@ -19,7 +19,7 @@ const formatRupiah = (value) => {
   }).format(number);
 };
 
-function Insight({ transactions = [], assets = [], debts = [], budgets = [], onNavigate, onQuickAdd, t, selectedMonth, setSelectedMonth }) {
+function Insight({ transactions = [], assets = [], debts = [], budgets = [], receivables = [], onNavigate, onQuickAdd, t, fm, selectedMonth, setSelectedMonth }) {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isInsightDismissed, setIsInsightDismissed] = useState(localStorage.getItem("smartInsightDismissed") === "true");
@@ -106,13 +106,21 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     else if (wealthScore >= 60) { status = "Good"; statusColor = "text-emerald-300"; }
     else if (wealthScore >= 40) { status = "Needs Attention"; statusColor = "text-yellow-400"; }
 
+    // Receivables Metrics
+    const outstandingReceivables = (receivables || []).reduce((acc, r) => acc + toNumber(r.remainingAmount), 0);
+    const paidReceivablesThisMonth = (receivables || []).reduce((acc, r) => {
+      const isPaidThisMonth = getMonthKey(r.updatedAt) === selectedMonth;
+      return isPaidThisMonth ? acc + toNumber(r.paidAmount) : acc;
+    }, 0);
+    const overdueCount = (receivables || []).filter(r => r.status !== 'paid' && r.dueDate && new Date(r.dueDate) < new Date()).length;
+
     return {
       totalAssets, totalLiabilities, netWorth, monthlyIncome, monthlyExpense, monthlySavings,
       saveRate, debtToAssetRatio, expenseRatio, monthlyBudget, budgetUsage,
       effectiveLiquid, emergencyFundMonths, biggestCategory, wealthScore, status, statusColor,
-      currentBudgets
+      currentBudgets, outstandingReceivables, paidReceivablesThisMonth, overdueCount
     };
-  }, [filteredTransactions, assets, debts, budgets, selectedMonth, transactions]);
+  }, [filteredTransactions, assets, debts, budgets, receivables, selectedMonth, transactions]);
 
   // 3. Smart Insight AI Logic (Rule-based)
   const smartInsight = useMemo(() => {
@@ -130,9 +138,13 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     if (transactions.length > 0 || assets.length > 0) {
       const monthName = new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long' });
       mainInsight = `Financial analysis for ${monthName} initialized.`;
+
+      if (monthlyExpense === 0 && monthlyIncome > 0) {
+        recommendations.push({ title: "Incomplete Expense Data", description: "Expense data is still incomplete. Add spending records for more accurate analysis.", priority: "medium", action: "Add Expense" });
+      }
       
       if (biggestCategory[0]) {
-        mainInsight = `Your biggest spending category in ${monthName} is ${biggestCategory[0]} at ${formatRupiah(biggestCategory[1])}.`;
+        mainInsight = `Your biggest spending category in ${monthName} is ${biggestCategory[0]} at ${fm(biggestCategory[1])}.`;
       }
 
       if (monthlyExpense > monthlyIncome && monthlyIncome > 0) {
@@ -143,11 +155,19 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
 
       if (totalLiabilities > totalAssets) {
         riskLevel = "Critical";
-        riskSummary = "Your liabilities are higher than your assets. Net worth is currently negative.";
+        riskSummary = "Your liabilities are higher than your assets. Critical debt exposure detected.";
         recommendations.push({ title: "Reduce debt exposure", description: "Focus on paying high-interest or short-term debts first before increasing discretionary spending.", priority: "high", action: "Pay Down" });
       } else if (debtToAssetRatio > 50) {
         riskLevel = riskLevel === "Critical" ? "Critical" : "High";
         riskSummary = "Debt-to-asset ratio is above 50%, which increases financial pressure.";
+      }
+
+      // Receivables Insights
+      if (analysis.outstandingReceivables > 0) {
+        opportunitySummary = `You have ${fm(analysis.outstandingReceivables)} in outstanding receivables. Collect these to improve liquidity.`;
+        if (analysis.overdueCount > 0) {
+          recommendations.push({ title: "Overdue Receivables", description: `You have ${analysis.overdueCount} receivables past their due date. Take action to recover these funds.`, priority: "medium", action: "Collect" });
+        }
       }
 
       if (saveRate >= 20) {
@@ -157,7 +177,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
       }
 
       if (budgetUsage > 100) {
-        riskSummary = `You have exceeded your monthly budget by ${formatRupiah(monthlyExpense - analysis.monthlyBudget)}.`;
+        riskSummary = `You have exceeded your monthly budget by ${fm(monthlyExpense - analysis.monthlyBudget)}.`;
         recommendations.push({ title: "Review over-budget categories", description: "Check which category exceeded the limit and reduce spending for the rest of the month.", priority: "high", action: "Optimize" });
       }
 
@@ -175,7 +195,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], onN
     }
 
     return { mainInsight, riskLevel, riskSummary, opportunitySummary, recommendations };
-  }, [analysis, transactions.length, assets.length]);
+  }, [analysis, transactions.length, assets.length, fm]);
 
   // 4. Strategic Tasks Logic
   const strategicTasks = useMemo(() => {

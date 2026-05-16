@@ -158,11 +158,18 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency }) {
                         <option value="Shopping" className="bg-slate-900">Shopping</option>
                         <option value="Entertainment" className="bg-slate-900">Entertainment</option>
                         <option value="Bills & Utilities" className="bg-slate-900">Bills & Utilities</option>
+                        <option value="Health" className="bg-slate-900">Health & Medical</option>
+                        <option value="Education" className="bg-slate-900">Education</option>
+                        <option value="Travel" className="bg-slate-900">Travel</option>
+                        <option value="Insurance" className="bg-slate-900">Insurance</option>
+                        <option value="Others" className="bg-slate-900">Others</option>
                       </>
                     ) : (
                       <>
                         <option value="Salary" className="bg-slate-900">Salary</option>
                         <option value="Business" className="bg-slate-900">Business</option>
+                        <option value="Bonus" className="bg-slate-900">Bonus</option>
+                        <option value="Freelance" className="bg-slate-900">Freelance</option>
                         <option value="Investment" className="bg-slate-900">Investment</option>
                         <option value="Gift" className="bg-slate-900">Gift</option>
                         <option value="Other Income" className="bg-slate-900">Other Income</option>

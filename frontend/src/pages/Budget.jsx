@@ -153,11 +153,11 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   const itemVariants = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } } };
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-8 max-w-[1400px] mx-auto overflow-x-hidden">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-6">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-8 2xl:p-12 max-w-[1600px] mx-auto overflow-x-hidden">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 2xl:mb-16 gap-6">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 ml-1">Strategy Center</p>
-          <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
+          <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 2xl:mb-4 ml-1">Strategy Center</p>
+          <h2 className="text-4xl 2xl:text-6xl font-black text-slate-100 tracking-tighter">
             {t('monthlyBudget')} {new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
         </div>
@@ -178,17 +178,17 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-8 mb-8">
-        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
+      <div className="grid grid-cols-12 gap-8 2xl:gap-12 mb-8 2xl:mb-12">
+        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
           <div className="relative z-10">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">{t('dailySafeToSpend')}</p>
-            <h3 className={`text-5xl font-black tracking-tighter mb-2 ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
-              {fm(safeToSpendPerDay)} <span className="text-lg font-bold text-slate-500">/ day</span>
+            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">{t('dailySafeToSpend')}</p>
+            <h3 className={`text-5xl 2xl:text-7xl font-black tracking-tighter mb-2 2xl:mb-4 ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
+              {fm(safeToSpendPerDay)} <span className="text-lg 2xl:text-2xl font-bold text-slate-500">/ day</span>
             </h3>
-            <p className="text-sm font-bold text-slate-500 tracking-tight">Remaining for the next {remainingDays} days.</p>
+            <p className="text-sm 2xl:text-base font-bold text-slate-500 tracking-tight">Remaining for the next {remainingDays} days.</p>
           </div>
-          <div className="mt-10 relative z-10">
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest mb-3">
+          <div className="mt-10 2xl:mt-16 relative z-10">
+            <div className="flex justify-between text-[10px] 2xl:text-xs font-black uppercase tracking-widest mb-3">
               <span className="text-slate-500">Monthly Utilization</span>
               <span className={consumedPercent > 100 ? 'text-red-300' : 'text-emerald-400'}>{consumedPercent.toFixed(1)}%</span>
             </div>
@@ -198,37 +198,37 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
           </div>
         </div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-emerald-400 transition-colors">Total Budget</p>
-            <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalBudget)}</p>
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 2xl:gap-12">
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
+            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-emerald-400 transition-colors">Total Budget</p>
+            <p className="text-3xl 2xl:text-5xl font-black text-slate-100 tracking-tighter">{fm(totalBudget)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-sky-400 transition-colors">Actual Spending</p>
-            <p className="text-3xl font-black text-slate-100 tracking-tighter">{fm(totalActual)}</p>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group">
+            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-sky-400 transition-colors">Actual Spending</p>
+            <p className="text-3xl 2xl:text-5xl font-black text-slate-100 tracking-tighter">{fm(totalActual)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1 group">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-2 group-hover:text-red-400 transition-colors">Remaining Budget</p>
-            <p className={`text-3xl font-black tracking-tighter ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1 group">
+            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-red-400 transition-colors">Remaining Budget</p>
+            <p className={`text-3xl 2xl:text-5xl font-black tracking-tighter ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
-          <div className="flex items-center justify-between mb-10">
-            <h4 className="text-2xl font-black text-slate-100 tracking-tight">{t('categoryBreakdown')}</h4>
-            <span onClick={() => setIsManageModalOpen(true)} className="text-[10px] font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 underline cursor-pointer transition-colors">{t('manageLimits')}</span>
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
+          <div className="flex items-center justify-between mb-10 2xl:mb-14">
+            <h4 className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tight">{t('categoryBreakdown')}</h4>
+            <span onClick={() => setIsManageModalOpen(true)} className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 underline cursor-pointer transition-colors">{t('manageLimits')}</span>
           </div>
-          <div className="space-y-8 max-h-[500px] overflow-y-auto pr-4 no-scrollbar">
+          <div className="space-y-8 2xl:space-y-12 max-h-[500px] 2xl:max-h-[700px] overflow-y-auto pr-4 no-scrollbar">
             {cStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : cStats.map((sObj, sIdx) => (
               <motion.div key={sObj.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (sIdx * 0.05) }} className="group">
-                <div className="flex justify-between items-end mb-3">
+                <div className="flex justify-between items-end mb-3 2xl:mb-5">
                   <div className="flex-1">
-                    <p className={`text-[10px] font-black uppercase tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-500'}`}>{sObj.category}</p>
-                    <p className={`text-xl font-black tracking-tight ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-100'}`}>
-                      {fm(sObj.actualSpent)} <span className="text-xs font-bold text-slate-500 tracking-tight">/ {fm(sObj.limit)}</span>
+                    <p className={`text-[10px] 2xl:text-xs font-black uppercase tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-500'}`}>{sObj.category}</p>
+                    <p className={`text-xl 2xl:text-3xl font-black tracking-tight ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-100'}`}>
+                      {fm(sObj.actualSpent)} <span className="text-xs 2xl:text-base font-bold text-slate-500 tracking-tight">/ {fm(sObj.limit)}</span>
                     </p>
                   </div>
-                  <p className={`text-sm font-black tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-emerald-400'}`}>{sObj.percentage.toFixed(0)}%</p>
+                  <p className={`text-sm 2xl:text-lg font-black tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-emerald-400'}`}>{sObj.percentage.toFixed(0)}%</p>
                 </div>
                 <div className="h-2.5 w-full bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
                   <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full bg-gradient-to-r ${sObj.percentage > 100 ? 'from-red-400 to-red-500' : 'from-emerald-400 to-sky-400'}`}></motion.div>
@@ -265,10 +265,10 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 
         {/* High Impact Spending */}
         <motion.div variants={itemVariants} className="col-span-12 rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-colors duration-200 hover:border-emerald-400/30">
-          <div className="p-8 border-b border-slate-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <h4 className="text-2xl font-black text-slate-100 tracking-tight">Recent High-Impact Spending</h4>
-            <div className="relative w-full md:w-64 group transition-all duration-300">
-              <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
+          <div className="p-8 2xl:p-12 border-b border-slate-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 2xl:gap-10">
+            <h4 className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tight">Recent High-Impact Spending</h4>
+            <div className="relative w-full md:w-64 2xl:w-80 group transition-all duration-300">
+              <span className="material-symbols-outlined absolute left-4 2xl:left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors 2xl:text-2xl">search</span>
               <input 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -288,10 +288,10 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
               <table className="w-full text-left border-collapse min-w-[600px] md:min-w-0">
                 <thead>
                   <tr className="bg-slate-950/35">
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('description')}</th>
-                    <th className="px-8 py-5 text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('category')}</th>
-                    <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">{t('amount')}</th>
-                    <th className="px-8 py-5 text-right text-[10px] font-black uppercase tracking-[0.2em] text-slate-500">Budget Impact</th>
+                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('description')}</th>
+                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('category')}</th>
+                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('amount')}</th>
+                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">Budget Impact</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/50">
@@ -320,24 +320,24 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                         transition={{ delay: 0.6 + (idx * 0.05) }}
                         className="hover:bg-slate-800/30 transition-colors duration-200 group"
                       >
-                        <td className="px-8 py-5">
-                          <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center text-emerald-400 transition-colors duration-200">
-                              <span className="material-symbols-outlined font-bold text-[20px]">payments</span>
+                        <td className="px-8 2xl:px-12 py-5 2xl:py-6">
+                          <div className="flex items-center gap-4 2xl:gap-6">
+                            <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center text-emerald-400 transition-colors duration-200">
+                              <span className="material-symbols-outlined font-bold text-[20px] 2xl:text-[24px]">payments</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-bold text-slate-100 truncate group-hover:text-emerald-400 transition-colors tracking-tight">{tItem.notes || tItem.category}</p>
-                              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(tItem.date)}</p>
+                              <p className="text-sm 2xl:text-lg font-bold text-slate-100 truncate group-hover:text-emerald-400 transition-colors tracking-tight">{tItem.notes || tItem.category}</p>
+                              <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(tItem.date)}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 py-5">
-                          <span className={`px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest inline-block border ${iLabel === 'Over Budget' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20'}`}>
+                        <td className="px-8 2xl:px-12 py-5 2xl:py-6">
+                          <span className={`px-3 py-1 2xl:px-4 2xl:py-1.5 rounded-lg text-[9px] 2xl:text-xs font-black uppercase tracking-widest inline-block border ${iLabel === 'Over Budget' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20'}`}>
                             {tItem.category}
                           </span>
                         </td>
-                        <td className="px-8 py-5 text-right font-black tracking-tighter text-lg text-slate-100 group-hover:text-emerald-400 transition-colors">{fm(tItem.amount)}</td>
-                        <td className={`px-8 py-5 text-right text-[10px] font-black uppercase tracking-widest ${iLabelColor}`}>{iLabel}</td>
+                        <td className="px-8 2xl:px-12 py-5 2xl:py-6 text-right font-black tracking-tighter text-lg 2xl:text-2xl text-slate-100 group-hover:text-emerald-400 transition-colors">{fm(tItem.amount)}</td>
+                        <td className={`px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-xs font-black uppercase tracking-widest ${iLabelColor}`}>{iLabel}</td>
                       </motion.tr>
                     );
                   })}

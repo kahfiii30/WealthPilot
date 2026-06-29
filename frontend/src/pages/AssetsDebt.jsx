@@ -101,47 +101,47 @@ function AssetsDebt({
       variants={container}
       initial="hidden"
       animate="show"
-      className="max-w-[1400px] mx-auto p-4 md:p-8"
+      className="max-w-[1600px] mx-auto p-4 md:p-8 2xl:p-12"
     >
       {/* Header / Summary Section */}
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
-        <div className="lg:col-span-2 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 flex flex-col justify-between overflow-hidden relative group shadow-2xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6 2xl:gap-10 mb-10 2xl:mb-16">
+        <div className="lg:col-span-2 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 2xl:p-14 flex flex-col justify-between overflow-hidden relative group shadow-2xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/5 rounded-full blur-[120px] -mr-40 -mt-40 group-hover:bg-emerald-400/10 transition-colors duration-500"></div>
           <div className="relative z-10">
-            <h2 className="text-[11px] font-black uppercase tracking-[0.4em] text-slate-500 mb-6">Total Net Worth</h2>
-            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10">
-              <span className={`text-6xl md:text-7xl font-black tracking-tighter leading-none ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
+            <h2 className="text-[11px] 2xl:text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-6 2xl:mb-8">Total Net Worth</h2>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 2xl:mb-14">
+              <span className={`text-6xl md:text-7xl 2xl:text-8xl font-black tracking-tighter leading-none ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
                 {fm(netWorth)}
               </span>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Liquid + Portfolio</p>
+              <p className="text-xs 2xl:text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 2xl:mb-3">Liquid + Portfolio</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-4 relative z-10">
-            <div className="p-5 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md">
-              <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400/70 mb-2">Cash Balance</p>
-              <p className="text-xl font-black text-emerald-400 tracking-tight">{fm(cashBalance)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 2xl:gap-6 mt-4 relative z-10">
+            <div className="p-5 2xl:p-7 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400/70 mb-2">Cash Balance</p>
+              <p className="text-xl 2xl:text-3xl font-black text-emerald-400 tracking-tight">{fm(cashBalance)}</p>
             </div>
-            <div className="p-5 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md">
-              <p className="text-[10px] font-black uppercase tracking-widest text-blue-400/70 mb-2">Portfolio Assets</p>
-              <p className="text-xl font-black text-blue-400 tracking-tight">{fm(totalAssets)}</p>
+            <div className="p-5 2xl:p-7 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-blue-400/70 mb-2">Portfolio Assets</p>
+              <p className="text-xl 2xl:text-3xl font-black text-blue-400 tracking-tight">{fm(totalAssets)}</p>
             </div>
-            <div className="p-5 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md">
-              <p className="text-[10px] font-black uppercase tracking-widest text-red-300/70 mb-2">Total Liabilities</p>
-              <p className="text-xl font-black text-red-300 tracking-tight">{fm(totalDebts)}</p>
+            <div className="p-5 2xl:p-7 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-red-300/70 mb-2">Total Liabilities</p>
+              <p className="text-xl 2xl:text-3xl font-black text-red-300 tracking-tight">{fm(totalDebts)}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col gap-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
+        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col gap-8 2xl:gap-12 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Asset Ratio</h3>
+            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">Asset Ratio</h3>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-black text-emerald-400 tracking-tight truncate mr-4">{fm(totalAssets)}</span>
-              <span className="text-[10px] font-black text-slate-400 tracking-widest shrink-0">
+              <span className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight truncate mr-4">{fm(totalAssets)}</span>
+              <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
-            <div className="w-full h-3 bg-slate-700/45 rounded-full mt-4 overflow-hidden border border-slate-700/20 shadow-inner">
+            <div className="w-full h-3 2xl:h-4 bg-slate-700/45 rounded-full mt-4 2xl:mt-6 overflow-hidden border border-slate-700/20 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalAssets / (totalAssets + totalDebts)) * 100 : 100}%` }}
@@ -151,14 +151,14 @@ function AssetsDebt({
             </div>
           </div>
           <div>
-            <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 mb-4">Debt Exposure</h3>
+            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">Debt Exposure</h3>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-black text-red-300 tracking-tight truncate mr-4">{fm(totalDebts)}</span>
-              <span className="text-[10px] font-black text-slate-400 tracking-widest shrink-0">
+              <span className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight truncate mr-4">{fm(totalDebts)}</span>
+              <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
-            <div className="w-full h-3 bg-slate-700/45 rounded-full mt-4 overflow-hidden border border-slate-700/20 shadow-inner">
+            <div className="w-full h-3 2xl:h-4 bg-slate-700/45 rounded-full mt-4 2xl:mt-6 overflow-hidden border border-slate-700/20 shadow-inner">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalDebts / (totalAssets + totalDebts)) * 100 : 0}%` }}
@@ -171,12 +171,12 @@ function AssetsDebt({
       </motion.div>
 
       {/* Bento Grid: Assets vs Liabilities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 2xl:gap-12">
         {/* Assets Section */}
-        <motion.section variants={item} className="space-y-6">
+        <motion.section variants={item} className="space-y-6 2xl:space-y-8">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-black text-emerald-400 tracking-tight flex items-center gap-3">
-              <span className="material-symbols-outlined font-bold">account_balance_wallet</span>
+            <h3 className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight flex items-center gap-3">
+              <span className="material-symbols-outlined font-bold 2xl:text-3xl">account_balance_wallet</span>
               Assets Portfolio
             </h3>
             <button 
@@ -202,28 +202,28 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: -10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 2xl:p-7 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className="w-11 h-11 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 transition-colors duration-200">
-                      <span className="material-symbols-outlined font-bold">{getAssetIcon(asset.category)}</span>
+                  <div className="flex items-center gap-5 2xl:gap-6">
+                    <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 transition-colors duration-200">
+                      <span className="material-symbols-outlined font-bold 2xl:text-[24px]">{getAssetIcon(asset.category)}</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{asset.name}</h4>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{asset.category} • {asset.note || 'No notes'}</p>
+                      <h4 className="font-bold 2xl:text-xl text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{asset.name}</h4>
+                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{asset.category} • {asset.note || 'No notes'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-6 2xl:gap-8">
                     <div className="text-right">
-                      <p className="text-lg font-black text-emerald-400 tracking-tighter">{fm(asset.amount)}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
+                      <p className="text-lg 2xl:text-2xl font-black text-emerald-400 tracking-tighter">{fm(asset.amount)}</p>
+                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditAsset(asset)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
+                      <button onClick={() => handleEditAsset(asset)} className="p-2 2xl:p-3 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
+                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 2xl:p-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">delete</span>
                       </button>
                     </div>
                   </div>
@@ -234,10 +234,10 @@ function AssetsDebt({
         </motion.section>
 
         {/* Debt Section */}
-        <motion.section variants={item} className="space-y-6">
+        <motion.section variants={item} className="space-y-6 2xl:space-y-8">
           <div className="flex items-center justify-between">
-            <h3 className="text-2xl font-black text-red-300 tracking-tight flex items-center gap-3">
-              <span className="material-symbols-outlined font-bold">credit_card_off</span>
+            <h3 className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight flex items-center gap-3">
+              <span className="material-symbols-outlined font-bold 2xl:text-3xl">credit_card_off</span>
               Total Liabilities
             </h3>
             <button 
@@ -263,28 +263,28 @@ function AssetsDebt({
                   initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg border-l-4 border-l-red-400"
+                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 2xl:p-7 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg border-l-4 border-l-red-400"
                 >
-                  <div className="flex items-center gap-5">
-                    <div className="w-11 h-11 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 transition-colors duration-200">
-                      <span className="material-symbols-outlined font-bold">{getDebtIcon(debt.category)}</span>
+                  <div className="flex items-center gap-5 2xl:gap-6">
+                    <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 transition-colors duration-200">
+                      <span className="material-symbols-outlined font-bold 2xl:text-[24px]">{getDebtIcon(debt.category)}</span>
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-100 group-hover:text-red-300 transition-colors tracking-tight">{debt.name}</h4>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
+                      <h4 className="font-bold 2xl:text-xl text-slate-100 group-hover:text-red-300 transition-colors tracking-tight">{debt.name}</h4>
+                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-6 2xl:gap-8">
                     <div className="text-right">
-                      <p className="text-lg font-black text-red-300 tracking-tighter">{fm(debt.amount)}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
+                      <p className="text-lg 2xl:text-2xl font-black text-red-300 tracking-tighter">{fm(debt.amount)}</p>
+                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditDebt(debt)} className="p-2 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px]">edit</span>
+                      <button onClick={() => handleEditDebt(debt)} className="p-2 2xl:p-3 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px]">delete</span>
+                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 2xl:p-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
+                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">delete</span>
                       </button>
                     </div>
                   </div>

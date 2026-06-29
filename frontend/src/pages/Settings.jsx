@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { uploadAvatar } from '../services/financeService';
+import toast from 'react-hot-toast';
+import { supabase } from '../lib/supabaseClient';
 
 function Settings({ 
   userProfile, 
@@ -20,8 +22,7 @@ function Settings({
   const [localPrefs, setLocalPrefs] = useState(preferences);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   
   const [form, setForm] = useState({
     firstName: "",
@@ -47,17 +48,15 @@ function Settings({
     }
   }
 
-  const showFeedback = (msg) => {
-    setFeedback(msg);
-    setTimeout(() => setFeedback(''), 3000);
-  };
+  const [passwordForm, setPasswordForm] = useState({
+    newPassword: "",
+    confirmPassword: ""
+  });
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
     try {
       setIsSaving(true);
-      setError(null);
-      setSuccess(null);
       
       const payload = {
         firstName: form.firstName,
@@ -67,10 +66,9 @@ function Settings({
       };
       
       await setUserProfile(payload);
-      setSuccess("Profile updated successfully.");
-      showFeedback(t('saveChanges') + ' success!');
+      toast.success(t('saveChanges') + ' success!');
     } catch (err) {
-      setError(err.message || "Failed to update profile.");
+      toast.error(err.message || "Failed to update profile.");
     } finally {
       setIsSaving(false);
     }
@@ -82,33 +80,29 @@ function Settings({
 
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
-      setError("Please upload PNG, JPG, or WEBP image.");
+      toast.error("Please upload PNG, JPG, or WEBP image.");
       return;
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      setError("Avatar image must be under 2MB.");
+      toast.error("Avatar image must be under 2MB.");
       return;
     }
 
     try {
       setIsUploadingAvatar(true);
-      setError(null);
-      setSuccess(null);
 
       const avatarUrl = await uploadAvatar(file);
       
-      // Update profile with new avatar URL
       await setUserProfile({
         ...userProfile,
         avatarUrl: avatarUrl
       });
 
-      setSuccess("Avatar updated successfully!");
-      showFeedback('Photo updated successfully!');
+      toast.success('Photo updated successfully!');
     } catch (err) {
       console.error("Failed to upload avatar:", err);
-      setError(err.message || "Failed to upload avatar.");
+      toast.error(err.message || "Failed to upload avatar.");
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -117,7 +111,7 @@ function Settings({
   const handlePrefSave = (e) => {
     e.preventDefault();
     setPreferences(localPrefs);
-    showFeedback(t('saveChanges') + ' success!');
+    toast.success(t('saveChanges') + ' success!');
   };
 
   const handleNotifSave = (e) => {
@@ -130,7 +124,34 @@ function Settings({
       goalProgress: formData.get('goalProgress') === 'on',
       largeExpenseAlert: formData.get('largeExpenseAlert') === 'on',
     });
-    showFeedback('Notification settings saved!');
+    toast.success('Notification settings saved!');
+  };
+
+  const handlePasswordUpdate = async (e) => {
+    e.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setIsUpdatingPassword(true);
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword
+      });
+      if (error) throw error;
+      
+      toast.success("Password updated successfully!");
+      setPasswordForm({ newPassword: "", confirmPassword: "" });
+    } catch (error) {
+      toast.error(error.message || "Failed to update password");
+    } finally {
+      setIsUpdatingPassword(false);
+    }
   };
 
   const tabs = [
@@ -206,19 +227,6 @@ function Settings({
                 <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl">
                   <h3 className="text-xl font-black text-slate-100 tracking-tight mb-8">Personal Information</h3>
                   
-                  {error && (
-                    <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[18px]">warning</span>
-                      {error}
-                    </div>
-                  )}
-
-                  {success && (
-                    <div className="mb-6 rounded-xl border border-emerald-400/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-400 flex items-center gap-3">
-                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                      {success}
-                    </div>
-                  )}
                   <form onSubmit={handleProfileSave}>
                     <div className="space-y-8">
                       <div className="flex flex-col sm:flex-row items-center gap-8 mb-10">
@@ -285,8 +293,7 @@ function Settings({
                         />
                       </div>
                     </div>
-                    <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
-                      <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
+                    <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-6">
                       <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs disabled:opacity-50">
                         {isSaving ? "Saving..." : "Commit Changes"}
                       </button>
@@ -341,8 +348,7 @@ function Settings({
                         </div>
                       </div>
                     </div>
-                    <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
-                      <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
+                    <div className="mt-12 pt-8 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-6">
                       <button className="w-full sm:w-auto px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs">
                         Update Preferences
                       </button>
@@ -377,8 +383,7 @@ function Settings({
                         </label>
                       ))}
                     </div>
-                    <div className="mt-12 pt-8 border-t border-slate-800 flex items-center justify-between">
-                      <span className="text-xs font-black uppercase tracking-widest text-emerald-400 drop-shadow-[0_0_8px_rgba(74,222,128,0.3)]">{feedback}</span>
+                    <div className="mt-12 pt-8 border-t border-slate-800 flex items-center justify-end">
                       <button className="px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs">
                         Commit Alerts
                       </button>
@@ -406,6 +411,39 @@ function Settings({
                         </button>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl">
+                    <h3 className="text-xl font-black text-slate-100 tracking-tight mb-8">Update Password</h3>
+                    <form onSubmit={handlePasswordUpdate}>
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">New Password</label>
+                          <input 
+                            required
+                            type="password" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold" 
+                            value={passwordForm.newPassword} 
+                            onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirm New Password</label>
+                          <input 
+                            required
+                            type="password" 
+                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold" 
+                            value={passwordForm.confirmPassword} 
+                            onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
+                          />
+                        </div>
+                        <div className="pt-4 flex justify-end">
+                          <button type="submit" disabled={isUpdatingPassword} className="px-10 py-3.5 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs disabled:opacity-50">
+                            {isUpdatingPassword ? "Updating..." : "Update Password"}
+                          </button>
+                        </div>
+                      </div>
+                    </form>
                   </div>
 
                   <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 shadow-xl backdrop-blur-xl">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import Sidebar from './components/Sidebar';
@@ -156,9 +157,11 @@ function App() {
       const { data: { user } } = await supabase.auth.getUser();
       const created = await createTransaction(user.id, t_data);
       setTransactions(prev => [created, ...prev]);
+      toast.success('Transaction added successfully!');
       return created;
     } catch (error) {
       console.error("Error adding transaction:", error);
+      toast.error(error.message || 'Failed to add transaction');
       throw error;
     }
   };
@@ -167,8 +170,10 @@ function App() {
     try {
       await deleteTransaction(id);
       setTransactions(prev => prev.filter(t => t.id !== id));
+      toast.success('Transaction deleted');
     } catch (error) {
       console.error("Error deleting transaction:", error);
+      toast.error('Failed to delete transaction');
     }
   };
 
@@ -338,6 +343,13 @@ function App() {
 
   return (
     <div className="relative min-h-screen text-slate-100 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(74,222,128,0.08),transparent_26%),linear-gradient(135deg,#020617_0%,#07111f_45%,#0b1628_100%)]">
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#0f172a',
+          color: '#f1f5f9',
+          border: '1px solid rgba(51, 65, 85, 0.5)',
+        }
+      }} />
       <div className="hidden md:block">
         <Sidebar activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} t={t} onUpgrade={() => setIsProModalOpen(true)} />
       </div>

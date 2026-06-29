@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
 import { getMonthKey } from '../services/financeService';
+import { exportToCSV } from '../utils/export';
 
 function Dashboard({ transactions, assets = [], debts = [], receivables = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
   const displayName = [userProfile?.firstName, userProfile?.lastName]
@@ -11,52 +12,64 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     .trim() || "Pilot";
 
   // 1. Filter transactions by selected month
-  const filteredTransactions = transactions.filter((transaction) => {
-    if (!transaction.date) return false;
-    const transactionMonth = getMonthKey(transaction.date);
-    return transactionMonth === selectedMonth;
-  });
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((transaction) => {
+      if (!transaction.date) return false;
+      const transactionMonth = getMonthKey(transaction.date);
+      return transactionMonth === selectedMonth;
+    });
+  }, [transactions, selectedMonth]);
 
   // 2. Metrics for selected month
-  const totalIncome = filteredTransactions.filter(t_data => t_data.type === 'income').reduce((acc, t_data) => acc + t_data.amount, 0);
-  const totalExpense = filteredTransactions.filter(t_data => t_data.type === 'expense').reduce((acc, t_data) => acc + t_data.amount, 0);
-  const savings = totalIncome - totalExpense;
-  const savingsRate = totalIncome > 0 ? ((savings / totalIncome) * 100).toFixed(1) : 0;
+  const { totalIncome, totalExpense, savings, savingsRate } = useMemo(() => {
+    const income = filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    const sav = income - expense;
+    const rate = income > 0 ? ((sav / income) * 100).toFixed(1) : 0;
+    return { totalIncome: income, totalExpense: expense, savings: sav, savingsRate: rate };
+  }, [filteredTransactions]);
   
-  const totalAssets = assets.reduce((acc, a) => acc + a.amount, 0);
-  const totalDebts = debts.reduce((acc, d) => acc + d.amount, 0);
+  const totalAssets = useMemo(() => assets.reduce((acc, a) => acc + a.amount, 0), [assets]);
+  const totalDebts = useMemo(() => debts.reduce((acc, d) => acc + d.amount, 0), [debts]);
 
   // Receivables Metrics
-  const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
-  const totalReceivablesActive = activeReceivables.reduce((acc, r) => acc + r.amount, 0);
-  const outstandingReceivables = activeReceivables.reduce((acc, r) => acc + r.remainingAmount, 0);
-  const paidThisMonth = (receivables || []).reduce((acc, r) => {
-    const isPaidThisMonth = r.status === 'paid' && getMonthKey(r.updatedAt) === selectedMonth;
-    return isPaidThisMonth ? acc + r.paidAmount : acc;
-  }, 0);
+  const { totalReceivablesActive, outstandingReceivables, paidThisMonth } = useMemo(() => {
+    const active = (receivables || []).filter(r => r.status !== 'paid');
+    const totalActive = active.reduce((acc, r) => acc + r.amount, 0);
+    const outstanding = active.reduce((acc, r) => acc + r.remainingAmount, 0);
+    const paid = (receivables || []).reduce((acc, r) => {
+      const isPaidThisMonth = r.status === 'paid' && getMonthKey(r.updatedAt) === selectedMonth;
+      return isPaidThisMonth ? acc + r.paidAmount : acc;
+    }, 0);
+    return { totalReceivablesActive: totalActive, outstandingReceivables: outstanding, paidThisMonth: paid };
+  }, [receivables, selectedMonth]);
 
-  const allIncome = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-  const allExpense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
-  const cashBalance = allIncome - allExpense;
-  const netWorth = cashBalance + totalAssets - totalDebts;
+  const { cashBalance, netWorth } = useMemo(() => {
+    const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+    const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    const cash = income - expense;
+    const net = cash + totalAssets - totalDebts;
+    return { cashBalance: cash, netWorth: net };
+  }, [transactions, totalAssets, totalDebts]);
 
   const [isReportOpen, setIsReportOpen] = useState(false);
 
   // 3. Monthly History (from ALL transactions)
-  const monthlySummary = transactions.reduce((acc, transaction) => {
-    if (!transaction.date) return acc;
-    const month = getMonthKey(transaction.date);
-    if (!acc[month]) {
-      acc[month] = { month, income: 0, expense: 0, balance: 0 };
-    }
-    const amount = Number(transaction.amount) || 0;
-    if (transaction.type === "income") acc[month].income += amount;
-    if (transaction.type === "expense") acc[month].expense += amount;
-    acc[month].balance = acc[month].income - acc[month].expense;
-    return acc;
-  }, {});
-
-  const monthlySummaryList = Object.values(monthlySummary).sort((a, b) => b.month.localeCompare(a.month));
+  const monthlySummaryList = useMemo(() => {
+    const summary = transactions.reduce((acc, transaction) => {
+      if (!transaction.date) return acc;
+      const month = getMonthKey(transaction.date);
+      if (!acc[month]) {
+        acc[month] = { month, income: 0, expense: 0, balance: 0 };
+      }
+      const amount = Number(transaction.amount) || 0;
+      if (transaction.type === "income") acc[month].income += amount;
+      if (transaction.type === "expense") acc[month].expense += amount;
+      acc[month].balance = acc[month].income - acc[month].expense;
+      return acc;
+    }, {});
+    return Object.values(summary).sort((a, b) => b.month.localeCompare(a.month));
+  }, [transactions]);
 
   // Spending Breakdown Categories
   const categories = [
@@ -320,12 +333,13 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
         }}
         fm={fm}
         month={selectedMonth}
+        transactions={filteredTransactions}
       />
     </motion.div>
   );
 }
 
-function ReportModal({ isOpen, onClose, data, fm, month }) {
+function ReportModal({ isOpen, onClose, data, fm, month, transactions }) {
   if (!isOpen) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
@@ -379,9 +393,12 @@ function ReportModal({ isOpen, onClose, data, fm, month }) {
            </div>
         </div>
 
-        <button className="w-full py-4 bg-slate-800 text-slate-100 font-bold rounded-xl border border-slate-700/50 hover:bg-slate-700 transition-all flex items-center justify-center gap-2">
-          <span className="material-symbols-outlined">download</span>
-          Export PDF (Pro)
+        <button 
+          onClick={() => exportToCSV(transactions, `WealthPilot_Report_${month}`)}
+          className="w-full py-4 bg-emerald-500 text-slate-950 font-black rounded-xl border border-emerald-400 hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(74,222,128,0.2)]"
+        >
+          <span className="material-symbols-outlined font-bold">download</span>
+          Export CSV (Full Report)
         </button>
       </motion.div>
     </div>

@@ -142,11 +142,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       {/* Primary Metrics */}
       <div className="grid grid-cols-12 gap-8 2xl:gap-12 mb-8 2xl:mb-12">
         {/* Total Net Worth Card */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
-          <div className="flex justify-between items-start mb-6 2xl:mb-10">
-            <div>
-              <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
-              <p className="text-5xl 2xl:text-7xl font-black text-slate-100 tracking-tighter mt-1 2xl:mt-3">{fm(netWorth)}</p>
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group min-w-0">
+          <div className="flex justify-between items-start mb-6 2xl:mb-10 min-w-0">
+            <div className="min-w-0 w-full overflow-hidden">
+              <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 truncate block">{t('totalNetWorth')}</span>
+              <p className="text-4xl lg:text-5xl 2xl:text-7xl font-black text-slate-100 tracking-tighter mt-1 2xl:mt-3 truncate">{fm(netWorth)}</p>
             </div>
             <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20">
               <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
@@ -174,12 +174,12 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
           <div className="mt-auto grid grid-cols-2 gap-4 border-t border-slate-700/30 pt-6">
             <div>
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1">{t('savingsRate')}</p>
-              <p className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 truncate block">{t('savingsRate')}</p>
+              <p className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tighter truncate">{savingsRate}%</p>
             </div>
-            <div>
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Monthly {t('savings')}</p>
-              <p className={`text-2xl 2xl:text-4xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
+            <div className="min-w-0">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1 truncate block">Monthly {t('savings')}</p>
+              <p className={`text-2xl 2xl:text-4xl font-black tracking-tighter truncate ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
             </div>
           </div>
         </motion.div>
@@ -224,25 +224,25 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             </div>
             <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Active Receivables</span>
           </div>
-          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(totalReceivablesActive)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100 truncate">{fm(totalReceivablesActive)}</div>
         </div>
-        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-blue-400/30 transition-all group">
+        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-blue-400/30 transition-all group min-w-0">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-blue-400/10 group-hover:bg-blue-400/20 transition-colors">
+            <div className="p-2 rounded-lg bg-blue-400/10 group-hover:bg-blue-400/20 transition-colors shrink-0">
               <span className="material-symbols-outlined text-blue-400 font-bold">check_circle</span>
             </div>
-            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Paid This Month</span>
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 truncate block">Paid This Month</span>
           </div>
-          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(paidThisMonth)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100 truncate">{fm(paidThisMonth)}</div>
         </div>
-        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-amber-400/30 transition-all group">
+        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-amber-400/30 transition-all group min-w-0">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 rounded-lg bg-amber-400/10 group-hover:bg-amber-400/20 transition-colors">
+            <div className="p-2 rounded-lg bg-amber-400/10 group-hover:bg-amber-400/20 transition-colors shrink-0">
               <span className="material-symbols-outlined text-amber-400 font-bold">pending</span>
             </div>
-            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Outstanding</span>
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 truncate block">Outstanding</span>
           </div>
-          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(outstandingReceivables)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100 truncate">{fm(outstandingReceivables)}</div>
         </div>
       </motion.div>
 

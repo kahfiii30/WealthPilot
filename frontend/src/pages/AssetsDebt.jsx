@@ -108,35 +108,35 @@ function AssetsDebt({
         <div className="lg:col-span-2 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 2xl:p-14 flex flex-col justify-between overflow-hidden relative group shadow-2xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/5 rounded-full blur-[120px] -mr-40 -mt-40 group-hover:bg-emerald-400/10 transition-colors duration-500"></div>
           <div className="relative z-10">
-            <h2 className="text-[11px] 2xl:text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-6 2xl:mb-8">Total Net Worth</h2>
-            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 2xl:mb-14">
-              <span className={`text-6xl md:text-7xl 2xl:text-8xl font-black tracking-tighter leading-none ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
+            <h2 className="text-[11px] 2xl:text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-6 2xl:mb-8 truncate block">Total Net Worth</h2>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 2xl:mb-14 min-w-0">
+              <span className={`text-5xl md:text-6xl 2xl:text-8xl font-black tracking-tighter leading-none truncate ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
                 {fm(netWorth)}
               </span>
               <p className="text-xs 2xl:text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 2xl:mb-3">Liquid + Portfolio</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 2xl:gap-6 mt-4 relative z-10">
-            <div className="p-5 2xl:p-7 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400/70 mb-2">Cash Balance</p>
-              <p className="text-xl 2xl:text-3xl font-black text-emerald-400 tracking-tight">{fm(cashBalance)}</p>
+            <div className="p-5 2xl:p-7 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md min-w-0">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400/70 mb-2 truncate block">Cash Balance</p>
+              <p className="text-xl 2xl:text-3xl font-black text-emerald-400 tracking-tight truncate">{fm(cashBalance)}</p>
             </div>
-            <div className="p-5 2xl:p-7 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-blue-400/70 mb-2">Portfolio Assets</p>
-              <p className="text-xl 2xl:text-3xl font-black text-blue-400 tracking-tight">{fm(totalAssets)}</p>
+            <div className="p-5 2xl:p-7 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md min-w-0">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-blue-400/70 mb-2 truncate block">Portfolio Assets</p>
+              <p className="text-xl 2xl:text-3xl font-black text-blue-400 tracking-tight truncate">{fm(totalAssets)}</p>
             </div>
-            <div className="p-5 2xl:p-7 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-red-300/70 mb-2">Total Liabilities</p>
-              <p className="text-xl 2xl:text-3xl font-black text-red-300 tracking-tight">{fm(totalDebts)}</p>
+            <div className="p-5 2xl:p-7 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md min-w-0">
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-red-300/70 mb-2 truncate block">Total Liabilities</p>
+              <p className="text-xl 2xl:text-3xl font-black text-red-300 tracking-tight truncate">{fm(totalDebts)}</p>
             </div>
           </div>
         </div>
 
         <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col gap-8 2xl:gap-12 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
           <div>
-            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">Asset Ratio</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight truncate mr-4">{fm(totalAssets)}</span>
+            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6 truncate block">Asset Ratio</h3>
+            <div className="flex items-center justify-between min-w-0">
+              <span className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight truncate mr-4 min-w-0">{fm(totalAssets)}</span>
               <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
@@ -151,9 +151,9 @@ function AssetsDebt({
             </div>
           </div>
           <div>
-            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">Debt Exposure</h3>
-            <div className="flex items-center justify-between">
-              <span className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight truncate mr-4">{fm(totalDebts)}</span>
+            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6 truncate block">Debt Exposure</h3>
+            <div className="flex items-center justify-between min-w-0">
+              <span className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight truncate mr-4 min-w-0">{fm(totalDebts)}</span>
               <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
                 {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>

@@ -40,6 +40,13 @@
 
   html {
     scrollbar-gutter: stable;
+    font-size: 87.5%; /* 14px base for desktop to reduce huge sizing */
+  }
+
+  @media (max-width: 768px) {
+    html {
+      font-size: 100%; /* 16px base for mobile for readability */
+    }
   }
 
   body {

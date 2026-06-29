@@ -284,17 +284,15 @@ function App() {
     try {
       const res = await apiMarkReceivablePayment(id, currentPaid, amount);
       setReceivables(prev => prev.map(r => r.id === id ? res : r));
-    } catch (error) {}
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleUpdateProfile = async (payload) => {
-    try {
-      const updated = await apiUpdateProfile(payload);
-      setUserProfile(updated);
-      return updated;
-    } catch (error) {
-      throw error;
-    }
+    const updated = await apiUpdateProfile(payload);
+    setUserProfile(updated);
+    return updated;
   };
 
   const handleSetPreferences = async (prefs) => {
@@ -308,15 +306,22 @@ function App() {
   };
 
   const handleResetFinanceData = async () => {
-    if (window.confirm("Are you sure you want to reset all financial data?")) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
       await Promise.all([
-        supabase.from('transactions').delete().eq('user_id', session.user.id),
-        supabase.from('assets').delete().eq('user_id', session.user.id),
-        supabase.from('debts').delete().eq('user_id', session.user.id),
-        supabase.from('budgets').delete().eq('user_id', session.user.id),
-        supabase.from('receivables').delete().eq('user_id', session.user.id)
+        supabase.from('transactions').delete().eq('user_id', user.id),
+        supabase.from('assets').delete().eq('user_id', user.id),
+        supabase.from('debts').delete().eq('user_id', user.id),
+        supabase.from('budgets').delete().eq('user_id', user.id),
+        supabase.from('receivables').delete().eq('user_id', user.id)
       ]);
       resetLocalState();
+      toast.success("Data reset successfully");
+    } catch (err) {
+      console.error("Error resetting data:", err);
+      toast.error("Failed to reset data");
     }
   };
 
@@ -402,7 +407,7 @@ function ProModal({ isOpen, onClose }) {
       <motion.div 
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative z-10 w-full max-w-md bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl overflow-hidden"
+        className="relative z-10 w-[90vw] sm:w-[400px] bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl overflow-hidden"
       >
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 blur-3xl -mr-16 -mt-16"></div>
         

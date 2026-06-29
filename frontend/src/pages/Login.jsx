@@ -38,7 +38,9 @@ function Login() {
     setMessage("");
 
     try {
-      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim());
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: window.location.origin,
+      });
       if (resetError) throw resetError;
       
       setMessage("Link reset password telah dikirim ke email Anda.");

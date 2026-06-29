@@ -18,7 +18,9 @@ if (!token) {
   console.error("❌ TELEGRAM_BOT_TOKEN is missing in .env");
 }
 
-const bot = new Telegraf(token);
+const bot = new Telegraf(token, {
+  telegram: { webhookReply: false }
+});
 
 // 3. Security: Check if user is allowed
 const allowedUserId = process.env.ALLOWED_TELEGRAM_USER_ID;

@@ -108,14 +108,14 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       className="p-8"
     >
       {/* Welcome Header */}
-      <motion.section variants={item} className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div className="flex flex-col gap-2">
-          <h2 className="text-4xl font-black text-slate-100 tracking-tighter">
+      <motion.section variants={item} className="mb-10 2xl:mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col gap-2 2xl:gap-4">
+          <h2 className="text-4xl 2xl:text-6xl font-black text-slate-100 tracking-tighter">
             {t('welcome')}, {displayName}.
           </h2>
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
-            <p className="text-base font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>
+            <span className="w-2.5 h-2.5 2xl:w-3.5 2xl:h-3.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_15px_rgba(74,222,128,0.4)]"></span>
+            <p className="text-base 2xl:text-xl font-bold text-slate-400 tracking-tight">{t('healthStatus')}</p>
           </div>
         </div>
 
@@ -140,55 +140,55 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       </motion.section>
 
       {/* Primary Metrics */}
-      <div className="grid grid-cols-12 gap-8 mb-8">
+      <div className="grid grid-cols-12 gap-8 2xl:gap-12 mb-8 2xl:mb-12">
         {/* Total Net Worth Card */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 flex flex-col shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
-          <div className="flex justify-between items-start mb-6">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group">
+          <div className="flex justify-between items-start mb-6 2xl:mb-10">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
-              <p className="text-5xl font-black text-slate-100 tracking-tighter mt-1">{fm(netWorth)}</p>
+              <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500">{t('totalNetWorth')}</span>
+              <p className="text-5xl 2xl:text-7xl font-black text-slate-100 tracking-tighter mt-1 2xl:mt-3">{fm(netWorth)}</p>
             </div>
             <div className="p-3 rounded-xl bg-emerald-400/10 border border-emerald-400/20">
               <span className="material-symbols-outlined text-emerald-400 font-bold">account_balance_wallet</span>
             </div>
           </div>
 
-          <div className="space-y-4 mb-8">
-            <div className="flex justify-between items-center text-sm">
+          <div className="mt-auto space-y-4 2xl:space-y-6 pt-6 2xl:pt-8 border-t border-slate-700/30">
+            <div className="flex justify-between items-center text-sm 2xl:text-lg">
               <span className="text-slate-400 font-medium">Cash Balance</span>
-              <span className="text-slate-200 font-black">{fm(cashBalance)}</span>
+              <span className="font-bold text-slate-100">{fm(cashBalance)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex justify-between items-center text-sm 2xl:text-lg">
               <span className="text-slate-400 font-medium">Assets</span>
               <span className="text-emerald-400 font-black">+ {fm(totalAssets)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm pb-4 border-b border-slate-700/30">
+            <div className="flex justify-between items-center text-sm 2xl:text-lg pb-4 border-b border-slate-700/30">
               <span className="text-slate-400 font-medium">Debts</span>
               <span className="text-red-300 font-black">- {fm(totalDebts)}</span>
             </div>
             <div className="flex justify-between items-center pt-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Formula</span>
-              <span className="text-[10px] font-bold text-slate-600">Cash + Assets - Debts</span>
+              <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Formula</span>
+              <span className="text-[10px] 2xl:text-sm font-bold text-slate-600">Cash + Assets - Debts</span>
             </div>
           </div>
 
           <div className="mt-auto grid grid-cols-2 gap-4 border-t border-slate-700/30 pt-6">
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">{t('savingsRate')}</p>
-              <p className="text-2xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1">{t('savingsRate')}</p>
+              <p className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tighter">{savingsRate}%</p>
             </div>
             <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-1">Monthly {t('savings')}</p>
-              <p className={`text-2xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
+              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-1">Monthly {t('savings')}</p>
+              <p className={`text-2xl 2xl:text-4xl font-black tracking-tighter ${savings >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(savings)}</p>
             </div>
           </div>
         </motion.div>
 
         {/* Income vs Expense Dashboard */}
-        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
+        <motion.div variants={item} className="col-span-12 md:col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
           <div className="mb-8">
-            <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-2">{t('cashflowOverview')}</h3>
-            <p className="text-sm font-bold text-slate-500 tracking-tight">Real-time breakdown of your income vs expenses.</p>
+            <h3 className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tight mb-2">{t('cashflowOverview')}</h3>
+            <p className="text-sm 2xl:text-base font-bold text-slate-500 tracking-tight">Real-time breakdown of your income vs expenses.</p>
           </div>
           
           <div className="grid grid-cols-2 gap-6 my-auto border-slate-700/30 border-y py-8 mb-8">
@@ -197,7 +197,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           </div>
           
           <div>
-            <div className="flex justify-between text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">
+            <div className="flex justify-between text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500 mb-3">
               <span className="truncate mr-4">{t('totalIncome')} {fm(totalIncome)}</span>
               <span className="truncate">{t('totalExpense')} {fm(totalExpense)}</span>
             </div>
@@ -217,38 +217,38 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
       {/* Receivables Summary Row */}
       <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-emerald-400/30 transition-all group">
+        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-emerald-400/30 transition-all group">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-emerald-400/10 group-hover:bg-emerald-400/20 transition-colors">
               <span className="material-symbols-outlined text-emerald-400 font-bold">payments</span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Active Receivables</span>
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Active Receivables</span>
           </div>
-          <div className="text-2xl font-black text-slate-100">{fm(totalReceivablesActive)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(totalReceivablesActive)}</div>
         </div>
-        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-blue-400/30 transition-all group">
+        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-blue-400/30 transition-all group">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-blue-400/10 group-hover:bg-blue-400/20 transition-colors">
               <span className="material-symbols-outlined text-blue-400 font-bold">check_circle</span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Paid This Month</span>
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Paid This Month</span>
           </div>
-          <div className="text-2xl font-black text-slate-100">{fm(paidThisMonth)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(paidThisMonth)}</div>
         </div>
-        <div className="p-6 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-amber-400/30 transition-all group">
+        <div className="p-6 2xl:p-8 rounded-2xl border border-slate-700/30 bg-slate-900/40 backdrop-blur-xl hover:border-amber-400/30 transition-all group">
           <div className="flex items-center gap-3 mb-4">
             <div className="p-2 rounded-lg bg-amber-400/10 group-hover:bg-amber-400/20 transition-colors">
               <span className="material-symbols-outlined text-amber-400 font-bold">pending</span>
             </div>
-            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Outstanding</span>
+            <span className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-slate-500">Outstanding</span>
           </div>
-          <div className="text-2xl font-black text-slate-100">{fm(outstandingReceivables)}</div>
+          <div className="text-2xl 2xl:text-4xl font-black text-slate-100">{fm(outstandingReceivables)}</div>
         </div>
       </motion.div>
 
       {/* Bento Grid: Spending & Transactions */}
-      <div className="grid grid-cols-12 gap-8">
-        <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
+      <div className="grid grid-cols-12 gap-8 2xl:gap-12">
+        <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-10 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
           <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
           <div className="space-y-6">
             {categories.map((cat) => {

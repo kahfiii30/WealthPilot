@@ -179,37 +179,37 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
       </div>
 
       <div className="grid grid-cols-12 gap-8 2xl:gap-12 mb-8 2xl:mb-12">
-        <div className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group min-w-0">
-          <div className="relative z-10 min-w-0">
+        <div className="col-span-12 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col md:flex-row items-start md:items-center justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group min-w-0 gap-8">
+          <div className="relative z-10 min-w-0 flex-1">
             <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">{t('dailySafeToSpend')}</p>
-            <h3 className={`text-4xl lg:text-5xl 2xl:text-6xl font-black tracking-tighter mb-2 2xl:mb-4 truncate ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
-              {fm(safeToSpendPerDay)} <span className="text-lg 2xl:text-2xl font-bold text-slate-500">/ day</span>
+            <h3 className={`text-5xl lg:text-6xl 2xl:text-7xl font-black tracking-tighter mb-2 2xl:mb-4 ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
+              {fm(safeToSpendPerDay)} <span className="text-xl 2xl:text-3xl font-bold text-slate-500">/ day</span>
             </h3>
             <p className="text-sm 2xl:text-base font-bold text-slate-500 tracking-tight">Remaining for the next {remainingDays} days.</p>
           </div>
-          <div className="mt-10 2xl:mt-16 relative z-10">
+          <div className="relative z-10 flex-1 w-full md:w-auto mt-4 md:mt-0 lg:max-w-xl 2xl:max-w-2xl mx-auto md:ml-auto">
             <div className="flex justify-between text-[10px] 2xl:text-xs font-black uppercase tracking-widest mb-3">
               <span className="text-slate-500">Monthly Utilization</span>
               <span className={consumedPercent > 100 ? 'text-red-300' : 'text-emerald-400'}>{consumedPercent.toFixed(1)}%</span>
             </div>
-            <div className="h-4 w-full bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
+            <div className="h-5 w-full bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
               <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(consumedPercent, 100)}%` }} className={`h-full bg-gradient-to-r ${consumedPercent > 100 ? 'from-red-400 to-red-500 shadow-[0_0_15px_rgba(248,113,113,0.3)]' : 'from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]'}`}></motion.div>
             </div>
           </div>
         </div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8 2xl:gap-12 min-w-0">
+        <motion.div variants={itemVariants} className="col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-8 2xl:gap-12 min-w-0">
           <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
             <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-emerald-400 transition-colors truncate">Total Budget</p>
-            <p className="text-3xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalBudget)}</p>
+            <p className="text-3xl lg:text-4xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalBudget)}</p>
           </div>
           <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
             <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-sky-400 transition-colors truncate">Actual Spending</p>
-            <p className="text-3xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalActual)}</p>
+            <p className="text-3xl lg:text-4xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalActual)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 sm:col-span-2 md:col-span-1 group min-w-0">
+          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
             <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-red-400 transition-colors truncate">Remaining Budget</p>
-            <p className={`text-3xl 2xl:text-5xl font-black tracking-tighter truncate ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
+            <p className={`text-3xl lg:text-4xl 2xl:text-5xl font-black tracking-tighter truncate ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
           </div>
         </motion.div>
 

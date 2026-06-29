@@ -8,7 +8,6 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error("❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing in .env");
-  process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -17,7 +16,6 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
   console.error("❌ TELEGRAM_BOT_TOKEN is missing in .env");
-  process.exit(1);
 }
 
 const bot = new Telegraf(token);
@@ -27,6 +25,9 @@ const allowedUserId = process.env.ALLOWED_TELEGRAM_USER_ID;
 const supabaseUserId = process.env.SUPABASE_USER_ID;
 
 // Pending Transactions Memory Store
+// Peringatan: Pada Serverless function (Vercel), memori ini bisa tereset jika function "cold start".
+// Untuk produksi jangka panjang disarankan menyimpannya ke Supabase / Redis. 
+// Namun untuk pemakaian pribadi yang cepat, ini biasanya masih berfungsi karena function tetap "warm" beberapa saat.
 const pendingData = new Map();
 
 // Formatter
@@ -35,7 +36,7 @@ const fm = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', curre
 // Middleware for access control
 bot.use((ctx, next) => {
   const userId = ctx.from?.id?.toString();
-  
+
   if (ctx.message && ctx.message.text === '/start') {
     return next();
   }
@@ -73,9 +74,9 @@ bot.start((ctx) => {
 
 bot.command('menu', (ctx) => {
   ctx.reply("Pilih menu navigasi:", Markup.keyboard([
-     ['📊 Laporan & Portofolio', '➕ Cara Penggunaan'],
-     ['⚙️ Pengaturan']
-   ]).resize());
+    ['📊 Laporan & Portofolio', '➕ Cara Penggunaan'],
+    ['⚙️ Pengaturan']
+  ]).resize());
 });
 
 // Text Menu Handlers
@@ -93,13 +94,13 @@ bot.command('report', (ctx) => handleReport(ctx));
 async function handleReport(ctx) {
   try {
     ctx.reply("⏳ Menarik data portofolio dari Supabase...");
-    
+
     const d = new Date();
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, "0");
     const lastDay = new Date(year, d.getMonth() + 1, 0).getDate(); // Get last day of month
     const monthStr = `${year}-${month}`;
-    
+
     const startDate = `${year}-${month}-01T00:00:00.000Z`;
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`;
 
@@ -125,7 +126,7 @@ async function handleReport(ctx) {
 
     let totalAssets = assetRes.data.reduce((acc, a) => acc + Number(a.amount), 0);
     let totalDebts = debtRes.data.reduce((acc, d) => acc + Number(d.amount), 0);
-    
+
     let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
 
     const balance = income - expense;
@@ -137,7 +138,7 @@ async function handleReport(ctx) {
       `💳 Total Hutang: ${fm(totalDebts)}\n` +
       `🤝 Total Piutang: ${fm(totalReceivables)}\n\n` +
       `⚖️ *Net Worth Bersih:* ${fm(balance + totalAssets + totalReceivables - totalDebts)}`;
-    
+
     ctx.reply(reportMsg, { parse_mode: 'Markdown' });
   } catch (err) {
     ctx.reply(`❌ Gagal mengambil laporan: ${err.message}`);
@@ -147,7 +148,7 @@ async function handleReport(ctx) {
 // 5. NLP Parser
 bot.on('text', async (ctx) => {
   const text = ctx.message.text.toLowerCase();
-  
+
   if (text === '📊 laporan & portofolio' || text === '➕ cara penggunaan' || text === '⚙️ pengaturan') return;
 
   // Shortcut for checking balance
@@ -165,7 +166,7 @@ bot.on('text', async (ctx) => {
   let amountStr = null;
   let note = null;
 
-  if (expenseMatch) { type = 'expense'; amountStr = expenseMatch[2]; note = expenseMatch[3]; } 
+  if (expenseMatch) { type = 'expense'; amountStr = expenseMatch[2]; note = expenseMatch[3]; }
   else if (incomeMatch) { type = 'income'; amountStr = incomeMatch[2]; note = incomeMatch[3]; }
   else if (assetMatch) { type = 'asset'; amountStr = assetMatch[2]; note = assetMatch[3]; }
   else if (debtMatch) { type = 'debt'; amountStr = debtMatch[2]; note = debtMatch[3]; }
@@ -188,10 +189,10 @@ bot.on('text', async (ctx) => {
       }]).select('id').single();
 
       if (error) throw error;
-      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, 
+      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined,
         `✅ *Piutang Berhasil Dicatat!*\n\nPeminjam: ${note}\nJumlah: ${fm(amount)}`, {
-          parse_mode: 'Markdown',
-          ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_rcv_${data.id}`) ])
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_rcv_${data.id}`)])
       });
     } catch (err) {
       return ctx.reply(`❌ Error: ${err.message}`);
@@ -223,7 +224,7 @@ bot.on('text', async (ctx) => {
 bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
   const txId = ctx.match[1];
   const category = ctx.match[2];
-  
+
   const pending = pendingData.get(txId);
   if (!pending) return ctx.answerCbQuery("❌ Sesi sudah diproses.", { show_alert: true });
 
@@ -252,7 +253,7 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
 
     const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
     if (error) throw error;
-    
+
     pendingData.delete(txId);
 
     let typeStr = "";
@@ -260,12 +261,12 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
     if (pending.type === 'income') typeStr = '🟢 Pemasukan';
     if (pending.type === 'asset') typeStr = '💎 Aset';
     if (pending.type === 'debt') typeStr = '💳 Hutang';
-    
+
     await ctx.editMessageText(
-      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`, 
+      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`,
       {
         parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`) ])
+        ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`)])
       }
     );
   } catch (error) {
@@ -283,12 +284,12 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
 bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   const prefix = ctx.match[1];
   const dbId = ctx.match[2];
-  
+
   let table = 'transactions';
   if (prefix === 'ast') table = 'assets';
   if (prefix === 'dbt') table = 'debts';
   if (prefix === 'rcv') table = 'receivables';
-  
+
   try {
     ctx.answerCbQuery("Membatalkan...");
     const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', supabaseUserId);
@@ -301,11 +302,19 @@ bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   }
 });
 
-// 8. Start the bot
-bot.launch().then(() => {
-  console.log("🚀 WealthPilot Telegram Bot V2 is running...");
-});
-
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+// 8. Vercel Serverless Function Handler (Webhook)
+module.exports = async (req, res) => {
+  try {
+    if (req.method === 'POST') {
+      await bot.handleUpdate(req.body, res);
+      if (!res.writableEnded) {
+        res.status(200).send('OK');
+      }
+    } else {
+      res.status(200).send('Bot is running (Webhook mode)!');
+    }
+  } catch (error) {
+    console.error('Error in webhook handler:', error);
+    res.status(500).send('Internal Server Error');
+  }
+};

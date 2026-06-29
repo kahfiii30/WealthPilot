@@ -22,42 +22,35 @@ const bot = new Telegraf(token, {
   telegram: { webhookReply: false }
 });
 
-// 3. Security: Check if user is allowed
-const allowedUserId = process.env.ALLOWED_TELEGRAM_USER_ID;
-const supabaseUserId = process.env.SUPABASE_USER_ID;
-
-// Pending Transactions Memory Store
-// Peringatan: Pada Serverless function (Vercel), memori ini bisa tereset jika function "cold start".
-// Untuk produksi jangka panjang disarankan menyimpannya ke Supabase / Redis. 
-// Namun untuk pemakaian pribadi yang cepat, ini biasanya masih berfungsi karena function tetap "warm" beberapa saat.
-const pendingData = new Map();
+// 3. (Multi-User) We no longer use .env variables for auth
+// We dynamically fetch from telegram_accounts table
 
 // Formatter
 const fm = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
 // Middleware for access control
-bot.use((ctx, next) => {
+bot.use(async (ctx, next) => {
   const userId = ctx.from?.id?.toString();
 
   if (ctx.message && ctx.message.text === '/start') {
     return next();
   }
 
-  if (!allowedUserId || allowedUserId === "") {
-    ctx.reply(`⚠️ SECURITY ALERT: ALLOWED_TELEGRAM_USER_ID is not set in your .env file.\n\nYour Telegram User ID is: ${userId}`);
+  if (!userId) return;
+
+  const { data, error } = await supabase
+    .from('telegram_accounts')
+    .select('user_id')
+    .eq('telegram_id', userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    ctx.reply(`⚠️ Akun Anda belum terhubung. Silakan login ke website WealthPilot, buka menu Settings -> Integrations, lalu masukkan Telegram ID Anda: \`${userId}\``, { parse_mode: 'Markdown' });
     return;
   }
 
-  if (userId !== allowedUserId) {
-    console.log(`Unauthorized access attempt by ID: ${userId}`);
-    ctx.reply("❌ Unauthorized user.");
-    return;
-  }
-
-  if (!supabaseUserId || supabaseUserId === "") {
-    ctx.reply(`⚠️ SUPABASE_USER_ID is not set in your .env file.`);
-    return;
-  }
+  // Inject supabaseUserId into state
+  ctx.state.supabaseUserId = data.user_id;
 
   return next();
 });
@@ -105,6 +98,8 @@ async function handleReport(ctx) {
 
     const startDate = `${year}-${month}-01T00:00:00.000Z`;
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`;
+
+    const supabaseUserId = ctx.state.supabaseUserId;
 
     // Fetch all required data in parallel
     const [txRes, assetRes, debtRes, recRes] = await Promise.all([
@@ -187,7 +182,7 @@ bot.on('text', async (ctx) => {
     try {
       const msg = await ctx.reply("⏳ Menyimpan piutang...");
       const { data, error } = await supabase.from('receivables').insert([{
-        user_id: supabaseUserId, debtor_name: note, amount: amount, paid_amount: 0, debt_date: new Date().toISOString()
+        user_id: ctx.state.supabaseUserId, debtor_name: note, amount: amount, paid_amount: 0, debt_date: new Date().toISOString()
       }]).select('id').single();
 
       if (error) throw error;
@@ -203,7 +198,16 @@ bot.on('text', async (ctx) => {
 
   // Save to pending state for Expense, Income, Asset, Debt
   const txId = `req_${Date.now()}`;
-  pendingData.set(txId, { type, amount, note });
+  
+  const { error: draftError } = await supabase.from('telegram_drafts').insert([{
+    telegram_id: ctx.from.id.toString(),
+    tx_id: txId,
+    payload: { type, amount, note, supabaseUserId: ctx.state.supabaseUserId }
+  }]);
+
+  if (draftError) {
+    return ctx.reply("❌ Gagal membuat draft. Silakan coba lagi.");
+  }
 
   let categories = [];
   let typeStr = "";
@@ -227,8 +231,16 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
   const txId = ctx.match[1];
   const category = ctx.match[2];
 
-  const pending = pendingData.get(txId);
-  if (!pending) return ctx.answerCbQuery("❌ Sesi sudah diproses.", { show_alert: true });
+  const { data: draftData, error: draftError } = await supabase
+    .from('telegram_drafts')
+    .select('payload')
+    .eq('tx_id', txId)
+    .maybeSingle();
+
+  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
+  
+  const pending = draftData.payload;
+  const supabaseUserId = pending.supabaseUserId;
 
   try {
     // Add catch to answerCbQuery to prevent unhandled rejections
@@ -256,7 +268,7 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
     const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
     if (error) throw error;
 
-    pendingData.delete(txId);
+    await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
 
     let typeStr = "";
     if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
@@ -294,7 +306,7 @@ bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
 
   try {
     ctx.answerCbQuery("Membatalkan...");
-    const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', supabaseUserId);
+    const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', ctx.state.supabaseUserId);
     if (error) throw error;
 
     const currentText = ctx.callbackQuery.message.text;

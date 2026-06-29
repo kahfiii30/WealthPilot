@@ -509,3 +509,48 @@ export const uploadAvatar = async (file) => {
 
   return publicUrlData.publicUrl;
 };
+
+// --- Telegram Integrations ---
+
+export const fetchTelegramLink = async () => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) return null;
+
+  const { data, error } = await supabase
+    .from("telegram_accounts")
+    .select("telegram_id")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error("fetchTelegramLink error:", error);
+    return null;
+  }
+  return data?.telegram_id || null;
+};
+
+export const linkTelegramAccount = async (telegramId) => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("Please sign in first.");
+
+  if (!telegramId || telegramId.trim() === "") {
+    throw new Error("Telegram ID cannot be empty.");
+  }
+
+  const { error } = await supabase
+    .from("telegram_accounts")
+    .upsert([{
+      user_id: user.id,
+      telegram_id: telegramId.trim()
+    }], { onConflict: "telegram_id" });
+
+  if (error) {
+    if (error.code === '23505') { // unique violation
+      throw new Error("This Telegram ID is already linked to another account.");
+    }
+    throw error;
+  }
+  
+  return true;
+};
+

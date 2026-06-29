@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { uploadAvatar } from '../services/financeService';
+import { uploadAvatar, fetchTelegramLink, linkTelegramAccount } from '../services/financeService';
 import toast from 'react-hot-toast';
 import { supabase } from '../lib/supabaseClient';
 
@@ -23,6 +23,9 @@ function Settings({
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+  const [isLinkingTelegram, setIsLinkingTelegram] = useState(false);
+  const [telegramId, setTelegramId] = useState('');
+  const [linkedTelegramId, setLinkedTelegramId] = useState(null);
   
   const [form, setForm] = useState({
     firstName: "",
@@ -52,6 +55,17 @@ function Settings({
     newPassword: "",
     confirmPassword: ""
   });
+
+  useEffect(() => {
+    const loadTelegramLink = async () => {
+      const link = await fetchTelegramLink();
+      if (link) {
+        setLinkedTelegramId(link);
+        setTelegramId(link);
+      }
+    };
+    loadTelegramLink();
+  }, []);
 
   const handleProfileSave = async (e) => {
     e.preventDefault();
@@ -158,6 +172,7 @@ function Settings({
     { id: 'profile', label: t('profile'), icon: 'person' },
     { id: 'preferences', label: t('preferences'), icon: 'tune' },
     { id: 'notifications', label: t('notifications'), icon: 'notifications' },
+    { id: 'integrations', label: 'Integrations', icon: 'hub' },
     { id: 'security', label: t('security'), icon: 'security' },
   ];
 
@@ -455,6 +470,70 @@ function Settings({
                     >
                       Purge Financial Repository
                     </button>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'integrations' && (
+                <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
+                  <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Integrations</h3>
+                  
+                  <div className="space-y-6 2xl:space-y-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 2xl:p-8 bg-slate-950/40 rounded-2xl border border-slate-700/30">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-[#2AABEE]/10 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-[#2AABEE] text-2xl">send</span>
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-100 text-sm 2xl:text-lg tracking-tight">Telegram Bot</p>
+                          <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest mt-1">Chat to log finances</p>
+                        </div>
+                      </div>
+                      <span className={`px-3 2xl:px-4 py-1 2xl:py-1.5 ${linkedTelegramId ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px] 2xl:text-[11px] font-black rounded-lg uppercase tracking-widest border`}>
+                        {linkedTelegramId ? 'Connected' : 'Not Connected'}
+                      </span>
+                    </div>
+
+                    <div className="p-6 2xl:p-8 bg-slate-950/20 rounded-2xl border border-slate-800">
+                      <h4 className="text-sm font-bold text-slate-200 mb-2">How to connect:</h4>
+                      <ol className="list-decimal list-inside text-xs text-slate-400 space-y-2 mb-6">
+                        <li>Open Telegram and search for your bot.</li>
+                        <li>Type <code className="bg-slate-800 px-1 py-0.5 rounded text-emerald-400">/start</code></li>
+                        <li>The bot will reply with your <strong>Telegram ID</strong>.</li>
+                        <li>Paste that ID below and click Connect.</li>
+                      </ol>
+
+                      <form onSubmit={async (e) => {
+                        e.preventDefault();
+                        try {
+                          setIsLinkingTelegram(true);
+                          await linkTelegramAccount(telegramId);
+                          setLinkedTelegramId(telegramId);
+                          toast.success("Telegram account linked successfully!");
+                        } catch (err) {
+                          toast.error(err.message || "Failed to link Telegram account");
+                        } finally {
+                          setIsLinkingTelegram(false);
+                        }
+                      }}>
+                        <div className="space-y-3">
+                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Telegram ID</label>
+                          <div className="flex gap-4">
+                            <input 
+                              required
+                              type="text" 
+                              placeholder="e.g. 123456789"
+                              className="flex-1 bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors font-bold" 
+                              value={telegramId} 
+                              onChange={e => setTelegramId(e.target.value)}
+                            />
+                            <button type="submit" disabled={isLinkingTelegram || telegramId === linkedTelegramId} className="px-8 py-3 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors shadow-[0_0_20px_rgba(74,222,128,0.2)] disabled:opacity-50">
+                              {isLinkingTelegram ? "..." : (linkedTelegramId ? "Update" : "Connect")}
+                            </button>
+                          </div>
+                        </div>
+                      </form>
+                    </div>
                   </div>
                 </div>
               )}

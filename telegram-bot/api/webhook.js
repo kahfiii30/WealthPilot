@@ -77,7 +77,7 @@ bot.command('menu', (ctx) => {
 // Text Menu Handlers
 bot.hears('📊 Laporan & Portofolio', (ctx) => handleReport(ctx));
 bot.hears('➕ Cara Penggunaan', (ctx) => {
-  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: \`keluar 50000 makan\`\n2. Pemasukan: \`masuk 2000000 gaji\`\n3. Hutang: \`hutang 50000 pinjol\`\n4. Aset: \`aset 1000000 tabungan\`\n5. Piutang: \`piutang 50000 budi\`\n\nSetelah itu, bot akan memproses & menyimpan secara otomatis!", { parse_mode: 'Markdown' });
+  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang: `hutang 50000 pinjol`\n4. Aset: `aset 1000000 tabungan`\n5. Piutang: `piutang 50000 budi`\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci>`\nContoh: `hapus aset tabungan`, `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik `list aset`, `list hutang`, atau `list piutang`", { parse_mode: 'Markdown' });
 });
 bot.hears('⚙️ Pengaturan', (ctx) => {
   ctx.reply("⚙️ *Pengaturan Koneksi*\nStatus: ✅ Terhubung ke Supabase\nFitur Premium: Aktif (Aset, Hutang, Piutang Tersinkronisasi)", { parse_mode: 'Markdown' });
@@ -90,13 +90,16 @@ async function handleReport(ctx) {
   try {
     ctx.reply("⏳ Menarik data portofolio dari Supabase...");
 
+    // Use Asia/Jakarta time for accurate monthly reporting
     const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const lastDay = new Date(year, d.getMonth() + 1, 0).getDate(); // Get last day of month
+    const jakartaTime = new Date(d.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const year = jakartaTime.getFullYear();
+    const month = String(jakartaTime.getMonth() + 1).padStart(2, "0");
+    const lastDay = new Date(year, jakartaTime.getMonth() + 1, 0).getDate(); // Get last day of month
     const monthStr = `${year}-${month}`;
 
-    const startDate = `${year}-${month}-01T00:00:00.000Z`;
+    // Use string boundary matching to ensure both 'YYYY-MM-DD' and 'YYYY-MM-DDT...' formats are captured
+    const startDate = `${year}-${month}-01`;
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`;
 
     const supabaseUserId = ctx.state.supabaseUserId;
@@ -151,6 +154,89 @@ bot.on('text', async (ctx) => {
   // Shortcut for checking balance
   if (text.includes('saldo') || text.includes('cek saldo') || text.includes('report')) {
     return handleReport(ctx);
+  }
+
+  const deleteMatch = text.match(/^(hapus|delete)\s+(aset|asset|hutang|utang|piutang|transaksi|pengeluaran|pemasukan)\s+(.+)$/i);
+  if (deleteMatch) {
+    const delType = deleteMatch[2].toLowerCase();
+    const keyword = deleteMatch[3].trim();
+    
+    let table = '';
+    let nameColumn = '';
+    let typePrefix = '';
+    let isTx = false;
+    
+    if (delType === 'aset' || delType === 'asset') { table = 'assets'; nameColumn = 'name'; typePrefix = 'ast'; }
+    else if (delType === 'hutang' || delType === 'utang') { table = 'debts'; nameColumn = 'name'; typePrefix = 'dbt'; }
+    else if (delType === 'piutang') { table = 'receivables'; nameColumn = 'debtor_name'; typePrefix = 'rcv'; }
+    else { table = 'transactions'; nameColumn = 'note'; typePrefix = 'tx'; isTx = true; }
+
+    try {
+      const msg = await ctx.reply(`🔍 Mencari ${delType} dengan kata kunci "${keyword}"...`);
+      const suId = ctx.state.supabaseUserId; 
+      
+      let query = supabase.from(table).select(`id, amount, ${nameColumn}${isTx ? ', type' : ''}`).eq('user_id', suId).ilike(nameColumn, `%${keyword}%`).order('created_at', { ascending: false }).limit(5);
+      
+      if (isTx && delType === 'pengeluaran') query = query.eq('type', 'expense');
+      if (isTx && delType === 'pemasukan') query = query.eq('type', 'income');
+
+      const { data, error } = await query;
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `❌ Tidak ditemukan ${delType} dengan kata kunci "${keyword}".`);
+      }
+
+      const buttons = data.map(item => {
+        const title = item[nameColumn] || 'Tanpa Nama';
+        let btnText = `${title} - ${fm(item.amount)}`;
+        if (isTx) btnText = `[${item.type === 'income' ? 'Masuk' : 'Keluar'}] ` + btnText;
+        return [Markup.button.callback(`🗑️ ${btnText}`, `del_${typePrefix}_${item.id}`)];
+      });
+      buttons.push([Markup.button.callback('❌ Batal', 'cancel_delete')]);
+
+      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `Menemukan ${data.length} hasil untuk "${keyword}". Pilih yang ingin dihapus:`, {
+        ...Markup.inlineKeyboard(buttons)
+      });
+    } catch (err) {
+      return ctx.reply(`❌ Error: ${err.message}`);
+    }
+  }
+
+  const listMatch = text.match(/^(list|daftar|cek)\s+(aset|asset|hutang|utang|piutang)$/i);
+  if (listMatch) {
+    const listType = listMatch[2].toLowerCase();
+    let table = '';
+    let nameColumn = '';
+    let typeStr = '';
+    
+    if (listType === 'aset' || listType === 'asset') { table = 'assets'; nameColumn = 'name'; typeStr = 'Aset'; }
+    else if (listType === 'hutang' || listType === 'utang') { table = 'debts'; nameColumn = 'name'; typeStr = 'Hutang'; }
+    else if (listType === 'piutang') { table = 'receivables'; nameColumn = 'debtor_name'; typeStr = 'Piutang'; }
+
+    try {
+      const msg = await ctx.reply(`⏳ Mengambil daftar ${typeStr}...`);
+      const suId = ctx.state.supabaseUserId;
+      
+      const { data, error } = await supabase.from(table).select(`id, amount, ${nameColumn}`).eq('user_id', suId).order('created_at', { ascending: false }).limit(20);
+      if (error) throw error;
+
+      if (!data || data.length === 0) {
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `📝 Daftar ${typeStr} kamu masih kosong.`);
+      }
+
+      let listText = `📋 *Daftar ${typeStr}*\n\n`;
+      let total = 0;
+      data.forEach((item, index) => {
+        const title = item[nameColumn] || 'Tanpa Nama';
+        listText += `${index + 1}. ${title} - ${fm(item.amount)}\n`;
+        total += Number(item.amount);
+      });
+      listText += `\n💰 *Total: ${fm(total)}*`;
+
+      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, listText, { parse_mode: 'Markdown' });
+    } catch (err) {
+      return ctx.reply(`❌ Error: ${err.message}`);
+    }
   }
 
   const expenseMatch = text.match(/^(keluar|bayar|pengeluaran|min)\s+([0-9.,]+)\s+(.+)$/i);
@@ -254,7 +340,10 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
     if (pending.type === 'expense' || pending.type === 'income') {
       table = 'transactions';
       undoPrefix = 'tx';
-      payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, note: pending.note, date: new Date().toISOString() };
+      const now = new Date();
+      const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+      const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+      payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, note: pending.note, date: localDateStr };
     } else if (pending.type === 'asset') {
       table = 'assets';
       undoPrefix = 'ast';
@@ -314,6 +403,33 @@ bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   } catch (error) {
     ctx.answerCbQuery("❌ Gagal membatalkan.", { show_alert: true });
   }
+});
+
+bot.action(/del_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
+  const prefix = ctx.match[1];
+  const dbId = ctx.match[2];
+  
+  let table = 'transactions';
+  let typeStr = 'Transaksi';
+  if (prefix === 'ast') { table = 'assets'; typeStr = 'Aset'; }
+  if (prefix === 'dbt') { table = 'debts'; typeStr = 'Hutang'; }
+  if (prefix === 'rcv') { table = 'receivables'; typeStr = 'Piutang'; }
+  
+  try {
+    ctx.answerCbQuery("Menghapus...").catch(e => console.error(e));
+    const suId = ctx.state.supabaseUserId; 
+    const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', suId);
+    if (error) throw error;
+
+    await ctx.editMessageText(`✅ *Berhasil dihapus!*\n\n${typeStr} tersebut telah dihapus dari sistem.`, { parse_mode: 'Markdown' });
+  } catch (error) {
+    ctx.answerCbQuery("❌ Gagal menghapus.", { show_alert: true }).catch(e => console.error(e));
+  }
+});
+
+bot.action('cancel_delete', async (ctx) => {
+  ctx.answerCbQuery().catch(e => console.error(e));
+  await ctx.editMessageText("❌ Dibatalkan.");
 });
 
 // 8. Vercel Serverless Function Handler (Webhook)

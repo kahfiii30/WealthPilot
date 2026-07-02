@@ -77,7 +77,7 @@ bot.command('menu', (ctx) => {
 // Text Menu Handlers
 bot.hears('📊 Laporan & Portofolio', (ctx) => handleReport(ctx));
 bot.hears('➕ Cara Penggunaan', (ctx) => {
-  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang: `hutang 50000 pinjol`\n4. Aset: `aset 1000000 tabungan`\n5. Piutang: `piutang 50000 budi`\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci>`\nContoh: `hapus aset tabungan`, `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik `list aset`, `list hutang`, atau `list piutang`", { parse_mode: 'Markdown' });
+  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang Baru: `hutang 50000 pinjol`\n4. Aset Baru: `aset 1000000 bca`\n5. Piutang Baru: `piutang 50000 budi`\n\n*(Catatan: Jangan gunakan kata 'masuk/keluar' untuk Aset, Hutang, atau Piutang)*\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci nama>`\nContoh:\n- `hapus aset bca`\n- `hapus hutang pinjol`\n- `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik:\n- `list aset`\n- `list hutang`\n- `list piutang`", { parse_mode: 'Markdown' });
 });
 bot.hears('⚙️ Pengaturan', (ctx) => {
   ctx.reply("⚙️ *Pengaturan Koneksi*\nStatus: ✅ Terhubung ke Supabase\nFitur Premium: Aktif (Aset, Hutang, Piutang Tersinkronisasi)", { parse_mode: 'Markdown' });

@@ -48,9 +48,9 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
     const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
     const cash = income - expense;
-    const net = cash + totalAssets - totalDebts;
+    const net = cash + totalAssets + outstandingReceivables - totalDebts;
     return { cashBalance: cash, netWorth: net };
-  }, [transactions, totalAssets, totalDebts]);
+  }, [transactions, totalAssets, totalDebts, outstandingReceivables]);
 
   const [isReportOpen, setIsReportOpen] = useState(false);
 
@@ -161,6 +161,10 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             <div className="flex justify-between items-center text-sm 2xl:text-lg">
               <span className="text-slate-400 font-medium">Assets</span>
               <span className="text-emerald-400 font-black">+ {fm(totalAssets)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm 2xl:text-lg">
+              <span className="text-slate-400 font-medium">Receivables (Piutang)</span>
+              <span className="text-emerald-400 font-black">+ {fm(outstandingReceivables)}</span>
             </div>
             <div className="flex justify-between items-center text-sm 2xl:text-lg pb-4 border-b border-slate-700/30">
               <span className="text-slate-400 font-medium">Debts</span>

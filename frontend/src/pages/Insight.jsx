@@ -36,7 +36,17 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
   const analysis = useMemo(() => {
     const totalAssets = assets.reduce((sum, a) => sum + toNumber(a.amount), 0);
     const totalLiabilities = debts.reduce((sum, d) => sum + toNumber(d.amount), 0);
-    const netWorth = totalAssets - totalLiabilities;
+    
+    // Calculate total outstanding receivables
+    const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
+    const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + toNumber(r.remainingAmount), 0);
+    
+    // Calculate all-time cashflow
+    const allTimeIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + toNumber(t.amount), 0);
+    const allTimeExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + toNumber(t.amount), 0);
+    const cashBalance = allTimeIncome - allTimeExpense;
+
+    const netWorth = cashBalance + totalAssets + outstandingReceivables - totalLiabilities;
 
     const monthlyIncome = filteredTransactions
       .filter(t_item => t_item.type === 'income')

@@ -107,23 +107,32 @@ async function handleReport(ctx) {
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`;
 
     // Fetch all required data in parallel
-    const [txRes, assetRes, debtRes, recRes] = await Promise.all([
+    const [txResMonth, txResAll, assetRes, debtRes, recRes] = await Promise.all([
       supabase.from('transactions').select('amount, type').eq('user_id', supabaseUserId).gte('date', startDate).lte('date', endDate),
+      supabase.from('transactions').select('amount, type').eq('user_id', supabaseUserId),
       supabase.from('assets').select('amount').eq('user_id', supabaseUserId),
       supabase.from('debts').select('amount').eq('user_id', supabaseUserId),
       supabase.from('receivables').select('amount, paid_amount').eq('user_id', supabaseUserId)
     ]);
 
-    if (txRes.error) throw txRes.error;
+    if (txResMonth.error) throw txResMonth.error;
+    if (txResAll.error) throw txResAll.error;
     if (assetRes.error) throw assetRes.error;
     if (debtRes.error) throw debtRes.error;
     if (recRes.error) throw recRes.error;
 
-    let income = 0;
-    let expense = 0;
-    txRes.data.forEach(t => {
-      if (t.type === 'income') income += Number(t.amount);
-      if (t.type === 'expense') expense += Number(t.amount);
+    let incomeMonth = 0;
+    let expenseMonth = 0;
+    txResMonth.data.forEach(t => {
+      if (t.type === 'income') incomeMonth += Number(t.amount);
+      if (t.type === 'expense') expenseMonth += Number(t.amount);
+    });
+    
+    let incomeAll = 0;
+    let expenseAll = 0;
+    txResAll.data.forEach(t => {
+      if (t.type === 'income') incomeAll += Number(t.amount);
+      if (t.type === 'expense') expenseAll += Number(t.amount);
     });
 
     let totalAssets = assetRes.data.reduce((acc, a) => acc + Number(a.amount), 0);
@@ -131,15 +140,17 @@ async function handleReport(ctx) {
     
     let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
 
-    const balance = income - expense;
+    const balanceMonth = incomeMonth - expenseMonth;
+    const balanceAll = incomeAll - expenseAll;
 
     const reportMsg = `📊 *Laporan Bulan Ini (${monthStr})*\n\n` +
-      `🟢 Pemasukan: ${fm(income)}\n🔴 Pengeluaran: ${fm(expense)}\n💰 Sisa Cashflow: ${fm(balance)}\n\n` +
+      `🟢 Pemasukan: ${fm(incomeMonth)}\n🔴 Pengeluaran: ${fm(expenseMonth)}\n💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
       `🏦 *Portofolio Saat Ini:*\n` +
+      `💵 Total Saldo Kas (All-Time): ${fm(balanceAll)}\n` +
       `💎 Total Aset: ${fm(totalAssets)}\n` +
       `💳 Total Hutang: ${fm(totalDebts)}\n` +
       `🤝 Total Piutang: ${fm(totalReceivables)}\n\n` +
-      `⚖️ *Net Worth Bersih:* ${fm(balance + totalAssets + totalReceivables - totalDebts)}`;
+      `⚖️ *Net Worth Bersih:* ${fm(balanceAll + totalAssets + totalReceivables - totalDebts)}`;
     
     ctx.reply(reportMsg, { parse_mode: 'Markdown' });
   } catch (err) {

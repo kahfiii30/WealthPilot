@@ -4,7 +4,8 @@ import { formatDate } from '../utils/dateUtils';
 
 function AssetsDebt({ 
   assets = [], 
-  debts = [], 
+  debts = [],
+  receivables = [],
   transactions = [],
   onAddAsset, 
   onUpdateAsset, 
@@ -40,13 +41,16 @@ function AssetsDebt({
   const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
   const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
   
+  const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
+  const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + (Number(r.remainingAmount) || 0), 0);
+  
   const cashBalance = transactions.reduce((acc, t_item) => {
     if (t_item.type === 'income') return acc + Number(t_item.amount || 0);
     if (t_item.type === 'expense') return acc - Number(t_item.amount || 0);
     return acc;
   }, 0);
 
-  const netWorth = cashBalance + totalAssets - totalDebts;
+  const netWorth = cashBalance + totalAssets + outstandingReceivables - totalDebts;
 
   const assetCategories = ['Cash', 'Bank', 'E-Wallet', 'Crypto', 'Stocks', 'Business Inventory', 'Receivables', 'Others'];
   const debtCategories = ['Paylater', 'Installment', 'Loan', 'Credit Card', 'Personal Debt', 'Others'];

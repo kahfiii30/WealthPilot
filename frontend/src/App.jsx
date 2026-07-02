@@ -371,7 +371,7 @@ function App() {
           )}
           {activePage === 'assets' && (
             <AnimatedPage key="assets">
-              <AssetsDebt assets={assets} debts={debts} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} />
+              <AssetsDebt assets={assets} debts={debts} receivables={receivables} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} />
             </AnimatedPage>
           )}
           {activePage === 'receivables' && (

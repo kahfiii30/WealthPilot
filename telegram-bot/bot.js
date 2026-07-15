@@ -138,10 +138,13 @@ async function handleReport(ctx) {
     let incomeAll = 0;
     let expenseAll = 0;
     let methodBalances = {};
+    let methodNames = {}; // store original case for display
 
     // Initialize method balances from assets
     assetRes.data.forEach(a => {
-      methodBalances[a.name] = Number(a.amount);
+      const key = a.name.toUpperCase();
+      methodBalances[key] = Number(a.amount);
+      methodNames[key] = a.name;
     });
 
     txResAll.data.forEach(t => {
@@ -149,10 +152,14 @@ async function handleReport(ctx) {
       if (t.type === 'expense') expenseAll += Number(t.amount);
 
       const method = t.method || 'Cash';
-      if (methodBalances[method] === undefined) methodBalances[method] = 0;
+      const key = method.toUpperCase();
+      if (methodBalances[key] === undefined) {
+        methodBalances[key] = 0;
+        methodNames[key] = method;
+      }
 
-      if (t.type === 'income') methodBalances[method] += Number(t.amount);
-      if (t.type === 'expense') methodBalances[method] -= Number(t.amount);
+      if (t.type === 'income') methodBalances[key] += Number(t.amount);
+      if (t.type === 'expense') methodBalances[key] -= Number(t.amount);
     });
 
     let totalAssets = assetRes.data.reduce((acc, a) => acc + Number(a.amount), 0);
@@ -166,7 +173,8 @@ async function handleReport(ctx) {
     let methodDetails = "";
     Object.entries(methodBalances)
       .sort((a, b) => b[1] - a[1]) // Sort by amount descending
-      .forEach(([method, amount]) => {
+      .forEach(([key, amount]) => {
+        const method = methodNames[key];
         let icon = '🏦';
         if (method.toLowerCase().includes('cash')) icon = '💵';
         methodDetails += `   ├ ${icon} ${method}: ${fm(amount)}\n`;

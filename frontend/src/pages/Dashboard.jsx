@@ -61,26 +61,29 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     
     // Initialize with assets
     assets.forEach(a => {
-      balances[a.name] = { name: a.name, amount: a.amount, category: a.category };
+      const key = a.name.toUpperCase();
+      balances[key] = { name: a.name, amount: a.amount, category: a.category };
     });
 
     // Ensure core methods exist
     coreMethods.forEach(m => {
-      if (!balances[m]) {
-        balances[m] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
+      const key = m.toUpperCase();
+      if (!balances[key]) {
+        balances[key] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
       }
     });
 
     // Process all transactions
     transactions.forEach(t => {
       const method = t.method || 'Cash';
-      if (!balances[method]) {
-        balances[method] = { name: method, amount: 0, category: 'Other' };
+      const key = method.toUpperCase();
+      if (!balances[key]) {
+        balances[key] = { name: method, amount: 0, category: 'Other' };
       }
       if (t.type === 'income') {
-        balances[method].amount += t.amount;
+        balances[key].amount += t.amount;
       } else if (t.type === 'expense') {
-        balances[method].amount -= t.amount;
+        balances[key].amount -= t.amount;
       }
     });
 

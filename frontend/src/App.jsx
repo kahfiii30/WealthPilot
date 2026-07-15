@@ -5,6 +5,7 @@ import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
+import MeshGradient from './components/MeshGradient';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
@@ -33,6 +34,7 @@ function App() {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
 
   // Core Data States
   const [userProfile, setUserProfile] = useState({ firstName: "Pilot", lastName: "", email: "", avatarUrl: "" });
@@ -63,9 +65,18 @@ function App() {
       return;
     }
 
+    const isRecoveryHash = window.location.hash.includes('type=recovery');
+    if (isRecoveryHash) {
+      setIsRecoveryMode(true);
+    }
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       if (session) {
+        if (isRecoveryHash) {
+          setLoading(false);
+          return;
+        }
         localStorage.setItem("isLoggedIn", "true");
         setIsLoggedIn(true);
         fetchUserData(session.user.id);
@@ -77,9 +88,17 @@ function App() {
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+        setLoading(false);
+        return;
+      }
+
       if (session) {
+        if (isRecoveryMode || window.location.hash.includes('type=recovery')) return;
         localStorage.setItem("isLoggedIn", "true");
         setIsLoggedIn(true);
         fetchUserData(session.user.id);
@@ -92,7 +111,7 @@ function App() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [isRecoveryMode]);
 
 
   const resetLocalState = () => {
@@ -343,11 +362,25 @@ function App() {
     );
   }
 
+  if (isRecoveryMode) {
+    return <RecoveryForm onComplete={() => {
+      setIsRecoveryMode(false);
+      if (session) {
+        localStorage.setItem("isLoggedIn", "true");
+        setIsLoggedIn(true);
+        fetchUserData(session.user.id);
+      } else {
+        window.location.reload();
+      }
+    }} />;
+  }
+
   if (!isSupabaseConfigured) return <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-error">Supabase Configuration Missing</div>;
   if (!isLoggedIn) return <Login />;
 
   return (
-    <div className="relative min-h-screen text-slate-100 bg-[radial-gradient(circle_at_top_left,rgba(56,189,248,0.10),transparent_30%),radial-gradient(circle_at_top_right,rgba(74,222,128,0.08),transparent_26%),linear-gradient(135deg,#020617_0%,#07111f_45%,#0b1628_100%)]">
+    <div className="relative min-h-screen text-slate-100 bg-[#020617]">
+      <MeshGradient />
       <Toaster position="top-right" toastOptions={{
         style: {
           background: '#0f172a',
@@ -393,7 +426,7 @@ function App() {
       </main>
       
       <MobileNav activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} />
-      <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} t={t} fm={fm} currency={preferences.currency} />
+      <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} t={t} fm={fm} currency={preferences.currency} assets={assets} />
       <ProModal isOpen={isProModalOpen} onClose={() => setIsProModalOpen(false)} />
     </div>
   );
@@ -443,6 +476,65 @@ function ProModal({ isOpen, onClose }) {
           </button>
         </div>
       </motion.div>
+    </div>
+  );
+}
+
+function RecoveryForm({ onComplete }) {
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleUpdate = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      toast.success("Password updated successfully!");
+      // Clean up the hash from the URL
+      window.history.replaceState(null, '', window.location.pathname);
+      onComplete();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-[#020617] flex items-center justify-center relative overflow-hidden p-4">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-emerald-500/10 blur-[150px] rounded-full"></div>
+      <div className="relative z-10 w-full max-w-md bg-slate-900 border border-slate-700/50 rounded-3xl p-8 shadow-2xl">
+        <h2 className="text-3xl font-black text-slate-100 mb-2">Reset Password</h2>
+        <p className="text-slate-400 mb-8 text-sm">Please enter your new password below.</p>
+        <form onSubmit={handleUpdate} className="space-y-6">
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-2 block">New Password</label>
+            <input 
+              type="password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 focus:border-emerald-400/50 transition-colors outline-none"
+              required 
+              minLength={6}
+            />
+          </div>
+          <button 
+            type="submit" 
+            disabled={loading}
+            className="w-full py-4 bg-emerald-400 text-slate-950 font-black uppercase tracking-widest rounded-xl hover:bg-emerald-300 transition-colors disabled:opacity-50"
+          >
+            {loading ? 'Updating...' : 'Update Password'}
+          </button>
+        </form>
+      </div>
+      <Toaster position="top-right" toastOptions={{
+        style: {
+          background: '#0f172a',
+          color: '#f1f5f9',
+          border: '1px solid rgba(51, 65, 85, 0.5)',
+        }
+      }} />
     </div>
   );
 }

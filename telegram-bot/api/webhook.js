@@ -77,7 +77,7 @@ bot.command('menu', (ctx) => {
 // Text Menu Handlers
 bot.hears('📊 Laporan & Portofolio', (ctx) => handleReport(ctx));
 bot.hears('➕ Cara Penggunaan', (ctx) => {
-  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang Baru: `hutang 50000 pinjol`\n4. Aset Baru: `aset 1000000 bca`\n5. Piutang Baru: `piutang 50000 budi`\n\n*(Catatan: Jangan gunakan kata 'masuk/keluar' untuk Aset, Hutang, atau Piutang)*\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci nama>`\nContoh:\n- `hapus aset bca`\n- `hapus hutang pinjol`\n- `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik:\n- `list aset`\n- `list hutang`\n- `list piutang`", { parse_mode: 'Markdown' });
+  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang Baru: `hutang 50000 pinjol`\n4. Aset Baru: `aset 1000000 bca`\n5. Piutang Baru: `piutang 50000 budi`\n\n*(Catatan: Jangan gunakan kata 'masuk/keluar' untuk Aset, Hutang, atau Piutang)*\n\n📉 *Cara Mengurangi Nominal (Bayar Hutang/Piutang/Pakai Aset):*\nKetik `kurang/bayar <tipe> <nominal> <kata kunci>`\nContoh:\n- `bayar piutang 50000 budi`\n- `kurang aset 20000 bca`\n- `bayar hutang 100000 pinjol`\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci nama>`\nContoh:\n- `hapus aset bca`\n- `hapus hutang pinjol`\n- `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik:\n- `list aset`\n- `list hutang`\n- `list piutang`", { parse_mode: 'Markdown' });
 });
 bot.hears('⚙️ Pengaturan', (ctx) => {
   ctx.reply("⚙️ *Pengaturan Koneksi*\nStatus: ✅ Terhubung ke Supabase\nFitur Premium: Aktif (Aset, Hutang, Piutang Tersinkronisasi)", { parse_mode: 'Markdown' });
@@ -106,11 +106,11 @@ async function handleReport(ctx) {
 
     // Fetch all required data in parallel
     const [txResMonth, txResAll, assetRes, debtRes, recRes] = await Promise.all([
-      supabase.from('transactions').select('amount, type').eq('user_id', supabaseUserId).gte('date', startDate).lte('date', endDate),
+      supabase.from('transactions').select('amount, type, category').eq('user_id', supabaseUserId).gte('date', startDate).lte('date', endDate),
       supabase.from('transactions').select('amount, type').eq('user_id', supabaseUserId),
-      supabase.from('assets').select('amount').eq('user_id', supabaseUserId),
-      supabase.from('debts').select('amount').eq('user_id', supabaseUserId),
-      supabase.from('receivables').select('amount, paid_amount').eq('user_id', supabaseUserId)
+      supabase.from('assets').select('name, amount').eq('user_id', supabaseUserId),
+      supabase.from('debts').select('name, amount').eq('user_id', supabaseUserId),
+      supabase.from('receivables').select('debtor_name, amount, paid_amount').eq('user_id', supabaseUserId)
     ]);
 
     if (txResMonth.error) throw txResMonth.error;
@@ -121,9 +121,16 @@ async function handleReport(ctx) {
 
     let incomeMonth = 0;
     let expenseMonth = 0;
+    let categoryTotals = {};
+
     txResMonth.data.forEach(t => {
       if (t.type === 'income') incomeMonth += Number(t.amount);
-      if (t.type === 'expense') expenseMonth += Number(t.amount);
+      if (t.type === 'expense') {
+        expenseMonth += Number(t.amount);
+        if (t.category) {
+          categoryTotals[t.category] = (categoryTotals[t.category] || 0) + Number(t.amount);
+        }
+      }
     });
     
     let incomeAll = 0;
@@ -133,9 +140,29 @@ async function handleReport(ctx) {
       if (t.type === 'expense') expenseAll += Number(t.amount);
     });
 
-    let totalAssets = assetRes.data.reduce((acc, a) => acc + Number(a.amount), 0);
-    let totalDebts = debtRes.data.reduce((acc, d) => acc + Number(d.amount), 0);
-    let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
+    let totalAssets = 0;
+    let assetDetails = "";
+    assetRes.data.forEach(a => {
+      totalAssets += Number(a.amount);
+      assetDetails += `   ├ ${a.name}: ${fm(a.amount)}\n`;
+    });
+
+    let totalDebts = 0;
+    let debtDetails = "";
+    debtRes.data.forEach(d => {
+      totalDebts += Number(d.amount);
+      debtDetails += `   ├ ${d.name}: ${fm(d.amount)}\n`;
+    });
+
+    let totalReceivables = 0;
+    let recDetails = "";
+    recRes.data.forEach(r => {
+      const sisa = Number(r.amount) - Number(r.paid_amount);
+      if (sisa > 0) {
+        totalReceivables += sisa;
+        recDetails += `   ├ ${r.debtor_name}: ${fm(sisa)}\n`;
+      }
+    });
 
     const balanceMonth = incomeMonth - expenseMonth;
     const balanceAll = incomeAll - expenseAll;
@@ -143,13 +170,48 @@ async function handleReport(ctx) {
     const reportMsg = `📊 *Laporan Bulan Ini (${monthStr})*\n\n` +
       `🟢 Pemasukan: ${fm(incomeMonth)}\n🔴 Pengeluaran: ${fm(expenseMonth)}\n💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
       `🏦 *Portofolio Saat Ini:*\n` +
-      `💵 Total Saldo Kas (All-Time): ${fm(balanceAll)}\n` +
+      `💵 Saldo Kas (All-Time): ${fm(balanceAll)}\n` +
       `💎 Total Aset: ${fm(totalAssets)}\n` +
+      (assetDetails ? `${assetDetails}` : '') +
       `💳 Total Hutang: ${fm(totalDebts)}\n` +
-      `🤝 Total Piutang: ${fm(totalReceivables)}\n\n` +
-      `⚖️ *Net Worth Bersih:* ${fm(balanceAll + totalAssets + totalReceivables - totalDebts)}`;
+      (debtDetails ? `${debtDetails}` : '') +
+      `🤝 Total Piutang: ${fm(totalReceivables)}\n` +
+      (recDetails ? `${recDetails}` : '') +
+      `\n⚖️ *Net Worth Bersih:* ${fm(balanceAll + totalAssets + totalReceivables - totalDebts)}`;
 
-    ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+    let chartUrl = null;
+    const catKeys = Object.keys(categoryTotals);
+    if (catKeys.length > 0) {
+      const chartConfig = {
+        type: 'doughnut',
+        data: {
+          labels: catKeys,
+          datasets: [{ 
+            data: catKeys.map(k => categoryTotals[k]),
+            backgroundColor: ['#34d399', '#38bdf8', '#818cf8', '#fb923c', '#eab308', '#f87171']
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'right', labels: { fontColor: 'white', fontSize: 14 } },
+            datalabels: { color: 'white', font: { weight: 'bold' } }
+          },
+          title: { display: true, text: `Pengeluaran ${monthStr}`, fontColor: 'white', fontSize: 16 }
+        }
+      };
+      chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}&backgroundColor=%230f172a&width=600&height=300`;
+    }
+
+    try {
+      if (chartUrl) {
+        await ctx.replyWithPhoto({ url: chartUrl }, { caption: reportMsg, parse_mode: 'Markdown' });
+      } else {
+        await ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+      }
+    } catch (e) {
+      console.error("Failed to send photo:", e);
+      await ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+    }
   } catch (err) {
     ctx.reply(`❌ Gagal mengambil laporan: ${err.message}`);
   }
@@ -164,6 +226,54 @@ bot.on('text', async (ctx) => {
   // Shortcut for checking balance
   if (text.includes('saldo') || text.includes('cek saldo') || text.includes('report')) {
     return handleReport(ctx);
+  }
+
+  const reduceMatch = text.match(/^(kurang|bayar)\s+(aset|asset|piutang|hutang|utang)\s+([0-9.,]+)\s+(.+)$/i);
+  if (reduceMatch) {
+    const reduceType = reduceMatch[2].toLowerCase();
+    const amountStr = reduceMatch[3];
+    const keyword = reduceMatch[4].trim();
+    const amount = Number(amountStr.replace(/[^0-9]/g, ''));
+    if (isNaN(amount) || amount <= 0) return ctx.reply("❌ Jumlah tidak valid.");
+
+    let table = '';
+    let nameColumn = '';
+
+    if (reduceType === 'aset' || reduceType === 'asset') { table = 'assets'; nameColumn = 'name'; }
+    else if (reduceType === 'hutang' || reduceType === 'utang') { table = 'debts'; nameColumn = 'name'; }
+    else if (reduceType === 'piutang') { table = 'receivables'; nameColumn = 'debtor_name'; }
+
+    try {
+      const msg = await ctx.reply(`🔍 Mencari ${reduceType} "${keyword}" untuk dikurangi ${fm(amount)}...`);
+      const suId = ctx.state.supabaseUserId; 
+
+      const { data, error } = await supabase.from(table).select(`id, amount, ${nameColumn}${table === 'receivables' ? ', paid_amount' : ''}`).eq('user_id', suId).ilike(nameColumn, `%${keyword}%`).order('created_at', { ascending: false }).limit(5);
+
+      if (error) throw error;
+      if (!data || data.length === 0) {
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `❌ Tidak ditemukan ${reduceType} dengan kata kunci "${keyword}".`);
+      }
+
+      const txId = `red_${Date.now()}`;
+      await supabase.from('telegram_drafts').insert([{
+        telegram_id: ctx.from.id.toString(),
+        tx_id: txId,
+        payload: { amount, table, nameColumn }
+      }]);
+
+      const buttons = data.map(item => {
+        const title = item[nameColumn] || 'Tanpa Nama';
+        const currentBal = table === 'receivables' ? (Number(item.amount) - Number(item.paid_amount)) : Number(item.amount);
+        return [Markup.button.callback(`📉 Kurangi ${title} (${fm(currentBal)})`, `red_${txId}_${item.id}`)];
+      });
+      buttons.push([Markup.button.callback('❌ Batal', 'cancel_delete')]);
+
+      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `Menemukan ${data.length} hasil untuk "${keyword}". Pilih yang ingin dikurangi nominalnya sebesar ${fm(amount)}:`, {
+        ...Markup.inlineKeyboard(buttons)
+      });
+    } catch (err) {
+      return ctx.reply(`❌ Error: ${err.message}`);
+    }
   }
 
   const deleteMatch = text.match(/^(hapus|delete)\s+(aset|asset|hutang|utang|piutang|transaksi|pengeluaran|pemasukan)\s+(.+)$/i);
@@ -339,59 +449,116 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
   const supabaseUserId = pending.supabaseUserId;
 
   try {
-    // Add catch to answerCbQuery to prevent unhandled rejections
-    ctx.answerCbQuery("Menyimpan...").catch(err => console.error("answerCbQuery error:", err));
-    await ctx.editMessageText(`⏳ Menyimpan ke database...`);
+    ctx.answerCbQuery("Kategori dipilih.").catch(e => console.error(e));
 
-    let table = 'transactions';
-    let payload = {};
-    let undoPrefix = 'tx';
-
-    if (pending.type === 'expense' || pending.type === 'income') {
-      table = 'transactions';
-      undoPrefix = 'tx';
-      const now = new Date();
-      const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-      const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
-      payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, note: pending.note, date: localDateStr };
-    } else if (pending.type === 'asset') {
-      table = 'assets';
-      undoPrefix = 'ast';
-      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
-    } else if (pending.type === 'debt') {
-      table = 'debts';
-      undoPrefix = 'dbt';
-      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
+    // If it's Asset or Debt, save directly (no method needed)
+    if (pending.type === 'asset' || pending.type === 'debt') {
+      await saveTransactionDraft(ctx, pending, category, null, txId);
+      return;
     }
 
-    const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
-    if (error) throw error;
+    // Save category to draft and ask for payment method
+    const updatedPayload = { ...pending, category };
+    await supabase.from('telegram_drafts').update({ payload: updatedPayload }).eq('tx_id', txId);
 
-    await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
+    // Fetch user assets to show banks
+    const { data: assets } = await supabase.from('assets').select('name, category').eq('user_id', supabaseUserId).in('category', ['Bank', 'E-Wallet', 'Cash']);
+    
+    let methodButtons = [];
+    if (assets && assets.length > 0) {
+      methodButtons = assets.map(a => Markup.button.callback(a.name, `mthd_${txId}_${a.name}`));
+    } else {
+      methodButtons = [
+        Markup.button.callback('Cash', `mthd_${txId}_Cash`),
+        Markup.button.callback('BCA', `mthd_${txId}_BCA`),
+        Markup.button.callback('Mandiri', `mthd_${txId}_Mandiri`),
+        Markup.button.callback('Seabank', `mthd_${txId}_Seabank`),
+        Markup.button.callback('E-Wallet', `mthd_${txId}_E-Wallet`)
+      ];
+    }
 
-    let typeStr = "";
-    if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
-    if (pending.type === 'income') typeStr = '🟢 Pemasukan';
-    if (pending.type === 'asset') typeStr = '💎 Aset';
-    if (pending.type === 'debt') typeStr = '💳 Hutang';
+    const keyboardRows = [];
+    for (let i = 0; i < methodButtons.length; i += 2) { keyboardRows.push(methodButtons.slice(i, i + 2)); }
 
-    await ctx.editMessageText(
-      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`,
-      {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`)])
-      }
-    );
+    await ctx.editMessageText(`Kategori: ${category}\n\n👇 *Pilih Metode Pembayaran / Bank:*`, {
+      parse_mode: 'Markdown',
+      ...Markup.inlineKeyboard(keyboardRows)
+    });
+
   } catch (error) {
-    console.error("Error saving to database:", error);
-    try {
-      await ctx.editMessageText(`❌ Terjadi kesalahan: ${error.message || String(error)}`);
-    } catch (editError) {
-      console.error("Error editing message in catch:", editError);
-      await ctx.reply(`❌ Terjadi kesalahan saat menyimpan data: ${error.message || String(error)}`).catch(e => console.error("Reply error:", e));
-    }
+    console.error("Error processing category:", error);
+    await ctx.reply(`❌ Terjadi kesalahan: ${error.message}`).catch(e => console.error(e));
   }
 });
+
+// 6.5 Handle Method Selection
+bot.action(/mthd_(req_[0-9]+)_(.+)/, async (ctx) => {
+  const txId = ctx.match[1];
+  const method = ctx.match[2];
+
+  const { data: draftData, error: draftError } = await supabase
+    .from('telegram_drafts')
+    .select('payload')
+    .eq('tx_id', txId)
+    .maybeSingle();
+
+  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
+
+  const pending = draftData.payload;
+  
+  try {
+    ctx.answerCbQuery("Menyimpan...").catch(e => console.error(e));
+    await saveTransactionDraft(ctx, pending, pending.category, method, txId);
+  } catch (error) {
+    console.error("Error processing method:", error);
+    await ctx.reply(`❌ Terjadi kesalahan: ${error.message}`).catch(e => console.error(e));
+  }
+});
+
+async function saveTransactionDraft(ctx, pending, category, method, txId) {
+  const supabaseUserId = pending.supabaseUserId;
+  await ctx.editMessageText(`⏳ Menyimpan ke database...`);
+
+  let table = 'transactions';
+  let payload = {};
+  let undoPrefix = 'tx';
+
+  if (pending.type === 'expense' || pending.type === 'income') {
+    table = 'transactions';
+    undoPrefix = 'tx';
+    const now = new Date();
+    const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+    payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, method: method || 'Cash', note: pending.note, date: localDateStr };
+  } else if (pending.type === 'asset') {
+    table = 'assets';
+    undoPrefix = 'ast';
+    payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
+  } else if (pending.type === 'debt') {
+    table = 'debts';
+    undoPrefix = 'dbt';
+    payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
+  }
+
+  const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
+  if (error) throw error;
+
+  await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
+
+  let typeStr = "";
+  if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
+  if (pending.type === 'income') typeStr = '🟢 Pemasukan';
+  if (pending.type === 'asset') typeStr = '💎 Aset';
+  if (pending.type === 'debt') typeStr = '💳 Hutang';
+
+  let successMsg = `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`;
+  if (method) successMsg += `\nMetode: ${method}`;
+
+  await ctx.editMessageText(successMsg, {
+    parse_mode: 'Markdown',
+    ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`)])
+  });
+}
 
 // 7. Handle Undo Action
 bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
@@ -434,6 +601,52 @@ bot.action(/del_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
     await ctx.editMessageText(`✅ *Berhasil dihapus!*\n\n${typeStr} tersebut telah dihapus dari sistem.`, { parse_mode: 'Markdown' });
   } catch (error) {
     ctx.answerCbQuery("❌ Gagal menghapus.", { show_alert: true }).catch(e => console.error(e));
+  }
+});
+
+bot.action(/red_(red_[0-9]+)_(.+)/, async (ctx) => {
+  const txId = ctx.match[1];
+  const dbId = ctx.match[2];
+  const suId = ctx.state.supabaseUserId;
+
+  const { data: draftData, error: draftError } = await supabase
+    .from('telegram_drafts')
+    .select('payload')
+    .eq('tx_id', txId)
+    .maybeSingle();
+
+  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
+  
+  const { amount, table, nameColumn } = draftData.payload;
+
+  try {
+    ctx.answerCbQuery("Memproses...").catch(e => console.error(e));
+    
+    const { data: currentData, error: fetchErr } = await supabase.from(table).select('*').eq('id', dbId).eq('user_id', suId).single();
+    if (fetchErr) throw fetchErr;
+
+    let newPayload = {};
+    let message = "";
+
+    if (table === 'receivables') {
+      const newPaid = Number(currentData.paid_amount) + amount;
+      newPayload = { paid_amount: newPaid, updated_at: new Date().toISOString() };
+      message = `✅ *Piutang Berhasil Dibayar!*\n\nPeminjam: ${currentData[nameColumn]}\nDibayar: ${fm(amount)}\nSisa Piutang: ${fm(Number(currentData.amount) - newPaid)}`;
+    } else {
+      let newAmount = Number(currentData.amount) - amount;
+      if (newAmount < 0) newAmount = 0;
+      newPayload = { amount: newAmount, updated_at: new Date().toISOString() };
+      const typeStr = table === 'assets' ? 'Aset' : 'Hutang';
+      message = `✅ *${typeStr} Berhasil Dikurangi!*\n\nNama: ${currentData[nameColumn]}\nDikurangi: ${fm(amount)}\nSisa Saldo: ${fm(newAmount)}`;
+    }
+
+    const { error: updateErr } = await supabase.from(table).update(newPayload).eq('id', dbId).eq('user_id', suId);
+    if (updateErr) throw updateErr;
+
+    await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
+    await ctx.editMessageText(message, { parse_mode: 'Markdown' });
+  } catch (error) {
+    ctx.answerCbQuery("❌ Gagal memproses.", { show_alert: true }).catch(e => console.error(e));
   }
 });
 

@@ -117,7 +117,6 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
     else if (wealthScore >= 40) { status = "Needs Attention"; statusColor = "text-yellow-400"; }
 
     // Receivables Metrics
-    const outstandingReceivables = (receivables || []).reduce((acc, r) => acc + toNumber(r.remainingAmount), 0);
     const paidReceivablesThisMonth = (receivables || []).reduce((acc, r) => {
       const isPaidThisMonth = getMonthKey(r.updatedAt) === selectedMonth;
       return isPaidThisMonth ? acc + toNumber(r.paidAmount) : acc;

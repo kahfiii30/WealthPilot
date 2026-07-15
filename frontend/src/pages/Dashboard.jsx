@@ -2,6 +2,8 @@ import { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import StatCard from '../components/StatCard';
 import RecentTransactions from '../components/RecentTransactions';
+import CashflowChart from '../components/CashflowChart';
+import CategoryChart from '../components/CategoryChart';
 import { getMonthKey } from '../services/financeService';
 import { exportToCSV } from '../utils/export';
 
@@ -205,7 +207,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
               <span className="truncate mr-4">{t('totalIncome')} {fm(totalIncome)}</span>
               <span className="truncate">{t('totalExpense')} {fm(totalExpense)}</span>
             </div>
-            <div className="w-full h-4 bg-slate-700/45 rounded-full overflow-hidden flex border border-slate-700/20 shadow-inner">
+            <div className="w-full h-4 bg-slate-700/45 rounded-full overflow-hidden flex border border-slate-700/20 shadow-inner mb-6">
               {totalIncome > 0 ? (
                 <>
                   <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, 100 - (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]"></motion.div>
@@ -214,6 +216,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
               ) : (
                 <div className="h-full bg-red-500/20 w-full"></div>
               )}
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-slate-700/30">
+              <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 mb-4">6-Month Trend</h4>
+              <CashflowChart transactions={transactions} />
             </div>
           </div>
         </motion.div>
@@ -253,8 +260,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       {/* Bento Grid: Spending & Transactions */}
       <div className="grid grid-cols-12 gap-8 2xl:gap-12">
         <motion.div variants={item} className="col-span-12 lg:col-span-4 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-10 shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 hover:bg-slate-900/70">
-          <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-8">{t('spendingBreakdown')}</h3>
-          <div className="space-y-6">
+          <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-6">{t('spendingBreakdown')}</h3>
+          <div className="mb-8">
+            <CategoryChart transactions={filteredTransactions} totalExpense={totalExpense} />
+          </div>
+          <div className="space-y-6 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
             {categories.map((cat) => {
                const catTotal = filteredTransactions.filter(t_data => t_data.type === 'expense' && t_data.category === cat.name).reduce((acc, t_data) => acc + t_data.amount, 0);
                const percent = totalExpense > 0 ? Math.round((catTotal / totalExpense) * 100) : 0;

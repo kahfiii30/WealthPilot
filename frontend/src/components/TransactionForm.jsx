@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency }) {
+function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, assets = [] }) {
   const [type, setType] = useState('expense');
   const [title, setTitle] = useState('');
   const [amount, setAmount] = useState('');
@@ -11,6 +11,16 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency }) {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
+
+  const liquidAssets = assets.filter(a => ['Bank', 'E-Wallet', 'Cash'].includes(a.category));
+  const defaultMethod = liquidAssets.length > 0 ? liquidAssets[0].name : 'Cash';
+
+  // Automatically set method to first available liquid asset if 'Cash' is not found in assets
+  useEffect(() => {
+    if (isOpen && liquidAssets.length > 0 && !liquidAssets.find(a => a.name === method)) {
+      setMethod(liquidAssets[0].name);
+    }
+  }, [isOpen, liquidAssets, method]);
 
   const handleTypeChange = (newType) => {
     setType(newType);
@@ -186,10 +196,16 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency }) {
                     onChange={(e) => setMethod(e.target.value)} 
                     className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
                   >
-                    <option value="Cash" className="bg-slate-900">Cash</option>
-                    <option value="Bank Transfer" className="bg-slate-900">Bank Transfer</option>
-                    <option value="Credit Card" className="bg-slate-900">Credit Card</option>
-                    <option value="E-Wallet" className="bg-slate-900">E-Wallet</option>
+                    {liquidAssets.length > 0 ? liquidAssets.map(a => (
+                      <option key={a.id} value={a.name} className="bg-slate-900">{a.name} ({a.category})</option>
+                    )) : (
+                      <>
+                        <option value="Cash" className="bg-slate-900">Cash</option>
+                        <option value="Bank Transfer" className="bg-slate-900">Bank Transfer</option>
+                        <option value="Credit Card" className="bg-slate-900">Credit Card</option>
+                        <option value="E-Wallet" className="bg-slate-900">E-Wallet</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

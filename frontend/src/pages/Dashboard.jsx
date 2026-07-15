@@ -54,6 +54,41 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     return { cashBalance: cash, netWorth: net };
   }, [transactions, totalAssets, totalDebts, outstandingReceivables]);
 
+  // Account Balances Calculation
+  const accountBalances = useMemo(() => {
+    const balances = {};
+    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
+    
+    // Initialize with assets
+    assets.forEach(a => {
+      balances[a.name] = { name: a.name, amount: a.amount, category: a.category };
+    });
+
+    // Ensure core methods exist
+    coreMethods.forEach(m => {
+      if (!balances[m]) {
+        balances[m] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
+      }
+    });
+
+    // Process all transactions
+    transactions.forEach(t => {
+      const method = t.method || 'Cash';
+      if (!balances[method]) {
+        balances[method] = { name: method, amount: 0, category: 'Other' };
+      }
+      if (t.type === 'income') {
+        balances[method].amount += t.amount;
+      } else if (t.type === 'expense') {
+        balances[method].amount -= t.amount;
+      }
+    });
+
+    return Object.values(balances).sort((a, b) => b.amount - a.amount);
+  }, [transactions, assets]);
+
+  const totalAccountBalance = useMemo(() => accountBalances.reduce((acc, a) => acc + a.amount, 0), [accountBalances]);
+
   const [isReportOpen, setIsReportOpen] = useState(false);
 
   // 3. Monthly History (from ALL transactions)
@@ -256,6 +291,53 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           <div className="text-2xl 2xl:text-4xl font-black text-slate-100 truncate">{fm(outstandingReceivables)}</div>
         </div>
       </motion.div>
+
+      {/* Accounts & Wallets Section */}
+      <motion.section variants={item} className="mb-8 2xl:mb-12">
+        <h3 className="text-2xl font-black text-slate-100 tracking-tight mb-6 flex items-center gap-3">
+          <span className="material-symbols-outlined text-emerald-400">account_balance</span>
+          Accounts & Wallets
+          <span className="ml-auto text-sm font-black text-slate-500 uppercase tracking-widest">Total: <span className="text-emerald-400">{fm(totalAccountBalance)}</span></span>
+        </h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 2xl:gap-6">
+          {accountBalances.map((acc, index) => {
+            let icon = 'account_balance_wallet';
+            let color = 'text-slate-400';
+            let bg = 'bg-slate-400/10';
+            
+            const nameLower = acc.name.toLowerCase();
+            if (nameLower.includes('bca')) {
+              icon = 'account_balance';
+              color = 'text-blue-500';
+              bg = 'bg-blue-500/10';
+            } else if (nameLower.includes('mandiri')) {
+              icon = 'account_balance';
+              color = 'text-yellow-500';
+              bg = 'bg-yellow-500/10';
+            } else if (nameLower.includes('seabank')) {
+              icon = 'account_balance';
+              color = 'text-orange-500';
+              bg = 'bg-orange-500/10';
+            } else if (nameLower.includes('cash')) {
+              icon = 'payments';
+              color = 'text-emerald-400';
+              bg = 'bg-emerald-400/10';
+            }
+
+            return (
+              <div key={acc.name} className="p-5 2xl:p-6 rounded-2xl border border-slate-700/30 bg-slate-900/60 backdrop-blur-xl hover:border-slate-500/50 transition-all group flex flex-col justify-between min-h-[120px]">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className={`p-2 rounded-xl ${bg} group-hover:scale-110 transition-transform`}>
+                    <span className={`material-symbols-outlined ${color} font-bold text-[20px]`}>{icon}</span>
+                  </div>
+                  <span className="text-[11px] 2xl:text-xs font-black uppercase tracking-widest text-slate-400 truncate">{acc.name}</span>
+                </div>
+                <div className="text-xl 2xl:text-3xl font-black text-slate-100 truncate">{fm(acc.amount)}</div>
+              </div>
+            );
+          })}
+        </div>
+      </motion.section>
 
       {/* Bento Grid: Spending & Transactions */}
       <div className="grid grid-cols-12 gap-8 2xl:gap-12">

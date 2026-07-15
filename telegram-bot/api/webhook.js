@@ -107,7 +107,7 @@ async function handleReport(ctx) {
     // Fetch all required data in parallel
     const [txResMonth, txResAll, assetRes, debtRes, recRes] = await Promise.all([
       supabase.from('transactions').select('amount, type, category').eq('user_id', supabaseUserId).gte('date', startDate).lte('date', endDate),
-      supabase.from('transactions').select('amount, type').eq('user_id', supabaseUserId),
+      supabase.from('transactions').select('amount, type, method').eq('user_id', supabaseUserId),
       supabase.from('assets').select('name, amount').eq('user_id', supabaseUserId),
       supabase.from('debts').select('name, amount').eq('user_id', supabaseUserId),
       supabase.from('receivables').select('debtor_name, amount, paid_amount').eq('user_id', supabaseUserId)
@@ -135,9 +135,22 @@ async function handleReport(ctx) {
     
     let incomeAll = 0;
     let expenseAll = 0;
+    let methodBalances = {};
+
+    // Initialize method balances from assets
+    assetRes.data.forEach(a => {
+      methodBalances[a.name] = Number(a.amount);
+    });
+
     txResAll.data.forEach(t => {
       if (t.type === 'income') incomeAll += Number(t.amount);
       if (t.type === 'expense') expenseAll += Number(t.amount);
+
+      const method = t.method || 'Cash';
+      if (methodBalances[method] === undefined) methodBalances[method] = 0;
+
+      if (t.type === 'income') methodBalances[method] += Number(t.amount);
+      if (t.type === 'expense') methodBalances[method] -= Number(t.amount);
     });
 
     let totalAssets = 0;
@@ -167,17 +180,30 @@ async function handleReport(ctx) {
     const balanceMonth = incomeMonth - expenseMonth;
     const balanceAll = incomeAll - expenseAll;
 
+    let methodDetails = "";
+    Object.entries(methodBalances)
+      .sort((a, b) => b[1] - a[1]) // Sort by amount descending
+      .forEach(([method, amount]) => {
+        let icon = '🏦';
+        if (method.toLowerCase().includes('cash')) icon = '💵';
+        methodDetails += `   ├ ${icon} ${method}: ${fm(amount)}\n`;
+      });
+      
+    const totalAccountBalance = Object.values(methodBalances).reduce((a, b) => a + b, 0);
+
     const reportMsg = `📊 *Laporan Bulan Ini (${monthStr})*\n\n` +
       `🟢 Pemasukan: ${fm(incomeMonth)}\n🔴 Pengeluaran: ${fm(expenseMonth)}\n💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
-      `🏦 *Portofolio Saat Ini:*\n` +
-      `💵 Saldo Kas (All-Time): ${fm(balanceAll)}\n` +
-      `💎 Total Aset: ${fm(totalAssets)}\n` +
+      `💳 *Saldo Rekening (Dompet/Bank):*\n` +
+      (methodDetails ? `${methodDetails}` : '   ├ Belum ada data\n') +
+      `💰 *Total Saldo: ${fm(totalAccountBalance)}*\n\n` +
+      `🏦 *Portofolio Tambahan:*\n` +
+      `💎 Total Aset Tetap: ${fm(totalAssets)}\n` +
       (assetDetails ? `${assetDetails}` : '') +
       `💳 Total Hutang: ${fm(totalDebts)}\n` +
       (debtDetails ? `${debtDetails}` : '') +
       `🤝 Total Piutang: ${fm(totalReceivables)}\n` +
       (recDetails ? `${recDetails}` : '') +
-      `\n⚖️ *Net Worth Bersih:* ${fm(balanceAll + totalAssets + totalReceivables - totalDebts)}`;
+      `\n⚖️ *Net Worth Bersih:* ${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}`;
 
     let chartUrl = null;
     const catKeys = Object.keys(categoryTotals);

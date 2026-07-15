@@ -13,14 +13,20 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
   const [error, setError] = useState(null);
 
   const liquidAssets = assets.filter(a => ['Bank', 'E-Wallet', 'Cash'].includes(a.category));
-  const defaultMethod = liquidAssets.length > 0 ? liquidAssets[0].name : 'Cash';
+  
+  // Combine user liquid assets with default core methods, ensuring no duplicates
+  const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
+  const assetMethods = liquidAssets.map(a => a.name);
+  const combinedMethods = [...new Set([...assetMethods, ...coreMethods])];
 
-  // Automatically set method to first available liquid asset if 'Cash' is not found in assets
+  const defaultMethod = combinedMethods.length > 0 ? combinedMethods[0] : 'Cash';
+
+  // Automatically set method to first available if current method is not found
   useEffect(() => {
-    if (isOpen && liquidAssets.length > 0 && !liquidAssets.find(a => a.name === method)) {
-      setMethod(liquidAssets[0].name);
+    if (isOpen && combinedMethods.length > 0 && !combinedMethods.includes(method)) {
+      setMethod(combinedMethods[0]);
     }
-  }, [isOpen, liquidAssets, method]);
+  }, [isOpen, method]);
 
   const handleTypeChange = (newType) => {
     setType(newType);
@@ -196,16 +202,9 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     onChange={(e) => setMethod(e.target.value)} 
                     className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
                   >
-                    {liquidAssets.length > 0 ? liquidAssets.map(a => (
-                      <option key={a.id} value={a.name} className="bg-slate-900">{a.name} ({a.category})</option>
-                    )) : (
-                      <>
-                        <option value="Cash" className="bg-slate-900">Cash</option>
-                        <option value="Bank Transfer" className="bg-slate-900">Bank Transfer</option>
-                        <option value="Credit Card" className="bg-slate-900">Credit Card</option>
-                        <option value="E-Wallet" className="bg-slate-900">E-Wallet</option>
-                      </>
-                    )}
+                    {combinedMethods.map(m => (
+                      <option key={m} value={m} className="bg-slate-900">{m}</option>
+                    ))}
                   </select>
                 </div>
               </div>

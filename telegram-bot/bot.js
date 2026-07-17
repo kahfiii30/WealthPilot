@@ -147,6 +147,15 @@ async function handleReport(ctx) {
       methodNames[key] = a.name;
     });
 
+    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
+    coreMethods.forEach(m => {
+      const key = m.toUpperCase();
+      if (methodBalances[key] === undefined) {
+         methodBalances[key] = 0;
+         methodNames[key] = m;
+      }
+    });
+
     txResAll.data.forEach(t => {
       if (t.type === 'income') incomeAll += Number(t.amount);
       if (t.type === 'expense') expenseAll += Number(t.amount);
@@ -176,22 +185,31 @@ async function handleReport(ctx) {
       .forEach(([key, amount]) => {
         const method = methodNames[key];
         let icon = '🏦';
-        if (method.toLowerCase().includes('cash')) icon = '💵';
-        methodDetails += `   ├ ${icon} ${method}: ${fm(amount)}\n`;
+        const methodLower = method.toLowerCase();
+        if (methodLower.includes('cash')) icon = '💵';
+        else if (methodLower.includes('bca') || methodLower.includes('mandiri') || methodLower.includes('seabank')) icon = '💳';
+        else if (methodLower.includes('invest')) icon = '📈';
+        
+        methodDetails += `   ├ ${icon} *${method}*: \`${fm(amount)}\`\n`;
       });
       
     const totalAccountBalance = Object.values(methodBalances).reduce((a, b) => a + b, 0);
+    const netWorth = totalAccountBalance + totalAssets + totalReceivables - totalDebts;
 
-    const reportMsg = `📊 *Laporan Bulan Ini (${monthStr})*\n\n` +
-      `🟢 Pemasukan: ${fm(incomeMonth)}\n🔴 Pengeluaran: ${fm(expenseMonth)}\n💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
-      `💳 *Saldo Rekening (Dompet/Bank):*\n` +
+    const reportMsg = `🌟 *WEALTHPILOT PRO REPORT* 🌟\n` +
+      `📅 Periode: *Bulan Ini (${monthStr})*\n\n` +
+      `💎 *CASHFLOW OVERVIEW*\n` +
+      `   ├ 🟢 Pemasukan  : \`${fm(incomeMonth)}\`\n` +
+      `   ├ 🔴 Pengeluaran: \`${fm(expenseMonth)}\`\n` +
+      `   └ 💰 Sisa (Net) : \`${fm(balanceMonth)}\`\n\n` +
+      `🏦 *REKENING & DOMPET (LIQUID)*\n` +
       (methodDetails ? `${methodDetails}` : '   ├ Belum ada data\n') +
-      `💰 *Total Saldo: ${fm(totalAccountBalance)}*\n\n` +
-      `🏦 *Portofolio Tambahan:*\n` +
-      `💎 Total Aset Tetap: ${fm(totalAssets)}\n` +
-      `💳 Total Hutang: ${fm(totalDebts)}\n` +
-      `🤝 Total Piutang: ${fm(totalReceivables)}\n\n` +
-      `⚖️ *Net Worth Bersih:* ${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}`;
+      `   └ 💎 *TOTAL LIQUID:* \`${fm(totalAccountBalance)}\`\n\n` +
+      `📈 *PORTOFOLIO TAMBAHAN*\n` +
+      `   ├ 📦 Aset Tetap : \`${fm(totalAssets)}\`\n` +
+      `   ├ 🤝 Piutang    : \`${fm(totalReceivables)}\`\n` +
+      `   └ 💳 Hutang     : \`${fm(totalDebts)}\`\n\n` +
+      `🏆 *NET WORTH BERSIH:* \`${fm(netWorth)}\``;
     
     ctx.reply(reportMsg, { parse_mode: 'Markdown' });
   } catch (err) {
@@ -342,7 +360,7 @@ bot.on('text', async (ctx) => {
 
   let categories = [];
   let typeStr = "";
-  if (type === 'expense') { categories = ['Food & Dining', 'Transportation', 'Shopping', 'Bills', 'Lainnya']; typeStr = '🔴 Pengeluaran'; }
+  if (type === 'expense') { categories = ['Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Lainnya']; typeStr = '🔴 Pengeluaran'; }
   else if (type === 'income') { categories = ['Salary', 'Bonus', 'Investment', 'Lainnya']; typeStr = '🟢 Pemasukan'; }
   else if (type === 'asset') { categories = ['Tunai', 'Tabungan', 'Investasi', 'Properti', 'Lainnya']; typeStr = '💎 Aset Baru'; }
   else if (type === 'debt') { categories = ['Pinjol', 'Kartu Kredit', 'KPR/KKB', 'Pribadi', 'Lainnya']; typeStr = '💳 Hutang Baru'; }

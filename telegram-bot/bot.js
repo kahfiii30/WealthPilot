@@ -375,7 +375,7 @@ bot.on('text', async (ctx) => {
   let categories = [];
   let typeStr = "";
   if (type === 'expense') { categories = ['Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Lainnya']; typeStr = '🔴 Pengeluaran'; }
-  else if (type === 'income') { categories = ['Salary', 'Bonus', 'Investment', 'Lainnya']; typeStr = '🟢 Pemasukan'; }
+  else if (type === 'income') { categories = ['Salary', 'Business', 'Bonus', 'Freelance', 'Investment', 'Gift', 'Other Income']; typeStr = '🟢 Pemasukan'; }
   else if (type === 'asset') { categories = ['Tunai', 'Tabungan', 'Investasi', 'Properti', 'Lainnya']; typeStr = '💎 Aset Baru'; }
   else if (type === 'debt') { categories = ['Pinjol', 'Kartu Kredit', 'KPR/KKB', 'Pribadi', 'Lainnya']; typeStr = '💳 Hutang Baru'; }
 

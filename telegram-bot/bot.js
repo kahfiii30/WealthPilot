@@ -124,6 +124,7 @@ async function handleReport(ctx) {
     let incomeMonth = 0;
     let expenseMonth = 0;
     let categoryTotals = {};
+    let chartUrl = "";
 
     txResMonth.data.forEach(t => {
       if (t.type === 'income') incomeMonth += Number(t.amount);
@@ -134,6 +135,30 @@ async function handleReport(ctx) {
         }
       }
     });
+
+    const catKeys = Object.keys(categoryTotals);
+    if (catKeys.length > 0) {
+      const chartConfig = {
+        type: 'doughnut',
+        data: {
+          labels: catKeys,
+          datasets: [{ 
+            data: catKeys.map(k => categoryTotals[k]),
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#14b8a6'],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'right', labels: { fontColor: '#f1f5f9', fontSize: 14, fontFamily: 'sans-serif' } },
+            datalabels: { color: '#ffffff', font: { weight: 'bold', size: 12, family: 'sans-serif' } },
+            doughnutlabel: { labels: [{ text: 'Expense', font: { size: 20, weight: 'bold' }, color: '#94a3b8' }] }
+          },
+          layout: { padding: 20 }
+        }
+      };
+      chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}&backgroundColor=%23020617&width=600&height=300`;
+    }
     
     let incomeAll = 0;
     let expenseAll = 0;
@@ -182,9 +207,13 @@ async function handleReport(ctx) {
     let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
 
     const balanceMonth = incomeMonth - expenseMonth;
-    const balanceAll = incomeAll - expenseAll;
 
     let methodDetails = "";
+    let assetDetails = assetRes.data.map(a => `   ├ 💎 ${a.name}: \`${fm(a.amount)}\`\n`).join('');
+    let debtDetails = debtRes.data.map(d => `   ├ 💳 ${d.name}: \`${fm(d.amount)}\`\n`).join('');
+    let recDetails = recRes.data.map(r => `   ├ 🤝 ${r.debtor_name}: \`${fm(r.amount - r.paid_amount)}\`\n`).join('');
+
+    let totalAccountBalance = 0;
     Object.entries(methodBalances)
       .filter(([key, amount]) => {
         const method = methodNames[key];
@@ -202,34 +231,47 @@ async function handleReport(ctx) {
       .sort((a, b) => b[1] - a[1]) // Sort by amount descending
       .forEach(([key, amount]) => {
         const method = methodNames[key];
-        let icon = '🏦';
+        let icon = '💳';
         const methodLower = method.toLowerCase();
         if (methodLower.includes('cash')) icon = '💵';
         else if (methodLower.includes('bca') || methodLower.includes('mandiri') || methodLower.includes('seabank')) icon = '💳';
         else if (methodLower.includes('invest')) icon = '📈';
         
         methodDetails += `   ├ ${icon} *${method}*: \`${fm(amount)}\`\n`;
+        totalAccountBalance += amount;
       });
-      
-    const totalAccountBalance = Object.values(methodBalances).reduce((a, b) => a + b, 0);
-    const netWorth = totalAccountBalance + totalAssets + totalReceivables - totalDebts;
 
-    const reportMsg = `🌟 *WEALTHPILOT PRO REPORT* 🌟\n` +
-      `📅 Periode: *Bulan Ini (${monthStr})*\n\n` +
-      `💎 *CASHFLOW OVERVIEW*\n` +
-      `   ├ 🟢 Pemasukan  : \`${fm(incomeMonth)}\`\n` +
-      `   ├ 🔴 Pengeluaran: \`${fm(expenseMonth)}\`\n` +
-      `   └ 💰 Sisa (Net) : \`${fm(balanceMonth)}\`\n\n` +
-      `🏦 *REKENING & DOMPET (LIQUID)*\n` +
-      (methodDetails ? `${methodDetails}` : '   ├ Belum ada data\n') +
-      `   └ 💎 *TOTAL LIQUID:* \`${fm(totalAccountBalance)}\`\n\n` +
-      `📈 *PORTOFOLIO TAMBAHAN*\n` +
-      `   ├ 📦 Aset Tetap : \`${fm(totalAssets)}\`\n` +
-      `   ├ 🤝 Piutang    : \`${fm(totalReceivables)}\`\n` +
-      `   └ 💳 Hutang     : \`${fm(totalDebts)}\`\n\n` +
-      `🏆 *NET WORTH BERSIH:* \`${fm(netWorth)}\``;
+    const formatList = (str) => {
+      if (!str) return '   └ 📭 Belum ada data\n';
+      return str.replace(/├([^├]*)$/, '└$1'); // Change last ├ to └
+    };
+
+    const reportMsg = `🌟 𝐖 𝐄 𝐀 𝐋 𝐓 𝐇 𝐏 𝐈 𝐋 𝐎 𝐓 🌟\n` +
+      `═══════════════════════\n` +
+      `📊 *𝗠𝗼𝗻𝘁𝗵𝗹𝘆 𝗜𝗻𝘀𝗶𝗴𝗵𝘁:* ${monthStr}\n\n` +
+      `🟢 Pemasukan: \`${fm(incomeMonth)}\`\n` +
+      `🔴 Pengeluaran: \`${fm(expenseMonth)}\`\n` +
+      `💰 Sisa Cashflow: \`${fm(balanceMonth)}\`\n\n` +
+      `💳 *𝗔𝗰𝗰𝗼𝘂𝗻𝘁𝘀 & 𝗪𝗮𝗹𝗹𝗲𝘁𝘀*\n` +
+      formatList(methodDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗟𝗶𝗾𝘂𝗶𝗱: \`${fm(totalAccountBalance)}\`*\n\n` +
+      `💎 *𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼 𝗔𝘀𝘀𝗲𝘁𝘀*\n` +
+      formatList(assetDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗔𝘀𝘀𝗲𝘁𝘀: \`${fm(totalAssets)}\`*\n\n` +
+      `💳 *𝗟𝗶𝗮𝗯𝗶𝗹𝗶𝘁𝗶𝗲𝘀 (𝗗𝗲𝗯𝘁𝘀)*\n` +
+      formatList(debtDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗗𝗲𝗯𝘁𝘀: \`${fm(totalDebts)}\`*\n\n` +
+      `🤝 *𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀*\n` +
+      formatList(recDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀: \`${fm(totalReceivables)}\`*\n` +
+      `═══════════════════════\n` +
+      `⚖️ *𝗡𝗲𝘁 𝗪𝗼𝗿𝘁𝗵:* \`${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}\``;
     
-    ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+    if (chartUrl) {
+      await ctx.replyWithPhoto(chartUrl, { caption: reportMsg, parse_mode: 'Markdown' });
+    } else {
+      ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+    }
   } catch (err) {
     ctx.reply(`❌ Gagal mengambil laporan: ${err.message}`);
   }

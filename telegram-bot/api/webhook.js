@@ -202,6 +202,7 @@ async function handleReport(ctx) {
     const balanceAll = incomeAll - expenseAll;
 
     let methodDetails = "";
+    let totalAccountBalance = 0;
     Object.entries(methodBalances)
       .filter(([key, amount]) => {
         const method = methodNames[key];
@@ -219,26 +220,37 @@ async function handleReport(ctx) {
       .sort((a, b) => b[1] - a[1]) // Sort by amount descending
       .forEach(([key, amount]) => {
         const method = methodNames[key];
-        let icon = '🏦';
+        let icon = '💳';
         if (method.toLowerCase().includes('cash')) icon = '💵';
         methodDetails += `   ├ ${icon} ${method}: ${fm(amount)}\n`;
+        totalAccountBalance += amount;
       });
-      
-    const totalAccountBalance = Object.values(methodBalances).reduce((a, b) => a + b, 0);
 
-    const reportMsg = `📊 *Laporan Bulan Ini (${monthStr})*\n\n` +
-      `🟢 Pemasukan: ${fm(incomeMonth)}\n🔴 Pengeluaran: ${fm(expenseMonth)}\n💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
-      `💳 *Saldo Rekening (Dompet/Bank):*\n` +
-      (methodDetails ? `${methodDetails}` : '   ├ Belum ada data\n') +
-      `💰 *Total Saldo: ${fm(totalAccountBalance)}*\n\n` +
-      `🏦 *Portofolio Tambahan:*\n` +
-      `💎 Total Aset Tetap: ${fm(totalAssets)}\n` +
-      (assetDetails ? `${assetDetails}` : '') +
-      `💳 Total Hutang: ${fm(totalDebts)}\n` +
-      (debtDetails ? `${debtDetails}` : '') +
-      `🤝 Total Piutang: ${fm(totalReceivables)}\n` +
-      (recDetails ? `${recDetails}` : '') +
-      `\n⚖️ *Net Worth Bersih:* ${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}`;
+    const formatList = (str) => {
+      if (!str) return '   └ 📭 Belum ada data\n';
+      return str.replace(/├([^├]*)$/, '└$1'); // Change last ├ to └
+    };
+
+    const reportMsg = `🌟 𝐖 𝐄 𝐀 𝐋 𝐓 𝐇 𝐏 𝐈 𝐋 𝐎 𝐓 🌟\n` +
+      `═══════════════════════\n` +
+      `📊 *𝗠𝗼𝗻𝘁𝗵𝗹𝘆 𝗜𝗻𝘀𝗶𝗴𝗵𝘁:* ${monthStr}\n\n` +
+      `🟢 Pemasukan: ${fm(incomeMonth)}\n` +
+      `🔴 Pengeluaran: ${fm(expenseMonth)}\n` +
+      `💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
+      `💳 *𝗔𝗰𝗰𝗼𝘂𝗻𝘁𝘀 & 𝗪𝗮𝗹𝗹𝗲𝘁𝘀*\n` +
+      formatList(methodDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗟𝗶𝗾𝘂𝗶𝗱: ${fm(totalAccountBalance)}*\n\n` +
+      `💎 *𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼 𝗔𝘀𝘀𝗲𝘁𝘀*\n` +
+      formatList(assetDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗔𝘀𝘀𝗲𝘁𝘀: ${fm(totalAssets)}*\n\n` +
+      `💳 *𝗟𝗶𝗮𝗯𝗶𝗹𝗶𝘁𝗶𝗲𝘀 (𝗗𝗲𝗯𝘁𝘀)*\n` +
+      formatList(debtDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗗𝗲𝗯𝘁𝘀: ${fm(totalDebts)}*\n\n` +
+      `🤝 *𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀*\n` +
+      formatList(recDetails) +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀: ${fm(totalReceivables)}*\n` +
+      `═══════════════════════\n` +
+      `⚖️ *𝗡𝗲𝘁 𝗪𝗼𝗿𝘁𝗵:* ${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}`;
 
     let chartUrl = null;
     const catKeys = Object.keys(categoryTotals);
@@ -249,7 +261,8 @@ async function handleReport(ctx) {
           labels: catKeys,
           datasets: [{ 
             data: catKeys.map(k => categoryTotals[k]),
-            backgroundColor: ['#34d399', '#38bdf8', '#818cf8', '#fb923c', '#eab308', '#f87171']
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#14b8a6'],
+            borderWidth: 0,
           }]
         },
         options: {

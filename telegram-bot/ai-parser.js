@@ -17,7 +17,7 @@ There are TWO possible intents:
 
 If intent is "record_transaction", include a 'data' object with:
 - 'type': 'expense', 'income', 'asset', 'debt', 'receivable'.
-- 'category' (for expense only): 'Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Lainnya'.
+- 'category' (for expense only): 'Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Investasi', 'Lainnya'.
 - 'category' (for income only): 'Salary', 'Business', 'Bonus', 'Freelance', 'Investment', 'Gift', 'Other Income'.
 - 'amount' as a pure number.
 - 'note' as a short description.

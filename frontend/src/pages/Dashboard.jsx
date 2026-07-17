@@ -135,6 +135,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     { name: 'Trading', icon: 'show_chart', color: 'bg-blue-500', text: 'text-blue-500' },
     { name: 'Kebutuhan', icon: 'shopping_bag', color: 'bg-orange-400', text: 'text-orange-400' },
     { name: 'Transportasi', icon: 'directions_car', color: 'bg-yellow-500', text: 'text-yellow-500' },
+    { name: 'Investasi', icon: 'trending_up', color: 'bg-purple-500', text: 'text-purple-500' },
     { name: 'Lainnya', icon: 'more_horiz', color: 'bg-slate-500', text: 'text-slate-500' },
   ];
 

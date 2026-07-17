@@ -355,7 +355,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
 }
 
 function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error }) {
-  const categories = ['Food & Dining', 'Transport', 'Shopping', 'Bills', 'Entertainment', 'Health', 'Education', 'Other'];
+  const categories = ['Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Investasi', 'Lainnya'];
   const [formData, setFormData] = useState({ category: categories[0], limit: '' });
 
   const [prevInitialData, setPrevInitialData] = useState(initialData);

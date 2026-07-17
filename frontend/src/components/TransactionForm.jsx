@@ -173,6 +173,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                         <option value="Trading" className="bg-slate-900">Trading</option>
                         <option value="Kebutuhan" className="bg-slate-900">Kebutuhan</option>
                         <option value="Transportasi" className="bg-slate-900">Transportasi</option>
+                        <option value="Investasi" className="bg-slate-900">Investasi</option>
                         <option value="Lainnya" className="bg-slate-900">Lainnya</option>
                       </>
                     ) : (

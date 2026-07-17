@@ -1,9 +1,9 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
-const { parseWithAI, answerFinancialQuery } = require('./ai-parser');
-const { getFinancialSummary } = require('./finance-summary');
-const { checkBudgetWarning } = require('./budget-checker');
+const { parseWithAI, answerFinancialQuery } = require('../ai-parser');
+const { getFinancialSummary } = require('../finance-summary');
+const { checkBudgetWarning } = require('../budget-checker');
 
 // 1. Setup Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;

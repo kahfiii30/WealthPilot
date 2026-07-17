@@ -207,7 +207,11 @@ async function handleReport(ctx) {
         const method = methodNames[key];
         const isCore = coreMethods.some(m => m.toUpperCase() === method.toUpperCase());
         const isAsset = assetRes.data.some(a => a.name.toUpperCase() === method.toUpperCase());
-        if (isCore || isAsset) return true;
+        
+        // Hide assets from the bank account list to prevent double counting
+        if (isAsset) return false;
+        
+        if (isCore) return true;
         if (amount === 0) return false;
         if (method === '-' || method === '0') return false;
         return true;

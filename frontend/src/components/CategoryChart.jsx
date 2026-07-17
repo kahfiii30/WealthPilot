@@ -11,7 +11,7 @@ export default function CategoryChart({ transactions, totalExpense }) {
       acc[t.category].value += t.amount;
       return acc;
     }, {});
-    
+
     return Object.values(summary).sort((a, b) => b.value - a.value);
   }, [transactions]);
 
@@ -41,10 +41,10 @@ export default function CategoryChart({ transactions, totalExpense }) {
       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
         <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Expenses</span>
         <span className="text-xl font-black text-slate-200 tracking-tighter">
-          Rp {totalExpense >= 1000000 ? (totalExpense/1000000).toFixed(1) + 'M' : (totalExpense/1000).toFixed(0) + 'k'}
+          Rp {totalExpense >= 1000000 ? (totalExpense / 1000000).toFixed(1) + 'M' : (totalExpense / 1000).toFixed(0) + 'k'}
         </span>
       </div>
-      
+
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Tooltip content={<CustomTooltip />} />

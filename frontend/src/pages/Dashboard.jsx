@@ -57,8 +57,15 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
   // Account Balances Calculation
   const accountBalances = useMemo(() => {
     const balances = {};
-    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
+    const coreMethods = ['BCA', 'Mandiri', 'Seabank'];
     
+    // Determine the main cash asset/account name
+    let cashMethodName = 'CASH';
+    const cashAsset = assets.find(a => a.name.toUpperCase().includes('CASH') || a.category?.toUpperCase() === 'CASH');
+    if (cashAsset) {
+      cashMethodName = cashAsset.name;
+    }
+
     // Initialize with assets
     assets.forEach(a => {
       const key = a.name.toUpperCase();
@@ -69,13 +76,25 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     coreMethods.forEach(m => {
       const key = m.toUpperCase();
       if (!balances[key]) {
-        balances[key] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
+        balances[key] = { name: m, amount: 0, category: 'Bank' };
       }
     });
+    
+    // Ensure the main cash account exists
+    const cashKey = cashMethodName.toUpperCase();
+    if (!balances[cashKey]) {
+      balances[cashKey] = { name: cashMethodName, amount: 0, category: 'Cash' };
+    }
 
     // Process all transactions
     transactions.forEach(t => {
-      const method = t.method || 'Cash';
+      let method = (t.method || '').trim();
+      const upperMethod = method.toUpperCase();
+      
+      // Map empty, -, 0, Cash, Bank Transfer to the main cash method
+      if (!method || upperMethod === '-' || upperMethod === '0' || upperMethod === 'CASH' || upperMethod === 'BANK TRANSFER') {
+        method = cashMethodName;
+      }
       
       const key = method.toUpperCase();
       if (!balances[key]) {
@@ -88,7 +107,18 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       }
     });
 
-    return Object.values(balances).sort((a, b) => b.amount - a.amount);
+    return Object.values(balances)
+      .filter(b => {
+        // Keep core methods, assets, and the main cash method
+        if (b.name.toUpperCase() === cashKey) return true;
+        if (coreMethods.some(m => m.toUpperCase() === b.name.toUpperCase())) return true;
+        if (assets.some(a => a.name.toUpperCase() === b.name.toUpperCase())) return true;
+        // Hide others if amount is 0 or if it's a weird artifact
+        if (b.amount === 0) return false;
+        if (b.name === '-' || b.name === '0') return false;
+        return true;
+      })
+      .sort((a, b) => b.amount - a.amount);
   }, [transactions, assets]);
 
   const totalAccountBalance = useMemo(() => accountBalances.reduce((acc, a) => acc + a.amount, 0), [accountBalances]);

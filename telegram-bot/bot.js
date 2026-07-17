@@ -415,20 +415,39 @@ bot.on('text', async (ctx) => {
   else if (recMatch) { type = 'receivable'; amountStr = recMatch[2]; note = recMatch[3]; }
   else {
       if (!process.env.GEMINI_API_KEY) {
-        return ctx.reply('❌ Format tidak dikenali. Gunakan format manual.', { parse_mode: 'Markdown' });
+        return ctx.reply('❌ Format tidak dikenali. Gunakan format manual. (API Key Belum Diatur)', { parse_mode: 'Markdown' });
       }
       const msg = await ctx.reply('⏳ Menganalisis pesan dengan AI...');
-      const aiResult = await parseWithAI(ctx.message.text);
-      if (!aiResult) {
+      const parsedResponse = await parseWithAI(ctx.message.text);
+      if (!parsedResponse) {
         return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ AI gagal memahami pesan ini.');
       }
+      
+      if (parsedResponse.intent === 'query_finance') {
+        await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, "⏳ Menarik data portofolio dari Supabase...");
+        const summary = await getFinancialSummary(supabaseUserId);
+        if (!summary) {
+          return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, "❌ Gagal menarik data keuangan dari database.");
+        }
+        
+        await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, "🤔 Menganalisa pertanyaan...");
+        const answer = await answerFinancialQuery(parsedResponse.data.question, summary);
+        
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, answer);
+      }
+
+      const aiResult = parsedResponse.data;
+      if (!aiResult || !aiResult.type) {
+         return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ Format tidak dikenali. Gunakan format manual.');
+      }
+
       type = aiResult.type;
-      amountStr = aiResult.amount.toString();
+      amountStr = (aiResult.amount || 0).toString();
       note = aiResult.note;
       ctx.state = ctx.state || {};
       ctx.state.aiCategory = aiResult.category;
       ctx.state.aiMethod = aiResult.method;
-      await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '\u2705 Pesan dipahami oleh AI (Tipe: ' + type.toUpperCase() + ').');
+      await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '✅ Pesan dipahami oleh AI (Tipe: ' + type.toUpperCase() + ').');
     }
 
     const amount = Number(amountStr.replace(/[^0-9]/g, ''));

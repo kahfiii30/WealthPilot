@@ -170,15 +170,10 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     {type === 'expense' ? (
                       <>
                         <option value="Food & Dining" className="bg-slate-900">Food & Dining</option>
-                        <option value="Transportation" className="bg-slate-900">Transportation</option>
-                        <option value="Shopping" className="bg-slate-900">Shopping</option>
-                        <option value="Entertainment" className="bg-slate-900">Entertainment</option>
-                        <option value="Bills & Utilities" className="bg-slate-900">Bills & Utilities</option>
-                        <option value="Health" className="bg-slate-900">Health & Medical</option>
-                        <option value="Education" className="bg-slate-900">Education</option>
-                        <option value="Travel" className="bg-slate-900">Travel</option>
-                        <option value="Insurance" className="bg-slate-900">Insurance</option>
-                        <option value="Others" className="bg-slate-900">Others</option>
+                        <option value="Trading" className="bg-slate-900">Trading</option>
+                        <option value="Kebutuhan" className="bg-slate-900">Kebutuhan</option>
+                        <option value="Transportasi" className="bg-slate-900">Transportasi</option>
+                        <option value="Lainnya" className="bg-slate-900">Lainnya</option>
                       </>
                     ) : (
                       <>

@@ -114,16 +114,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
   // Spending Breakdown Categories
   const categories = [
-    { name: 'Food & Dining', icon: 'restaurant', color: 'bg-primary', text: 'text-primary' },
-    { name: 'Transportation', icon: 'directions_car', color: 'bg-secondary', text: 'text-secondary' },
-    { name: 'Shopping', icon: 'shopping_bag', color: 'bg-tertiary', text: 'text-tertiary' },
-    { name: 'Entertainment', icon: 'movie', color: 'bg-orange-500', text: 'text-orange-500' },
-    { name: 'Bills & Utilities', icon: 'electric_bolt', color: 'bg-yellow-500', text: 'text-yellow-500' },
-    { name: 'Health & Medical', icon: 'favorite', color: 'bg-red-500', text: 'text-red-500' },
-    { name: 'Education', icon: 'school', color: 'bg-blue-500', text: 'text-blue-500' },
-    { name: 'Travel', icon: 'flight', color: 'bg-cyan-500', text: 'text-cyan-500' },
-    { name: 'Insurance', icon: 'health_and_safety', color: 'bg-emerald-500', text: 'text-emerald-500' },
-    { name: 'Others', icon: 'more_horiz', color: 'bg-slate-500', text: 'text-slate-500' },
+    { name: 'Food & Dining', icon: 'restaurant', color: 'bg-emerald-400', text: 'text-emerald-400' },
+    { name: 'Trading', icon: 'show_chart', color: 'bg-blue-500', text: 'text-blue-500' },
+    { name: 'Kebutuhan', icon: 'shopping_bag', color: 'bg-orange-400', text: 'text-orange-400' },
+    { name: 'Transportasi', icon: 'directions_car', color: 'bg-yellow-500', text: 'text-yellow-500' },
+    { name: 'Lainnya', icon: 'more_horiz', color: 'bg-slate-500', text: 'text-slate-500' },
   ];
 
   const container = {

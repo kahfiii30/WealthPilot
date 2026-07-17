@@ -66,20 +66,20 @@ async function answerFinancialQuery(question, summaryData) {
     const fm = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(val || 0);
 
     // Format summary nicely for the AI
-    let contextStr = `Data Keuangan Pengguna Bulan \${summaryData.month}:\n`;
-    contextStr += `- Saldo Rekening/Kas: \${fm(summaryData.totalAccountBalance)}\n`;
-    contextStr += `- Total Aset: \${fm(summaryData.totalAssets)}\n`;
-    contextStr += `- Total Hutang: \${fm(summaryData.totalDebts)}\n`;
-    contextStr += `- Total Piutang: \${fm(summaryData.totalReceivables)}\n`;
-    contextStr += `- Net Worth (Kekayaan Bersih): \${fm(summaryData.netWorth)}\n`;
-    contextStr += `- Pemasukan Bulan Ini: \${fm(summaryData.incomeMonth)}\n`;
-    contextStr += `- Pengeluaran Bulan Ini: \${fm(summaryData.expenseMonth)}\n`;
-    contextStr += `- Sisa Cashflow Bulan Ini: \${fm(summaryData.cashflowMonth)}\n`;
+    let contextStr = `Data Keuangan Pengguna Bulan ${summaryData.month}:\n`;
+    contextStr += `- Saldo Rekening/Kas: ${fm(summaryData.totalAccountBalance)}\n`;
+    contextStr += `- Total Aset: ${fm(summaryData.totalAssets)}\n`;
+    contextStr += `- Total Hutang: ${fm(summaryData.totalDebts)}\n`;
+    contextStr += `- Total Piutang: ${fm(summaryData.totalReceivables)}\n`;
+    contextStr += `- Net Worth (Kekayaan Bersih): ${fm(summaryData.netWorth)}\n`;
+    contextStr += `- Pemasukan Bulan Ini: ${fm(summaryData.incomeMonth)}\n`;
+    contextStr += `- Pengeluaran Bulan Ini: ${fm(summaryData.expenseMonth)}\n`;
+    contextStr += `- Sisa Cashflow Bulan Ini: ${fm(summaryData.cashflowMonth)}\n`;
     
     if (Object.keys(summaryData.categoryExpenses).length > 0) {
       contextStr += `- Rincian Pengeluaran:\n`;
       for (const [cat, amt] of Object.entries(summaryData.categoryExpenses)) {
-        contextStr += `  * \${cat}: \${fm(amt)}\n`;
+        contextStr += `  * ${cat}: ${fm(amt)}\n`;
       }
     }
 
@@ -88,9 +88,9 @@ Gunakan bahasa Indonesia yang santai tapi sopan (gunakan 'saya' untuk Anda, dan 
 Gunakan emoji yang relevan.
 
 Berikut adalah data keuangan pengguna saat ini:
-\${contextStr}
+${contextStr}
 
-Pertanyaan/Pesan pengguna: "\${question}"
+Pertanyaan/Pesan pengguna: "${question}"
 
 Tugas Anda:
 Jawab pertanyaan pengguna berdasarkan data keuangan di atas. Jangan mengarang angka yang tidak ada.

@@ -5,7 +5,7 @@ import RecentTransactions from '../components/RecentTransactions';
 import CashflowChart from '../components/CashflowChart';
 import CategoryChart from '../components/CategoryChart';
 import { getMonthKey } from '../services/financeService';
-import { exportToCSV } from '../utils/export';
+import { exportToCSV, exportToPDF } from '../utils/export';
 
 function Dashboard({ transactions, assets = [], debts = [], receivables = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
   const displayName = [userProfile?.firstName, userProfile?.lastName]
@@ -96,9 +96,10 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
     return Object.values(balances)
       .filter(b => {
-        // Keep core methods and assets
+        // Keep core methods
         if (coreMethods.some(m => m.toUpperCase() === b.name.toUpperCase())) return true;
-        if (assets.some(a => a.name.toUpperCase() === b.name.toUpperCase())) return true;
+        // Explicitly hide assets from the wallets view to prevent double-counting
+        if (assets.some(a => a.name.toUpperCase() === b.name.toUpperCase())) return false;
         // Hide others if amount is 0 or if it's a weird artifact
         if (b.amount === 0) return false;
         if (b.name === '-' || b.name === '0') return false;

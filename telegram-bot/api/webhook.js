@@ -630,17 +630,17 @@ bot.launch().then(() => {
 
 // 8. Vercel Serverless Function Handler (Webhook)
 module.exports = async (req, res) => {
-  try {
-    if (req.method === \'POST\') {
-      await bot.handleUpdate(req.body, res);
-      if (!res.writableEnded) {
-        res.status(200).send(\'OK\');
+    try {
+      if (req.method === 'POST') {
+        await bot.handleUpdate(req.body, res);
+        if (!res.writableEnded) {
+          res.status(200).send('OK');
+        }
+      } else {
+        res.status(200).send('Bot is running (Webhook mode)!');
       }
-    } else {
-      res.status(200).send(\'Bot is running (Webhook mode)!\');
+    } catch (error) {
+      console.error('Error in webhook handler:', error);
+      res.status(500).send('Internal Server Error');
     }
-  } catch (error) {
-    console.error(\'Error in webhook handler:\', error);
-    res.status(500).send(\'Internal Server Error\');
-  }
-};
+  };

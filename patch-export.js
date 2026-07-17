@@ -1,37 +1,7 @@
-export const exportToCSV = (transactions, filename) => {
-  if (!transactions || !transactions.length) return;
+const fs = require('fs');
+let code = fs.readFileSync('frontend/src/utils/export.js', 'utf8');
 
-  const headers = ['Date', 'Type', 'Category', 'Title/Note', 'Method', 'Amount'];
-  
-  const csvRows = [
-    headers.join(','),
-    ...transactions.map(t => {
-      return [
-        t.date || '',
-        t.type || '',
-        `"${t.category || ''}"`,
-        `"${(t.title || t.note || '').replace(/"/g, '""')}"`,
-        `"${t.method || ''}"`,
-        t.amount || 0
-      ].join(',');
-    })
-  ];
-
-  const csvContent = csvRows.join('\n');
-  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-  
-  const link = document.createElement('a');
-  if (link.download !== undefined) {
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `${filename}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  }
-};
-
+code += `
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -46,7 +16,7 @@ export const exportToPDF = (transactions, summaryData, filename) => {
   
   doc.setFontSize(11);
   doc.setTextColor(100, 100, 100);
-  doc.text(`Dicetak pada: ${new Date().toLocaleString()}`, 14, 30);
+  doc.text(\`Dicetak pada: \${new Date().toLocaleString()}\`, 14, 30);
 
   // Summary Table
   doc.autoTable({
@@ -80,5 +50,8 @@ export const exportToPDF = (transactions, summaryData, filename) => {
     headStyles: { fillColor: [52, 73, 94] },
   });
 
-  doc.save(`${filename}.pdf`);
+  doc.save(\`\${filename}.pdf\`);
 };
+`;
+fs.writeFileSync('frontend/src/utils/export.js', code);
+console.log("Patched export.js");

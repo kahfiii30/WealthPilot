@@ -642,11 +642,6 @@ bot.action('cancel_delete', async (ctx) => {
   await ctx.editMessageText("❌ Dibatalkan.");
 });
 
-// 8. Start the bot
-bot.launch().then(() => {
-  console.log("🚀 WealthPilot Telegram Bot V2 is running...");
-});
-
 
 // 8. Vercel Serverless Function Handler (Webhook)
 module.exports = async (req, res) => {

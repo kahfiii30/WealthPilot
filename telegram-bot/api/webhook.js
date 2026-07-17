@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
+const { parseWithAI } = require('./ai-parser');
+const { checkBudgetWarning } = require('./budget-checker');
 
 // 1. Setup Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -8,6 +10,7 @@ const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl || !supabaseKey) {
   console.error("❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is missing in .env");
+  process.exit(1);
 }
 
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -16,41 +19,44 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (!token) {
   console.error("❌ TELEGRAM_BOT_TOKEN is missing in .env");
+  process.exit(1);
 }
 
-const bot = new Telegraf(token, {
-  telegram: { webhookReply: false }
-});
+const bot = new Telegraf(token);
 
-// 3. (Multi-User) We no longer use .env variables for auth
-// We dynamically fetch from telegram_accounts table
+// 3. Security: Check if user is allowed
+const allowedUserId = process.env.ALLOWED_TELEGRAM_USER_ID;
+const supabaseUserId = process.env.SUPABASE_USER_ID;
+
+// Pending Transactions Memory Store
+const pendingData = new Map();
 
 // Formatter
 const fm = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
 
 // Middleware for access control
-bot.use(async (ctx, next) => {
+bot.use((ctx, next) => {
   const userId = ctx.from?.id?.toString();
-
+  
   if (ctx.message && ctx.message.text === '/start') {
     return next();
   }
 
-  if (!userId) return;
-
-  const { data, error } = await supabase
-    .from('telegram_accounts')
-    .select('user_id')
-    .eq('telegram_id', userId)
-    .maybeSingle();
-
-  if (error || !data) {
-    ctx.reply(`⚠️ Akun Anda belum terhubung. Silakan login ke website WealthPilot, buka menu Settings -> Integrations, lalu masukkan Telegram ID Anda: \`${userId}\``, { parse_mode: 'Markdown' });
+  if (!allowedUserId || allowedUserId === "") {
+    ctx.reply(`⚠️ SECURITY ALERT: ALLOWED_TELEGRAM_USER_ID is not set in your .env file.\n\nYour Telegram User ID is: ${userId}`);
     return;
   }
 
-  // Inject supabaseUserId into state
-  ctx.state.supabaseUserId = data.user_id;
+  if (userId !== allowedUserId) {
+    console.log(`Unauthorized access attempt by ID: ${userId}`);
+    ctx.reply("❌ Unauthorized user.");
+    return;
+  }
+
+  if (!supabaseUserId || supabaseUserId === "") {
+    ctx.reply(`⚠️ SUPABASE_USER_ID is not set in your .env file.`);
+    return;
+  }
 
   return next();
 });
@@ -69,15 +75,15 @@ bot.start((ctx) => {
 
 bot.command('menu', (ctx) => {
   ctx.reply("Pilih menu navigasi:", Markup.keyboard([
-    ['📊 Laporan & Portofolio', '➕ Cara Penggunaan'],
-    ['⚙️ Pengaturan']
-  ]).resize());
+     ['📊 Laporan & Portofolio', '➕ Cara Penggunaan'],
+     ['⚙️ Pengaturan']
+   ]).resize());
 });
 
 // Text Menu Handlers
 bot.hears('📊 Laporan & Portofolio', (ctx) => handleReport(ctx));
 bot.hears('➕ Cara Penggunaan', (ctx) => {
-  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang Baru: `hutang 50000 pinjol`\n4. Aset Baru: `aset 1000000 bca`\n5. Piutang Baru: `piutang 50000 budi`\n\n*(Catatan: Jangan gunakan kata 'masuk/keluar' untuk Aset, Hutang, atau Piutang)*\n\n📉 *Cara Mengurangi Nominal (Bayar Hutang/Piutang/Pakai Aset):*\nKetik `kurang/bayar <tipe> <nominal> <kata kunci>`\nContoh:\n- `bayar piutang 50000 budi`\n- `kurang aset 20000 bca`\n- `bayar hutang 100000 pinjol`\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci nama>`\nContoh:\n- `hapus aset bca`\n- `hapus hutang pinjol`\n- `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik:\n- `list aset`\n- `list hutang`\n- `list piutang`", { parse_mode: 'Markdown' });
+  ctx.reply("💡 *Cara Cepat Mencatat:*\n\n1. Pengeluaran: `keluar 50000 makan`\n2. Pemasukan: `masuk 2000000 gaji`\n3. Hutang Baru: `hutang 50000 pinjol`\n4. Aset Baru: `aset 1000000 bca`\n5. Piutang Baru: `piutang 50000 budi`\n\n*(Catatan: Jangan gunakan kata 'masuk/keluar' untuk Aset, Hutang, atau Piutang)*\n\n🗑️ *Cara Menghapus Data:*\nKetik `hapus <tipe> <kata kunci nama>`\nContoh:\n- `hapus aset bca`\n- `hapus hutang pinjol`\n- `hapus pengeluaran makan`\n\n📋 *Cara Melihat Daftar Data:*\nKetik:\n- `list aset`\n- `list hutang`\n- `list piutang`", { parse_mode: 'Markdown' });
 });
 bot.hears('⚙️ Pengaturan', (ctx) => {
   ctx.reply("⚙️ *Pengaturan Koneksi*\nStatus: ✅ Terhubung ke Supabase\nFitur Premium: Aktif (Aset, Hutang, Piutang Tersinkronisasi)", { parse_mode: 'Markdown' });
@@ -89,7 +95,7 @@ bot.command('report', (ctx) => handleReport(ctx));
 async function handleReport(ctx) {
   try {
     ctx.reply("⏳ Menarik data portofolio dari Supabase...");
-
+    
     // Use Asia/Jakarta time for accurate monthly reporting
     const d = new Date();
     const jakartaTime = new Date(d.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
@@ -97,12 +103,10 @@ async function handleReport(ctx) {
     const month = String(jakartaTime.getMonth() + 1).padStart(2, "0");
     const lastDay = new Date(year, jakartaTime.getMonth() + 1, 0).getDate(); // Get last day of month
     const monthStr = `${year}-${month}`;
-
-    // Use string boundary matching to ensure both 'YYYY-MM-DD' and 'YYYY-MM-DDT...' formats are captured
+    
+    // Use prefix matching to ensure both 'YYYY-MM-DD' and 'YYYY-MM-DDT...' formats are captured
     const startDate = `${year}-${month}-01`;
     const endDate = `${year}-${month}-${String(lastDay).padStart(2, "0")}T23:59:59.999Z`;
-
-    const supabaseUserId = ctx.state.supabaseUserId;
 
     // Fetch all required data in parallel
     const [txResMonth, txResAll, assetRes, debtRes, recRes] = await Promise.all([
@@ -122,6 +126,7 @@ async function handleReport(ctx) {
     let incomeMonth = 0;
     let expenseMonth = 0;
     let categoryTotals = {};
+    let chartUrl = "";
 
     txResMonth.data.forEach(t => {
       if (t.type === 'income') incomeMonth += Number(t.amount);
@@ -132,11 +137,35 @@ async function handleReport(ctx) {
         }
       }
     });
+
+    const catKeys = Object.keys(categoryTotals);
+    if (catKeys.length > 0) {
+      const chartConfig = {
+        type: 'doughnut',
+        data: {
+          labels: catKeys,
+          datasets: [{ 
+            data: catKeys.map(k => categoryTotals[k]),
+            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#14b8a6'],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { position: 'right', labels: { fontColor: '#f1f5f9', fontSize: 14, fontFamily: 'sans-serif' } },
+            datalabels: { color: '#ffffff', font: { weight: 'bold', size: 12, family: 'sans-serif' } },
+            doughnutlabel: { labels: [{ text: 'Expense', font: { size: 20, weight: 'bold' }, color: '#94a3b8' }] }
+          },
+          layout: { padding: 20 }
+        }
+      };
+      chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}&backgroundColor=%23020617&width=600&height=300`;
+    }
     
     let incomeAll = 0;
     let expenseAll = 0;
     let methodBalances = {};
-    let methodNames = {};
+    let methodNames = {}; // store original case for display
 
     // Initialize method balances from assets
     assetRes.data.forEach(a => {
@@ -174,34 +203,42 @@ async function handleReport(ctx) {
       if (t.type === 'expense') methodBalances[key] -= Number(t.amount);
     });
 
+    let btcPrice = 0;
+    try {
+      const btcRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=idr');
+      const btcData = await btcRes.json();
+      btcPrice = btcData.bitcoin.idr;
+    } catch(e) {
+      console.log("Failed to fetch crypto price");
+    }
+
     let totalAssets = 0;
-    let assetDetails = "";
-    assetRes.data.forEach(a => {
-      totalAssets += Number(a.amount);
-      assetDetails += `   ├ ${a.name}: ${fm(a.amount)}\n`;
-    });
-
-    let totalDebts = 0;
-    let debtDetails = "";
-    debtRes.data.forEach(d => {
-      totalDebts += Number(d.amount);
-      debtDetails += `   ├ ${d.name}: ${fm(d.amount)}\n`;
-    });
-
-    let totalReceivables = 0;
-    let recDetails = "";
-    recRes.data.forEach(r => {
-      const sisa = Number(r.amount) - Number(r.paid_amount);
-      if (sisa > 0) {
-        totalReceivables += sisa;
-        recDetails += `   ├ ${r.debtor_name}: ${fm(sisa)}\n`;
+    for (let a of assetRes.data) {
+      let amount = Number(a.amount);
+      if (a.asset_type === 'crypto' && a.symbol && a.quantity) {
+        if (a.symbol.toLowerCase() === 'btc' || a.symbol.toLowerCase() === 'bitcoin') {
+          amount = a.quantity * btcPrice;
+          // Dynamically update the amount in memory so it reflects correctly
+          a.amount = amount;
+        }
+      } else if (a.name.toUpperCase().includes('BITCOIN') && a.amount > 0 && btcPrice > 0) {
+        // Fallback: If it's the old BITCOIN entry and has no quantity, assume it's just IDR value, or if they update it to be 0.0016 BTC in the name we could parse it, but for now we rely on DB schema update. 
+        // Wait, the DB schema is updated but they haven't filled 'quantity' yet. 
+        // We will just leave it as fiat amount if quantity is missing.
       }
-    });
+      totalAssets += amount;
+    }
+    let totalDebts = debtRes.data.reduce((acc, d) => acc + Number(d.amount), 0);
+    
+    let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
 
     const balanceMonth = incomeMonth - expenseMonth;
-    const balanceAll = incomeAll - expenseAll;
 
     let methodDetails = "";
+    let assetDetails = assetRes.data.map(a => `   ├ 💎 ${a.name}: \`${fm(a.amount)}\`\n`).join('');
+    let debtDetails = debtRes.data.map(d => `   ├ 💳 ${d.name}: \`${fm(d.amount)}\`\n`).join('');
+    let recDetails = recRes.data.map(r => `   ├ 🤝 ${r.debtor_name}: \`${fm(r.amount - r.paid_amount)}\`\n`).join('');
+
     let totalAccountBalance = 0;
     Object.entries(methodBalances)
       .filter(([key, amount]) => {
@@ -221,8 +258,12 @@ async function handleReport(ctx) {
       .forEach(([key, amount]) => {
         const method = methodNames[key];
         let icon = '💳';
-        if (method.toLowerCase().includes('cash')) icon = '💵';
-        methodDetails += `   ├ ${icon} ${method}: ${fm(amount)}\n`;
+        const methodLower = method.toLowerCase();
+        if (methodLower.includes('cash')) icon = '💵';
+        else if (methodLower.includes('bca') || methodLower.includes('mandiri') || methodLower.includes('seabank')) icon = '💳';
+        else if (methodLower.includes('invest')) icon = '📈';
+        
+        methodDetails += `   ├ ${icon} *${method}*: \`${fm(amount)}\`\n`;
         totalAccountBalance += amount;
       });
 
@@ -234,57 +275,28 @@ async function handleReport(ctx) {
     const reportMsg = `🌟 𝐖 𝐄 𝐀 𝐋 𝐓 𝐇 𝐏 𝐈 𝐋 𝐎 𝐓 🌟\n` +
       `═══════════════════════\n` +
       `📊 *𝗠𝗼𝗻𝘁𝗵𝗹𝘆 𝗜𝗻𝘀𝗶𝗴𝗵𝘁:* ${monthStr}\n\n` +
-      `🟢 Pemasukan: ${fm(incomeMonth)}\n` +
-      `🔴 Pengeluaran: ${fm(expenseMonth)}\n` +
-      `💰 Sisa Cashflow: ${fm(balanceMonth)}\n\n` +
+      `🟢 Pemasukan: \`${fm(incomeMonth)}\`\n` +
+      `🔴 Pengeluaran: \`${fm(expenseMonth)}\`\n` +
+      `💰 Sisa Cashflow: \`${fm(balanceMonth)}\`\n\n` +
       `💳 *𝗔𝗰𝗰𝗼𝘂𝗻𝘁𝘀 & 𝗪𝗮𝗹𝗹𝗲𝘁𝘀*\n` +
       formatList(methodDetails) +
-      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗟𝗶𝗾𝘂𝗶𝗱: ${fm(totalAccountBalance)}*\n\n` +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗟𝗶𝗾𝘂𝗶𝗱: \`${fm(totalAccountBalance)}\`*\n\n` +
       `💎 *𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼 𝗔𝘀𝘀𝗲𝘁𝘀*\n` +
       formatList(assetDetails) +
-      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗔𝘀𝘀𝗲𝘁𝘀: ${fm(totalAssets)}*\n\n` +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗔𝘀𝘀𝗲𝘁𝘀: \`${fm(totalAssets)}\`*\n\n` +
       `💳 *𝗟𝗶𝗮𝗯𝗶𝗹𝗶𝘁𝗶𝗲𝘀 (𝗗𝗲𝗯𝘁𝘀)*\n` +
       formatList(debtDetails) +
-      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗗𝗲𝗯𝘁𝘀: ${fm(totalDebts)}*\n\n` +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗗𝗲𝗯𝘁𝘀: \`${fm(totalDebts)}\`*\n\n` +
       `🤝 *𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀*\n` +
       formatList(recDetails) +
-      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀: ${fm(totalReceivables)}*\n` +
+      `✨ *𝗧𝗼𝘁𝗮𝗹 𝗥𝗲𝗰𝗲𝗶𝘃𝗮𝗯𝗹𝗲𝘀: \`${fm(totalReceivables)}\`*\n` +
       `═══════════════════════\n` +
-      `⚖️ *𝗡𝗲𝘁 𝗪𝗼𝗿𝘁𝗵:* ${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}`;
-
-    let chartUrl = null;
-    const catKeys = Object.keys(categoryTotals);
-    if (catKeys.length > 0) {
-      const chartConfig = {
-        type: 'doughnut',
-        data: {
-          labels: catKeys,
-          datasets: [{ 
-            data: catKeys.map(k => categoryTotals[k]),
-            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4', '#f97316', '#ec4899', '#14b8a6'],
-            borderWidth: 0,
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { position: 'right', labels: { fontColor: 'white', fontSize: 14 } },
-            datalabels: { color: 'white', font: { weight: 'bold' } }
-          },
-          title: { display: true, text: `Pengeluaran ${monthStr}`, fontColor: 'white', fontSize: 16 }
-        }
-      };
-      chartUrl = `https://quickchart.io/chart?c=${encodeURIComponent(JSON.stringify(chartConfig))}&backgroundColor=%230f172a&width=600&height=300`;
-    }
-
-    try {
-      if (chartUrl) {
-        await ctx.replyWithPhoto({ url: chartUrl }, { caption: reportMsg, parse_mode: 'Markdown' });
-      } else {
-        await ctx.reply(reportMsg, { parse_mode: 'Markdown' });
-      }
-    } catch (e) {
-      console.error("Failed to send photo:", e);
-      await ctx.reply(reportMsg, { parse_mode: 'Markdown' });
+      `⚖️ *𝗡𝗲𝘁 𝗪𝗼𝗿𝘁𝗵:* \`${fm(totalAccountBalance + totalAssets + totalReceivables - totalDebts)}\``;
+    
+    if (chartUrl) {
+      await ctx.replyWithPhoto(chartUrl, { caption: reportMsg, parse_mode: 'Markdown' });
+    } else {
+      ctx.reply(reportMsg, { parse_mode: 'Markdown' });
     }
   } catch (err) {
     ctx.reply(`❌ Gagal mengambil laporan: ${err.message}`);
@@ -294,60 +306,12 @@ async function handleReport(ctx) {
 // 5. NLP Parser
 bot.on('text', async (ctx) => {
   const text = ctx.message.text.toLowerCase();
-
+  
   if (text === '📊 laporan & portofolio' || text === '➕ cara penggunaan' || text === '⚙️ pengaturan') return;
 
   // Shortcut for checking balance
   if (text.includes('saldo') || text.includes('cek saldo') || text.includes('report')) {
     return handleReport(ctx);
-  }
-
-  const reduceMatch = text.match(/^(kurang|bayar)\s+(aset|asset|piutang|hutang|utang)\s+([0-9.,]+)\s+(.+)$/i);
-  if (reduceMatch) {
-    const reduceType = reduceMatch[2].toLowerCase();
-    const amountStr = reduceMatch[3];
-    const keyword = reduceMatch[4].trim();
-    const amount = Number(amountStr.replace(/[^0-9]/g, ''));
-    if (isNaN(amount) || amount <= 0) return ctx.reply("❌ Jumlah tidak valid.");
-
-    let table = '';
-    let nameColumn = '';
-
-    if (reduceType === 'aset' || reduceType === 'asset') { table = 'assets'; nameColumn = 'name'; }
-    else if (reduceType === 'hutang' || reduceType === 'utang') { table = 'debts'; nameColumn = 'name'; }
-    else if (reduceType === 'piutang') { table = 'receivables'; nameColumn = 'debtor_name'; }
-
-    try {
-      const msg = await ctx.reply(`🔍 Mencari ${reduceType} "${keyword}" untuk dikurangi ${fm(amount)}...`);
-      const suId = ctx.state.supabaseUserId; 
-
-      const { data, error } = await supabase.from(table).select(`id, amount, ${nameColumn}${table === 'receivables' ? ', paid_amount' : ''}`).eq('user_id', suId).ilike(nameColumn, `%${keyword}%`).order('created_at', { ascending: false }).limit(5);
-
-      if (error) throw error;
-      if (!data || data.length === 0) {
-        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `❌ Tidak ditemukan ${reduceType} dengan kata kunci "${keyword}".`);
-      }
-
-      const txId = `red_${Date.now()}`;
-      await supabase.from('telegram_drafts').insert([{
-        telegram_id: ctx.from.id.toString(),
-        tx_id: txId,
-        payload: { amount, table, nameColumn }
-      }]);
-
-      const buttons = data.map(item => {
-        const title = item[nameColumn] || 'Tanpa Nama';
-        const currentBal = table === 'receivables' ? (Number(item.amount) - Number(item.paid_amount)) : Number(item.amount);
-        return [Markup.button.callback(`📉 Kurangi ${title} (${fm(currentBal)})`, `red_${txId}_${item.id}`)];
-      });
-      buttons.push([Markup.button.callback('❌ Batal', 'cancel_delete')]);
-
-      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, `Menemukan ${data.length} hasil untuk "${keyword}". Pilih yang ingin dikurangi nominalnya sebesar ${fm(amount)}:`, {
-        ...Markup.inlineKeyboard(buttons)
-      });
-    } catch (err) {
-      return ctx.reply(`❌ Error: ${err.message}`);
-    }
   }
 
   const deleteMatch = text.match(/^(hapus|delete)\s+(aset|asset|hutang|utang|piutang|transaksi|pengeluaran|pemasukan)\s+(.+)$/i);
@@ -367,7 +331,7 @@ bot.on('text', async (ctx) => {
 
     try {
       const msg = await ctx.reply(`🔍 Mencari ${delType} dengan kata kunci "${keyword}"...`);
-      const suId = ctx.state.supabaseUserId; 
+      const suId = supabaseUserId; 
       
       let query = supabase.from(table).select(`id, amount, ${nameColumn}${isTx ? ', type' : ''}`).eq('user_id', suId).ilike(nameColumn, `%${keyword}%`).order('created_at', { ascending: false }).limit(5);
       
@@ -409,7 +373,7 @@ bot.on('text', async (ctx) => {
 
     try {
       const msg = await ctx.reply(`⏳ Mengambil daftar ${typeStr}...`);
-      const suId = ctx.state.supabaseUserId;
+      const suId = supabaseUserId;
       
       const { data, error } = await supabase.from(table).select(`id, amount, ${nameColumn}`).eq('user_id', suId).order('created_at', { ascending: false }).limit(20);
       if (error) throw error;
@@ -443,16 +407,30 @@ bot.on('text', async (ctx) => {
   let amountStr = null;
   let note = null;
 
-  if (expenseMatch) { type = 'expense'; amountStr = expenseMatch[2]; note = expenseMatch[3]; }
+  if (expenseMatch) { type = 'expense'; amountStr = expenseMatch[2]; note = expenseMatch[3]; } 
   else if (incomeMatch) { type = 'income'; amountStr = incomeMatch[2]; note = incomeMatch[3]; }
   else if (assetMatch) { type = 'asset'; amountStr = assetMatch[2]; note = assetMatch[3]; }
   else if (debtMatch) { type = 'debt'; amountStr = debtMatch[2]; note = debtMatch[3]; }
   else if (recMatch) { type = 'receivable'; amountStr = recMatch[2]; note = recMatch[3]; }
   else {
-    return ctx.reply("❌ Format tidak dikenali.\n\nGunakan format:\n`keluar 50000 makan`\n`hutang 500000 pinjol`\n`aset 1000000 emas`", { parse_mode: 'Markdown' });
-  }
+      if (!process.env.GEMINI_API_KEY) {
+        return ctx.reply('❌ Format tidak dikenali. Gunakan format manual.', { parse_mode: 'Markdown' });
+      }
+      const msg = await ctx.reply('⏳ Menganalisis pesan dengan AI...');
+      const aiResult = await parseWithAI(ctx.message.text);
+      if (!aiResult) {
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ AI gagal memahami pesan ini.');
+      }
+      type = aiResult.type;
+      amountStr = aiResult.amount.toString();
+      note = aiResult.note;
+      ctx.state = ctx.state || {};
+      ctx.state.aiCategory = aiResult.category;
+      ctx.state.aiMethod = aiResult.method;
+      await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '\u2705 Pesan dipahami oleh AI (Tipe: ' + type.toUpperCase() + ').');
+    }
 
-  const amount = Number(amountStr.replace(/[^0-9]/g, ''));
+    const amount = Number(amountStr.replace(/[^0-9]/g, ''));
   if (isNaN(amount) || amount <= 0) {
     return ctx.reply("❌ Jumlah tidak valid.");
   }
@@ -462,32 +440,55 @@ bot.on('text', async (ctx) => {
     try {
       const msg = await ctx.reply("⏳ Menyimpan piutang...");
       const { data, error } = await supabase.from('receivables').insert([{
-        user_id: ctx.state.supabaseUserId, debtor_name: note, amount: amount, paid_amount: 0, debt_date: new Date().toISOString()
+        user_id: supabaseUserId, debtor_name: note, amount: amount, paid_amount: 0, debt_date: new Date().toISOString()
       }]).select('id').single();
 
       if (error) throw error;
-      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined,
+      return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, 
         `✅ *Piutang Berhasil Dicatat!*\n\nPeminjam: ${note}\nJumlah: ${fm(amount)}`, {
-        parse_mode: 'Markdown',
-        ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_rcv_${data.id}`)])
+          parse_mode: 'Markdown',
+          ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_rcv_${data.id}`) ])
       });
     } catch (err) {
       return ctx.reply(`❌ Error: ${err.message}`);
     }
   }
 
-  // Save to pending state for Expense, Income, Asset, Debt
-  const txId = `req_${Date.now()}`;
-  
-  const { error: draftError } = await supabase.from('telegram_drafts').insert([{
-    telegram_id: ctx.from.id.toString(),
-    tx_id: txId,
-    payload: { type, amount, note, supabaseUserId: ctx.state.supabaseUserId }
-  }]);
+  // If AI already provided a category, we can insert immediately
+    if (ctx.state && ctx.state.aiCategory && (type === 'expense' || type === 'income')) {
+      try {
+        const msg = await ctx.reply("⏳ Menyimpan transaksi...");
+        const now = new Date();
+        const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+        const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+        
+        let method = ctx.state.aiMethod || 'Cash';
+        const payload = { user_id: supabaseUserId, type: type, amount: amount, category: ctx.state.aiCategory, note: note, date: localDateStr, method: method };
+        
+        const { data, error } = await supabase.from('transactions').insert([payload]).select('id').single();
+        if (error) throw error;
+        
+        if (type === 'expense') {
+          checkBudgetWarning(ctx, supabaseUserId, ctx.state.aiCategory, amount);
+        }
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, 
+          `✅ *Berhasil dicatat otomatis oleh AI!*
 
-  if (draftError) {
-    return ctx.reply("❌ Gagal membuat draft. Silakan coba lagi.");
-  }
+📝 ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}: ${fm(amount)}
+Kategori: ${ctx.state.aiCategory}
+Metode: ${method}
+Keterangan: ${note}`, {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_tx_${data.id}`) ])
+        });
+      } catch (err) {
+        return ctx.reply(`❌ Error: ${err.message}`);
+      }
+    }
+
+    // Save to pending state for Expense, Income, Asset, Debt
+    const txId = `req_${Date.now()}`;
+  pendingData.set(txId, { type, amount, note });
 
   let categories = [];
   let typeStr = "";
@@ -510,143 +511,81 @@ bot.on('text', async (ctx) => {
 bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
   const txId = ctx.match[1];
   const category = ctx.match[2];
-
-  const { data: draftData, error: draftError } = await supabase
-    .from('telegram_drafts')
-    .select('payload')
-    .eq('tx_id', txId)
-    .maybeSingle();
-
-  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
   
-  const pending = draftData.payload;
-  const supabaseUserId = pending.supabaseUserId;
+  const pending = pendingData.get(txId);
+  if (!pending) return ctx.answerCbQuery("❌ Sesi sudah diproses.", { show_alert: true });
 
   try {
-    ctx.answerCbQuery("Kategori dipilih.").catch(e => console.error(e));
+    // Add catch to answerCbQuery to prevent unhandled rejections
+    ctx.answerCbQuery("Menyimpan...").catch(err => console.error("answerCbQuery error:", err));
+    await ctx.editMessageText(`⏳ Menyimpan ke database...`);
 
-    // If it's Asset or Debt, save directly (no method needed)
-    if (pending.type === 'asset' || pending.type === 'debt') {
-      await saveTransactionDraft(ctx, pending, category, null, txId);
-      return;
+    let table = 'transactions';
+    let payload = {};
+    let undoPrefix = 'tx';
+
+    if (pending.type === 'expense' || pending.type === 'income') {
+      table = 'transactions';
+      undoPrefix = 'tx';
+      const now = new Date();
+      const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+      const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+      payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, note: pending.note, date: localDateStr };
+    } else if (pending.type === 'asset') {
+      table = 'assets';
+      undoPrefix = 'ast';
+      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
+    } else if (pending.type === 'debt') {
+      table = 'debts';
+      undoPrefix = 'dbt';
+      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
     }
 
-    // Save category to draft and ask for payment method
-    const updatedPayload = { ...pending, category };
-    await supabase.from('telegram_drafts').update({ payload: updatedPayload }).eq('tx_id', txId);
-
-    // Fetch user assets to show banks
-    const { data: assets } = await supabase.from('assets').select('name, category').eq('user_id', supabaseUserId).in('category', ['Bank', 'E-Wallet', 'Cash']);
+    const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
+    if (error) throw error;
     
-    let methodButtons = [];
-    if (assets && assets.length > 0) {
-      methodButtons = assets.map(a => Markup.button.callback(a.name, `mthd_${txId}_${a.name}`));
-    } else {
-      methodButtons = [
-        Markup.button.callback('Cash', `mthd_${txId}_Cash`),
-        Markup.button.callback('BCA', `mthd_${txId}_BCA`),
-        Markup.button.callback('Mandiri', `mthd_${txId}_Mandiri`),
-        Markup.button.callback('Seabank', `mthd_${txId}_Seabank`),
-        Markup.button.callback('E-Wallet', `mthd_${txId}_E-Wallet`)
-      ];
+    pendingData.delete(txId);
+
+    let typeStr = "";
+    if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
+    if (pending.type === 'income') typeStr = '🟢 Pemasukan';
+    if (pending.type === 'asset') typeStr = '💎 Aset';
+    if (pending.type === 'debt') typeStr = '💳 Hutang';
+    
+    if (pending.type === 'expense') {
+        checkBudgetWarning(ctx, supabaseUserId, category, pending.amount);
+      }
+      await ctx.editMessageText(
+        `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`, 
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`) ])
+      }
+    );
+  } catch (error) {
+    console.error("Error saving to database:", error);
+    try {
+      await ctx.editMessageText(`❌ Terjadi kesalahan: ${error.message || String(error)}`);
+    } catch (editError) {
+      console.error("Error editing message in catch:", editError);
+      await ctx.reply(`❌ Terjadi kesalahan saat menyimpan data: ${error.message || String(error)}`).catch(e => console.error("Reply error:", e));
     }
-
-    const keyboardRows = [];
-    for (let i = 0; i < methodButtons.length; i += 2) { keyboardRows.push(methodButtons.slice(i, i + 2)); }
-
-    await ctx.editMessageText(`Kategori: ${category}\n\n👇 *Pilih Metode Pembayaran / Bank:*`, {
-      parse_mode: 'Markdown',
-      ...Markup.inlineKeyboard(keyboardRows)
-    });
-
-  } catch (error) {
-    console.error("Error processing category:", error);
-    await ctx.reply(`❌ Terjadi kesalahan: ${error.message}`).catch(e => console.error(e));
   }
 });
-
-// 6.5 Handle Method Selection
-bot.action(/mthd_(req_[0-9]+)_(.+)/, async (ctx) => {
-  const txId = ctx.match[1];
-  const method = ctx.match[2];
-
-  const { data: draftData, error: draftError } = await supabase
-    .from('telegram_drafts')
-    .select('payload')
-    .eq('tx_id', txId)
-    .maybeSingle();
-
-  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
-
-  const pending = draftData.payload;
-  
-  try {
-    ctx.answerCbQuery("Menyimpan...").catch(e => console.error(e));
-    await saveTransactionDraft(ctx, pending, pending.category, method, txId);
-  } catch (error) {
-    console.error("Error processing method:", error);
-    await ctx.reply(`❌ Terjadi kesalahan: ${error.message}`).catch(e => console.error(e));
-  }
-});
-
-async function saveTransactionDraft(ctx, pending, category, method, txId) {
-  const supabaseUserId = pending.supabaseUserId;
-  await ctx.editMessageText(`⏳ Menyimpan ke database...`);
-
-  let table = 'transactions';
-  let payload = {};
-  let undoPrefix = 'tx';
-
-  if (pending.type === 'expense' || pending.type === 'income') {
-    table = 'transactions';
-    undoPrefix = 'tx';
-    const now = new Date();
-    const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-    const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
-    payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, method: method || 'Cash', note: pending.note, date: localDateStr };
-  } else if (pending.type === 'asset') {
-    table = 'assets';
-    undoPrefix = 'ast';
-    payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
-  } else if (pending.type === 'debt') {
-    table = 'debts';
-    undoPrefix = 'dbt';
-    payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
-  }
-
-  const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
-  if (error) throw error;
-
-  await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
-
-  let typeStr = "";
-  if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
-  if (pending.type === 'income') typeStr = '🟢 Pemasukan';
-  if (pending.type === 'asset') typeStr = '💎 Aset';
-  if (pending.type === 'debt') typeStr = '💳 Hutang';
-
-  let successMsg = `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`;
-  if (method) successMsg += `\nMetode: ${method}`;
-
-  await ctx.editMessageText(successMsg, {
-    parse_mode: 'Markdown',
-    ...Markup.inlineKeyboard([Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`)])
-  });
-}
 
 // 7. Handle Undo Action
 bot.action(/undo_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   const prefix = ctx.match[1];
   const dbId = ctx.match[2];
-
+  
   let table = 'transactions';
   if (prefix === 'ast') table = 'assets';
   if (prefix === 'dbt') table = 'debts';
   if (prefix === 'rcv') table = 'receivables';
-
+  
   try {
     ctx.answerCbQuery("Membatalkan...");
-    const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', ctx.state.supabaseUserId);
+    const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', supabaseUserId);
     if (error) throw error;
 
     const currentText = ctx.callbackQuery.message.text;
@@ -668,7 +607,7 @@ bot.action(/del_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   
   try {
     ctx.answerCbQuery("Menghapus...").catch(e => console.error(e));
-    const suId = ctx.state.supabaseUserId; 
+    const suId = supabaseUserId; 
     const { error } = await supabase.from(table).delete().eq('id', dbId).eq('user_id', suId);
     if (error) throw error;
 
@@ -678,70 +617,30 @@ bot.action(/del_(tx|ast|dbt|rcv)_(.+)/, async (ctx) => {
   }
 });
 
-bot.action(/red_(red_[0-9]+)_(.+)/, async (ctx) => {
-  const txId = ctx.match[1];
-  const dbId = ctx.match[2];
-  const suId = ctx.state.supabaseUserId;
-
-  const { data: draftData, error: draftError } = await supabase
-    .from('telegram_drafts')
-    .select('payload')
-    .eq('tx_id', txId)
-    .maybeSingle();
-
-  if (draftError || !draftData) return ctx.answerCbQuery("❌ Sesi sudah diproses atau kedaluwarsa.", { show_alert: true });
-  
-  const { amount, table, nameColumn } = draftData.payload;
-
-  try {
-    ctx.answerCbQuery("Memproses...").catch(e => console.error(e));
-    
-    const { data: currentData, error: fetchErr } = await supabase.from(table).select('*').eq('id', dbId).eq('user_id', suId).single();
-    if (fetchErr) throw fetchErr;
-
-    let newPayload = {};
-    let message = "";
-
-    if (table === 'receivables') {
-      const newPaid = Number(currentData.paid_amount) + amount;
-      newPayload = { paid_amount: newPaid, updated_at: new Date().toISOString() };
-      message = `✅ *Piutang Berhasil Dibayar!*\n\nPeminjam: ${currentData[nameColumn]}\nDibayar: ${fm(amount)}\nSisa Piutang: ${fm(Number(currentData.amount) - newPaid)}`;
-    } else {
-      let newAmount = Number(currentData.amount) - amount;
-      if (newAmount < 0) newAmount = 0;
-      newPayload = { amount: newAmount, updated_at: new Date().toISOString() };
-      const typeStr = table === 'assets' ? 'Aset' : 'Hutang';
-      message = `✅ *${typeStr} Berhasil Dikurangi!*\n\nNama: ${currentData[nameColumn]}\nDikurangi: ${fm(amount)}\nSisa Saldo: ${fm(newAmount)}`;
-    }
-
-    const { error: updateErr } = await supabase.from(table).update(newPayload).eq('id', dbId).eq('user_id', suId);
-    if (updateErr) throw updateErr;
-
-    await supabase.from('telegram_drafts').delete().eq('tx_id', txId);
-    await ctx.editMessageText(message, { parse_mode: 'Markdown' });
-  } catch (error) {
-    ctx.answerCbQuery("❌ Gagal memproses.", { show_alert: true }).catch(e => console.error(e));
-  }
-});
-
 bot.action('cancel_delete', async (ctx) => {
   ctx.answerCbQuery().catch(e => console.error(e));
   await ctx.editMessageText("❌ Dibatalkan.");
 });
 
+// 8. Start the bot
+bot.launch().then(() => {
+  console.log("🚀 WealthPilot Telegram Bot V2 is running...");
+});
+
+
 // 8. Vercel Serverless Function Handler (Webhook)
 module.exports = async (req, res) => {
   try {
-    if (req.method === 'POST') {
+    if (req.method === \'POST\') {
       await bot.handleUpdate(req.body, res);
       if (!res.writableEnded) {
-        res.status(200).send('OK');
+        res.status(200).send(\'OK\');
       }
     } else {
-      res.status(200).send('Bot is running (Webhook mode)!');
+      res.status(200).send(\'Bot is running (Webhook mode)!\');
     }
   } catch (error) {
-    console.error('Error in webhook handler:', error);
-    res.status(500).send('Internal Server Error');
+    console.error(\'Error in webhook handler:\', error);
+    res.status(500).send(\'Internal Server Error\');
   }
 };

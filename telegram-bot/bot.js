@@ -1,6 +1,8 @@
 require('dotenv').config();
 const { Telegraf, Markup } = require('telegraf');
 const { createClient } = require('@supabase/supabase-js');
+const { parseWithAI } = require('./ai-parser');
+const { checkBudgetWarning } = require('./budget-checker');
 
 // 1. Setup Supabase Client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -201,7 +203,31 @@ async function handleReport(ctx) {
       if (t.type === 'expense') methodBalances[key] -= Number(t.amount);
     });
 
-    let totalAssets = assetRes.data.reduce((acc, a) => acc + Number(a.amount), 0);
+    let btcPrice = 0;
+    try {
+      const btcRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=idr');
+      const btcData = await btcRes.json();
+      btcPrice = btcData.bitcoin.idr;
+    } catch(e) {
+      console.log("Failed to fetch crypto price");
+    }
+
+    let totalAssets = 0;
+    for (let a of assetRes.data) {
+      let amount = Number(a.amount);
+      if (a.asset_type === 'crypto' && a.symbol && a.quantity) {
+        if (a.symbol.toLowerCase() === 'btc' || a.symbol.toLowerCase() === 'bitcoin') {
+          amount = a.quantity * btcPrice;
+          // Dynamically update the amount in memory so it reflects correctly
+          a.amount = amount;
+        }
+      } else if (a.name.toUpperCase().includes('BITCOIN') && a.amount > 0 && btcPrice > 0) {
+        // Fallback: If it's the old BITCOIN entry and has no quantity, assume it's just IDR value, or if they update it to be 0.0016 BTC in the name we could parse it, but for now we rely on DB schema update. 
+        // Wait, the DB schema is updated but they haven't filled 'quantity' yet. 
+        // We will just leave it as fiat amount if quantity is missing.
+      }
+      totalAssets += amount;
+    }
     let totalDebts = debtRes.data.reduce((acc, d) => acc + Number(d.amount), 0);
     
     let totalReceivables = recRes.data.reduce((acc, r) => acc + (Number(r.amount) - Number(r.paid_amount)), 0);
@@ -387,10 +413,24 @@ bot.on('text', async (ctx) => {
   else if (debtMatch) { type = 'debt'; amountStr = debtMatch[2]; note = debtMatch[3]; }
   else if (recMatch) { type = 'receivable'; amountStr = recMatch[2]; note = recMatch[3]; }
   else {
-    return ctx.reply("❌ Format tidak dikenali.\n\nGunakan format:\n`keluar 50000 makan`\n`hutang 500000 pinjol`\n`aset 1000000 emas`", { parse_mode: 'Markdown' });
-  }
+      if (!process.env.GEMINI_API_KEY) {
+        return ctx.reply('❌ Format tidak dikenali. Gunakan format manual.', { parse_mode: 'Markdown' });
+      }
+      const msg = await ctx.reply('⏳ Menganalisis pesan dengan AI...');
+      const aiResult = await parseWithAI(ctx.message.text);
+      if (!aiResult) {
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ AI gagal memahami pesan ini.');
+      }
+      type = aiResult.type;
+      amountStr = aiResult.amount.toString();
+      note = aiResult.note;
+      ctx.state = ctx.state || {};
+      ctx.state.aiCategory = aiResult.category;
+      ctx.state.aiMethod = aiResult.method;
+      await ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '\u2705 Pesan dipahami oleh AI (Tipe: ' + type.toUpperCase() + ').');
+    }
 
-  const amount = Number(amountStr.replace(/[^0-9]/g, ''));
+    const amount = Number(amountStr.replace(/[^0-9]/g, ''));
   if (isNaN(amount) || amount <= 0) {
     return ctx.reply("❌ Jumlah tidak valid.");
   }
@@ -414,8 +454,40 @@ bot.on('text', async (ctx) => {
     }
   }
 
-  // Save to pending state for Expense, Income, Asset, Debt
-  const txId = `req_${Date.now()}`;
+  // If AI already provided a category, we can insert immediately
+    if (ctx.state && ctx.state.aiCategory && (type === 'expense' || type === 'income')) {
+      try {
+        const msg = await ctx.reply("⏳ Menyimpan transaksi...");
+        const now = new Date();
+        const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+        const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+        
+        let method = ctx.state.aiMethod || 'Cash';
+        const payload = { user_id: supabaseUserId, type: type, amount: amount, category: ctx.state.aiCategory, note: note, date: localDateStr, method: method };
+        
+        const { data, error } = await supabase.from('transactions').insert([payload]).select('id').single();
+        if (error) throw error;
+        
+        if (type === 'expense') {
+          checkBudgetWarning(ctx, supabaseUserId, ctx.state.aiCategory, amount);
+        }
+        return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, 
+          `✅ *Berhasil dicatat otomatis oleh AI!*
+
+📝 ${type === 'income' ? 'Pemasukan' : 'Pengeluaran'}: ${fm(amount)}
+Kategori: ${ctx.state.aiCategory}
+Metode: ${method}
+Keterangan: ${note}`, {
+            parse_mode: 'Markdown',
+            ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_tx_${data.id}`) ])
+        });
+      } catch (err) {
+        return ctx.reply(`❌ Error: ${err.message}`);
+      }
+    }
+
+    // Save to pending state for Expense, Income, Asset, Debt
+    const txId = `req_${Date.now()}`;
   pendingData.set(txId, { type, amount, note });
 
   let categories = [];
@@ -480,8 +552,11 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
     if (pending.type === 'asset') typeStr = '💎 Aset';
     if (pending.type === 'debt') typeStr = '💳 Hutang';
     
-    await ctx.editMessageText(
-      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`, 
+    if (pending.type === 'expense') {
+        checkBudgetWarning(ctx, supabaseUserId, category, pending.amount);
+      }
+      await ctx.editMessageText(
+        `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`, 
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`) ])

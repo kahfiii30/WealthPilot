@@ -438,7 +438,7 @@ bot.on('text', async (ctx) => {
 
       const aiResult = parsedResponse.data;
       if (!aiResult || !aiResult.type) {
-         return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ Format tidak dikenali. Gunakan format manual.');
+         return ctx.telegram.editMessageText(ctx.chat.id, msg.message_id, undefined, '❌ Format tidak dikenali. Gunakan format manual.\n\n[DEBUG AI]: ' + JSON.stringify(parsedResponse));
       }
 
       type = aiResult.type;

@@ -511,13 +511,23 @@ Keterangan: ${note}`, {
   pendingData.set(txId, { type, amount, note });
 
   let categories = [];
+  let typeCode = "e";
   let typeStr = "";
-  if (type === 'expense') { categories = ['Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Lainnya']; typeStr = '🔴 Pengeluaran'; }
-  else if (type === 'income') { categories = ['Salary', 'Business', 'Bonus', 'Freelance', 'Investment', 'Gift', 'Other Income']; typeStr = '🟢 Pemasukan'; }
-  else if (type === 'asset') { categories = ['Tunai', 'Tabungan', 'Investasi', 'Properti', 'Lainnya']; typeStr = '💎 Aset Baru'; }
-  else if (type === 'debt') { categories = ['Pinjol', 'Kartu Kredit', 'KPR/KKB', 'Pribadi', 'Lainnya']; typeStr = '💳 Hutang Baru'; }
+  if (type === 'expense') { categories = ['Food & Dining', 'Trading', 'Kebutuhan', 'Transportasi', 'Investasi', 'Lainnya']; typeStr = '🔴 Pengeluaran'; typeCode = 'e'; }
+  else if (type === 'income') { categories = ['Salary', 'Business', 'Bonus', 'Freelance', 'Investment', 'Gift', 'Other Income']; typeStr = '🟢 Pemasukan'; typeCode = 'i'; }
+  else if (type === 'asset') { categories = ['Tunai', 'Tabungan', 'Investasi', 'Properti', 'Lainnya']; typeStr = '💎 Aset Baru'; typeCode = 'a'; }
+  else if (type === 'debt') { categories = ['Pinjol', 'Kartu Kredit', 'KPR/KKB', 'Pribadi', 'Lainnya']; typeStr = '💳 Hutang Baru'; typeCode = 'd'; }
 
-  const buttons = categories.map(cat => Markup.button.callback(cat, `cat_${txId}_${cat}`));
+  const buttons = categories.map(cat => {
+    let packed = `cx|${typeCode}|${amount}|${cat}|${note}`;
+    if (packed.length > 64) {
+      const allowedNoteLen = 64 - (packed.length - note.length);
+      const shortNote = note.substring(0, allowedNoteLen);
+      packed = `cx|${typeCode}|${amount}|${cat}|${shortNote}`;
+    }
+    return Markup.button.callback(cat, packed);
+  });
+  
   const keyboardRows = [];
   for (let i = 0; i < buttons.length; i += 2) { keyboardRows.push(buttons.slice(i, i + 2)); }
 
@@ -528,15 +538,18 @@ Keterangan: ${note}`, {
 });
 
 // 6. Handle Inline Category Selection
-bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
-  const txId = ctx.match[1];
-  const category = ctx.match[2];
-  
-  const pending = pendingData.get(txId);
-  if (!pending) return ctx.answerCbQuery("❌ Sesi sudah diproses.", { show_alert: true });
+bot.action(/^cx\|([eiad])\|([0-9]+)\|([^|]+)\|(.*)$/, async (ctx) => {
+  const typeCode = ctx.match[1];
+  const amount = Number(ctx.match[2]);
+  const category = ctx.match[3];
+  const note = ctx.match[4];
+
+  let type = 'expense';
+  if (typeCode === 'i') type = 'income';
+  else if (typeCode === 'a') type = 'asset';
+  else if (typeCode === 'd') type = 'debt';
 
   try {
-    // Add catch to answerCbQuery to prevent unhandled rejections
     ctx.answerCbQuery("Menyimpan...").catch(err => console.error("answerCbQuery error:", err));
     await ctx.editMessageText(`⏳ Menyimpan ke database...`);
 
@@ -544,39 +557,37 @@ bot.action(/cat_(req_[0-9]+)_(.+)/, async (ctx) => {
     let payload = {};
     let undoPrefix = 'tx';
 
-    if (pending.type === 'expense' || pending.type === 'income') {
+    if (type === 'expense' || type === 'income') {
       table = 'transactions';
       undoPrefix = 'tx';
       const now = new Date();
       const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
       const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
-      payload = { user_id: supabaseUserId, type: pending.type, amount: pending.amount, category: category, note: pending.note, date: localDateStr };
-    } else if (pending.type === 'asset') {
+      payload = { user_id: supabaseUserId, type: type, amount: amount, category: category, note: note, date: localDateStr, method: 'Cash' };
+    } else if (type === 'asset') {
       table = 'assets';
       undoPrefix = 'ast';
-      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
-    } else if (pending.type === 'debt') {
+      payload = { user_id: supabaseUserId, name: note, category: category, amount: amount };
+    } else if (type === 'debt') {
       table = 'debts';
       undoPrefix = 'dbt';
-      payload = { user_id: supabaseUserId, name: pending.note, category: category, amount: pending.amount };
+      payload = { user_id: supabaseUserId, name: note, category: category, amount: amount };
     }
 
     const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
     if (error) throw error;
     
-    pendingData.delete(txId);
-
     let typeStr = "";
-    if (pending.type === 'expense') typeStr = '🔴 Pengeluaran';
-    if (pending.type === 'income') typeStr = '🟢 Pemasukan';
-    if (pending.type === 'asset') typeStr = '💎 Aset';
-    if (pending.type === 'debt') typeStr = '💳 Hutang';
+    if (type === 'expense') typeStr = '🔴 Pengeluaran';
+    if (type === 'income') typeStr = '🟢 Pemasukan';
+    if (type === 'asset') typeStr = '💎 Aset';
+    if (type === 'debt') typeStr = '💳 Hutang';
     
-    if (pending.type === 'expense') {
-        checkBudgetWarning(ctx, supabaseUserId, category, pending.amount);
+    if (type === 'expense') {
+        checkBudgetWarning(ctx, supabaseUserId, category, amount);
       }
       await ctx.editMessageText(
-        `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(pending.amount)}\nKategori: ${category}\nKeterangan: ${pending.note}`, 
+        `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(amount)}\nKategori: ${category}\nKeterangan: ${note}`, 
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`) ])

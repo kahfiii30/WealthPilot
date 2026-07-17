@@ -140,12 +140,6 @@ async function handleReport(ctx) {
     let methodBalances = {};
     let methodNames = {}; // store original case for display
 
-    let cashMethodName = 'CASH';
-    const cashAsset = assetRes.data.find(a => a.name.toUpperCase().includes('CASH'));
-    if (cashAsset) {
-      cashMethodName = cashAsset.name;
-    }
-
     // Initialize method balances from assets
     assetRes.data.forEach(a => {
       const key = a.name.toUpperCase();
@@ -153,7 +147,7 @@ async function handleReport(ctx) {
       methodNames[key] = a.name;
     });
 
-    const coreMethods = ['BCA', 'Mandiri', 'Seabank'];
+    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
     coreMethods.forEach(m => {
       const key = m.toUpperCase();
       if (methodBalances[key] === undefined) {
@@ -162,20 +156,14 @@ async function handleReport(ctx) {
       }
     });
 
-    const cashKey = cashMethodName.toUpperCase();
-    if (methodBalances[cashKey] === undefined) {
-      methodBalances[cashKey] = 0;
-      methodNames[cashKey] = cashMethodName;
-    }
-
     txResAll.data.forEach(t => {
       if (t.type === 'income') incomeAll += Number(t.amount);
       if (t.type === 'expense') expenseAll += Number(t.amount);
 
       let method = (t.method || '').trim();
       const upperMethod = method.toUpperCase();
-      if (!method || upperMethod === '-' || upperMethod === '0' || upperMethod === 'CASH' || upperMethod === 'BANK TRANSFER') {
-        method = cashMethodName;
+      if (!method || upperMethod === '-' || upperMethod === '0' || upperMethod === 'BANK TRANSFER') {
+        method = 'Cash';
       }
       
       const key = method.toUpperCase();
@@ -200,7 +188,7 @@ async function handleReport(ctx) {
     Object.entries(methodBalances)
       .filter(([key, amount]) => {
         const method = methodNames[key];
-        const isCore = method.toUpperCase() === cashKey || coreMethods.some(m => m.toUpperCase() === method.toUpperCase());
+        const isCore = coreMethods.some(m => m.toUpperCase() === method.toUpperCase());
         const isAsset = assetRes.data.some(a => a.name.toUpperCase() === method.toUpperCase());
         if (isCore || isAsset) return true;
         if (amount === 0) return false;

@@ -76,6 +76,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     // Process all transactions
     transactions.forEach(t => {
       const method = t.method || 'Cash';
+      
       const key = method.toUpperCase();
       if (!balances[key]) {
         balances[key] = { name: method, amount: 0, category: 'Other' };
@@ -335,7 +336,14 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
                   </div>
                   <span className="text-[11px] 2xl:text-xs font-black uppercase tracking-widest text-slate-400 truncate">{acc.name}</span>
                 </div>
-                <div className="text-xl 2xl:text-3xl font-black text-slate-100 truncate">{fm(acc.amount)}</div>
+                <div className="text-xl 2xl:text-3xl font-black text-slate-100 truncate">
+                  {acc.amount < 0 ? fm(0) : fm(acc.amount)}
+                </div>
+                {acc.amount < 0 && (
+                  <span className="text-[10px] text-red-400 font-bold mt-1 tracking-wider">
+                    Deficit: {fm(acc.amount)}
+                  </span>
+                )}
               </div>
             );
           })}

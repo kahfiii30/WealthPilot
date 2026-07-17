@@ -1,33 +1,4 @@
-export const fetchAssets = async (userId) => {
-  const { data, error } = await supabase
-    .from('assets')
-    .select('*')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false });
-  
-  if (error) throw error;
-  
-  let btcPrice = 0;
-  try {
-    const btcRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=idr');
-    const btcData = await btcRes.json();
-    btcPrice = btcData.bitcoin.idr;
-  } catch(e) {
-    console.warn("Failed to fetch crypto price", e);
-  }
-
-  const rawData = data || [];
-  
-  for (let a of rawData) {
-    if (a.asset_type === 'crypto' && a.symbol && a.quantity) {
-      if (a.symbol.toLowerCase() === 'btc' || a.symbol.toLowerCase() === 'bitcoin') {
-        a.amount = a.quantity * btcPrice;
-      }
-    }
-  }
-
-  return rawData.map(normalizeAsset);
-};import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 
 // --- Normalizers ---
 

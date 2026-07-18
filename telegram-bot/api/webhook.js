@@ -550,21 +550,45 @@ bot.action(/^cx\|([eiad])\|([0-9]+)\|([^|]+)\|(.*)$/, async (ctx) => {
   else if (typeCode === 'd') type = 'debt';
 
   try {
+    let typeStr = "";
+    if (type === 'expense') typeStr = '🔴 Pengeluaran';
+    else if (type === 'income') typeStr = '🟢 Pemasukan';
+    else if (type === 'asset') typeStr = '💎 Aset';
+    else if (type === 'debt') typeStr = '💳 Hutang';
+
+    // If it's expense or income, ask for the payment method next
+    if (type === 'expense' || type === 'income') {
+      ctx.answerCbQuery().catch(err => console.error("answerCbQuery error:", err));
+
+      const methods = ['Cash', 'BCA', 'Mandiri', 'Seabank', 'Lainnya'];
+      const buttons = methods.map(m => {
+        // Pack data for method selection: mx|typeCode|amount|category|method|note
+        let packed = `mx|${typeCode}|${amount}|${category}|${m}|${note}`;
+        if (packed.length > 64) {
+          const allowedNoteLen = 64 - (packed.length - note.length);
+          const shortNote = note.substring(0, Math.max(0, allowedNoteLen));
+          packed = `mx|${typeCode}|${amount}|${category}|${m}|${shortNote}`;
+        }
+        return Markup.button.callback(m, packed);
+      });
+      const keyboardRows = [];
+      for (let i = 0; i < buttons.length; i += 2) { keyboardRows.push(buttons.slice(i, i + 2)); }
+      
+      return ctx.editMessageText(`*Draft ${typeStr}*\nJumlah: ${fm(amount)}\nKategori: ${category}\nKeterangan: ${note}\n\n👇 *Pilih Metode Pembayaran:*`, {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard(keyboardRows)
+      });
+    }
+
+    // For asset and debt, save immediately
     ctx.answerCbQuery("Menyimpan...").catch(err => console.error("answerCbQuery error:", err));
     await ctx.editMessageText(`⏳ Menyimpan ke database...`);
 
-    let table = 'transactions';
+    let table = 'assets';
     let payload = {};
-    let undoPrefix = 'tx';
+    let undoPrefix = 'ast';
 
-    if (type === 'expense' || type === 'income') {
-      table = 'transactions';
-      undoPrefix = 'tx';
-      const now = new Date();
-      const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
-      const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
-      payload = { user_id: supabaseUserId, type: type, amount: amount, category: category, note: note, date: localDateStr, method: 'Cash' };
-    } else if (type === 'asset') {
+    if (type === 'asset') {
       table = 'assets';
       undoPrefix = 'ast';
       payload = { user_id: supabaseUserId, name: note, category: category, amount: amount };
@@ -577,20 +601,67 @@ bot.action(/^cx\|([eiad])\|([0-9]+)\|([^|]+)\|(.*)$/, async (ctx) => {
     const { data, error } = await supabase.from(table).insert([payload]).select('id').single();
     if (error) throw error;
     
-    let typeStr = "";
-    if (type === 'expense') typeStr = '🔴 Pengeluaran';
-    if (type === 'income') typeStr = '🟢 Pemasukan';
-    if (type === 'asset') typeStr = '💎 Aset';
-    if (type === 'debt') typeStr = '💳 Hutang';
-    
-    if (type === 'expense') {
-        checkBudgetWarning(ctx, supabaseUserId, category, amount);
-      }
-      await ctx.editMessageText(
-        `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(amount)}\nKategori: ${category}\nKeterangan: ${note}`, 
+    await ctx.editMessageText(
+      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(amount)}\nKategori: ${category}\nKeterangan: ${note}`, 
       {
         parse_mode: 'Markdown',
         ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_${undoPrefix}_${data.id}`) ])
+      }
+    );
+  } catch (error) {
+    console.error("Error saving to database:", error);
+    try {
+      await ctx.editMessageText(`❌ Terjadi kesalahan: ${error.message || String(error)}`);
+    } catch (editError) {
+      console.error("Error editing message in catch:", editError);
+      await ctx.reply(`❌ Terjadi kesalahan saat menyimpan data: ${error.message || String(error)}`).catch(e => console.error("Reply error:", e));
+    }
+  }
+});
+
+// 6.5 Handle Inline Method Selection
+bot.action(/^mx\|([eiad])\|([0-9]+)\|([^|]+)\|([^|]+)\|(.*)$/, async (ctx) => {
+  const typeCode = ctx.match[1];
+  const amount = Number(ctx.match[2]);
+  const category = ctx.match[3];
+  const method = ctx.match[4];
+  const note = ctx.match[5];
+
+  let type = 'expense';
+  if (typeCode === 'i') type = 'income';
+
+  try {
+    ctx.answerCbQuery("Menyimpan...").catch(err => console.error("answerCbQuery error:", err));
+    await ctx.editMessageText(`⏳ Menyimpan ke database...`);
+
+    const now = new Date();
+    const jkt = new Date(now.toLocaleString("en-US", { timeZone: "Asia/Jakarta" }));
+    const localDateStr = `${jkt.getFullYear()}-${String(jkt.getMonth() + 1).padStart(2, '0')}-${String(jkt.getDate()).padStart(2, '0')}`;
+    
+    const payload = { 
+      user_id: supabaseUserId, 
+      type: type, 
+      amount: amount, 
+      category: category, 
+      note: note, 
+      date: localDateStr,
+      method: method
+    };
+
+    const { data, error } = await supabase.from('transactions').insert([payload]).select('id').single();
+    if (error) throw error;
+
+    let typeStr = type === 'expense' ? '🔴 Pengeluaran' : '🟢 Pemasukan';
+    
+    if (type === 'expense') {
+      checkBudgetWarning(ctx, supabaseUserId, category, amount);
+    }
+    
+    await ctx.editMessageText(
+      `✅ *Berhasil dicatat!*\n\n${typeStr}: ${fm(amount)}\nKategori: ${category}\nMetode: ${method}\nKeterangan: ${note}`, 
+      {
+        parse_mode: 'Markdown',
+        ...Markup.inlineKeyboard([ Markup.button.callback('❌ Batalkan (Undo)', `undo_tx_${data.id}`) ])
       }
     );
   } catch (error) {

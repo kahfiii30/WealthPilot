@@ -393,8 +393,8 @@ function App() {
       <Header onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} onUpgrade={() => setIsProModalOpen(true)} />
 
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative w-full md:w-[calc(100%-240px)]">
-        <AnimatePresence mode="wait">
-          <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
+        <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
+          <Routes location={location} key={location.pathname}>
             <Route path="/" element={<AnimatedPage><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
             <Route path="/transactions" element={<AnimatedPage><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
             <Route path="/budget" element={<AnimatedPage><Budget transactions={transactions} budgets={budgets} onAddBudget={addBudget} onUpdateBudget={updateBudget} onDeleteBudget={deleteBudget} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />

@@ -351,23 +351,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
         />
       </div>
 
-      {!initialData && (
-        <div className="space-y-2">
-          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Fund Source (Asset)</label>
-          <select 
-            required
-            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all appearance-none"
-            value={formData.assetId}
-            onChange={e => setFormData({...formData, assetId: e.target.value})}
-          >
-            <option value="" disabled>Select Asset to Deduct</option>
-            {assets.map(a => (
-              <option key={a.id} value={a.id}>{a.name} ({a.amount.toLocaleString()})</option>
-            ))}
-          </select>
-          <p className="text-[10px] text-slate-500 ml-1">Money will be deducted from this asset, and an expense transaction will be recorded.</p>
-        </div>
-      )}
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">

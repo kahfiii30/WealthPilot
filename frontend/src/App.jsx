@@ -14,6 +14,7 @@ import Login from './pages/Login';
 import Settings from './pages/Settings';
 import AnimatedPage from './components/AnimatedPage';
 import TransactionForm from './components/TransactionForm';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { translate } from './utils/translations';
 import { formatMoney } from './utils/formatMoney';
 import { 
@@ -29,7 +30,7 @@ import Receivables from './pages/Receivables';
 function App() {
   const [session, setSession] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(localStorage.getItem("isLoggedIn") === "true");
-  const [activePage, setActivePage] = useState('dashboard');
+  const location = useLocation();
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -387,43 +388,25 @@ function App() {
         }
       }} />
       <div className="hidden md:block">
-        <Sidebar activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} t={t} onUpgrade={() => setIsProModalOpen(true)} />
+        <Sidebar onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} t={t} onUpgrade={() => setIsProModalOpen(true)} />
       </div>
-      <Header activePage={activePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} onUpgrade={() => setIsProModalOpen(true)} />
+      <Header onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} onUpgrade={() => setIsProModalOpen(true)} />
 
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative w-full md:w-[calc(100%-240px)]">
         <AnimatePresence mode="wait">
-          {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
-          {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
-          {activePage === 'budget' && (
-            <AnimatedPage key="budget">
-              <Budget transactions={transactions} budgets={budgets} onAddBudget={addBudget} onUpdateBudget={updateBudget} onDeleteBudget={deleteBudget} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
-            </AnimatedPage>
-          )}
-          {activePage === 'assets' && (
-            <AnimatedPage key="assets">
-              <AssetsDebt assets={assets} debts={debts} receivables={receivables} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} />
-            </AnimatedPage>
-          )}
-          {activePage === 'receivables' && (
-            <AnimatedPage key="receivables">
-              <Receivables receivables={receivables} assets={assets} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} />
-            </AnimatedPage>
-          )}
-          {activePage === 'insight' && (
-            <AnimatedPage key="insight">
-              <Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} receivables={receivables} onNavigate={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} />
-            </AnimatedPage>
-          )}
-          {activePage === 'settings' && (
-            <AnimatedPage key="settings">
-              <Settings userProfile={userProfile} setUserProfile={handleUpdateProfile} preferences={preferences} setPreferences={handleSetPreferences} notifications={notifications} setNotifications={handleSetNotifications} onLogout={handleLogout} onResetData={handleResetFinanceData} t={t} fm={fm} />
-            </AnimatedPage>
-          )}
+          <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
+            <Route path="/" element={<AnimatedPage><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/transactions" element={<AnimatedPage><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/budget" element={<AnimatedPage><Budget transactions={transactions} budgets={budgets} onAddBudget={addBudget} onUpdateBudget={updateBudget} onDeleteBudget={deleteBudget} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/assets" element={<AnimatedPage><AssetsDebt assets={assets} debts={debts} receivables={receivables} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} /></AnimatedPage>} />
+            <Route path="/receivables" element={<AnimatedPage><Receivables receivables={receivables} assets={assets} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} /></AnimatedPage>} />
+            <Route path="/insight" element={<AnimatedPage><Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} receivables={receivables} onNavigate={() => {}} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/settings" element={<AnimatedPage><Settings userProfile={userProfile} setUserProfile={handleUpdateProfile} preferences={preferences} setPreferences={handleSetPreferences} notifications={notifications} setNotifications={handleSetNotifications} onLogout={handleLogout} onResetData={handleResetFinanceData} t={t} fm={fm} /></AnimatedPage>} />
+          </Routes>
         </AnimatePresence>
       </main>
       
-      <MobileNav activePage={activePage} setActivePage={setActivePage} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} />
+      <MobileNav onQuickAdd={() => setIsQuickAddOpen(true)} t={t} />
       <TransactionForm isOpen={isQuickAddOpen} onClose={() => setIsQuickAddOpen(false)} onAddTransaction={handleAddTransaction} t={t} fm={fm} currency={preferences.currency} assets={assets} />
       <ProModal isOpen={isProModalOpen} onClose={() => setIsProModalOpen(false)} />
     </div>

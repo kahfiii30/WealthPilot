@@ -1,14 +1,18 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Link, useLocation } from 'react-router-dom';
 
-function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t }) {
+function Sidebar({ onQuickAdd, onLogout, onUpgrade, t }) {
+  const location = useLocation();
+  const activePage = location.pathname.split('/')[1] || 'dashboard';
+
   const navItems = [
-    { id: 'dashboard', label: t('dashboard'), icon: 'dashboard' },
-    { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },
-    { id: 'budget', label: t('budget'), icon: 'account_balance_wallet' },
-    { id: 'assets', label: t('assetsDebt'), icon: 'account_balance' },
-    { id: 'receivables', label: t('receivables'), icon: 'payments' },
-    { id: 'insight', label: t('insight'), icon: 'insights' },
+    { id: 'dashboard', path: '/', label: t('dashboard'), icon: 'dashboard' },
+    { id: 'transactions', path: '/transactions', label: t('transactions'), icon: 'receipt_long' },
+    { id: 'budget', path: '/budget', label: t('budget'), icon: 'account_balance_wallet' },
+    { id: 'assets', path: '/assets', label: t('assetsDebt'), icon: 'account_balance' },
+    { id: 'receivables', path: '/receivables', label: t('receivables'), icon: 'payments' },
+    { id: 'insight', path: '/insight', label: t('insight'), icon: 'insights' },
   ];
 
   return (
@@ -26,9 +30,9 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t
         {navItems.map(item => {
           const isActive = activePage === item.id;
           return (
-            <button
+            <Link
               key={item.id}
-              onClick={() => setActivePage(item.id)}
+              to={item.path}
               className={`relative w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group ${
                 isActive 
                   ? 'text-white bg-white/[0.03]' 
@@ -45,7 +49,7 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t
                 {item.icon}
               </span>
               <span className="font-medium text-sm tracking-wide">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>
@@ -59,8 +63,8 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t
           {t('addTransaction')}
         </button>
 
-        <button 
-          onClick={() => setActivePage('settings')}
+        <Link 
+          to="/settings"
           className={`relative w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group ${
             activePage === 'settings' 
               ? 'text-white bg-white/[0.03]' 
@@ -75,7 +79,7 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t
           )}
           <span className={`material-symbols-outlined transition-colors duration-200 ${activePage === 'settings' ? 'text-primary' : 'group-hover:text-neutral-300'}`}>settings</span>
           <span className="font-medium text-sm tracking-wide">{t('settings')}</span>
-        </button>
+        </Link>
 
         <button 
           onClick={onLogout}

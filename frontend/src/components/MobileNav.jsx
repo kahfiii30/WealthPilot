@@ -1,26 +1,30 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-function MobileNav({ activePage, setActivePage, onQuickAdd, t }) {
+function MobileNav({ onQuickAdd, t }) {
+  const location = useLocation();
+  const activePage = location.pathname.split('/')[1] || 'dashboard';
+
   const navItems = [
-    { id: 'dashboard', label: t('dashboard'), icon: 'dashboard' },
-    { id: 'transactions', label: t('transactions'), icon: 'receipt_long' },
-    { id: 'budget', label: t('budget'), icon: 'account_balance_wallet' },
-    { id: 'receivables', label: t('receivables'), icon: 'payments' },
-    { id: 'settings', label: t('settings'), icon: 'settings' },
+    { id: 'dashboard', path: '/', label: t('dashboard'), icon: 'dashboard' },
+    { id: 'transactions', path: '/transactions', label: t('transactions'), icon: 'receipt_long' },
+    { id: 'budget', path: '/budget', label: t('budget'), icon: 'account_balance_wallet' },
+    { id: 'assets', path: '/assets', label: t('assetsDebt'), icon: 'account_balance' },
+    { id: 'receivables', path: '/receivables', label: t('receivables'), icon: 'payments' },
+    { id: 'insight', path: '/insight', label: t('insight'), icon: 'insights' },
   ];
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[72px] bg-black/80 backdrop-blur-md border-t border-white/5 flex items-center justify-around px-2 z-[60] pb-safe">
-      {navItems.slice(0, 2).map(item => (
-        <a 
+      {navItems.slice(0, 3).map(item => (
+        <Link 
           key={item.id}
+          to={item.path}
           className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-neutral-500 hover:text-white'}`} 
-          href="#" 
-          onClick={(e) => { e.preventDefault(); setActivePage(item.id); }}
         >
           <span className={`material-symbols-outlined text-[24px] ${activePage === item.id ? 'text-primary' : ''}`} style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
           <span className={`text-[10px] text-center ${activePage === item.id ? 'font-semibold' : ''}`}>{item.label}</span>
-        </a>
+        </Link>
       ))}
 
       <div className="relative -top-4">
@@ -32,16 +36,15 @@ function MobileNav({ activePage, setActivePage, onQuickAdd, t }) {
         </button>
       </div>
 
-      {navItems.slice(2).map(item => (
-        <a 
+      {navItems.slice(3).map(item => (
+        <Link 
           key={item.id}
+          to={item.path}
           className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-neutral-500 hover:text-white'}`} 
-          href="#" 
-          onClick={(e) => { e.preventDefault(); setActivePage(item.id); }}
         >
           <span className={`material-symbols-outlined text-[24px] ${activePage === item.id ? 'text-primary' : ''}`} style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
           <span className={`text-[10px] text-center ${activePage === item.id ? 'font-semibold' : ''}`}>{item.label}</span>
-        </a>
+        </Link>
       ))}
     </nav>
   );

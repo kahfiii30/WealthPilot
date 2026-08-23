@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import EmptyState from '../components/EmptyState';
+import { useState } from 'react';
+import { motion } from 'framer-motion';
 import { getMonthKey } from '../services/financeService';
 import { formatDate } from '../utils/dateUtils';
 
@@ -25,22 +24,13 @@ const formatRupiah = (value) => {
 
 function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, onDeleteBudget, t, fm, selectedMonth, setSelectedMonth }) {
   // 1. State Management
-  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(() => {
-    const flag = localStorage.getItem("openBudgetModalOnLoad");
-    if (flag === "true") {
-      localStorage.removeItem("openBudgetModalOnLoad");
-      return true;
-    }
-    return false;
-  });
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isManageModalOpen, setIsManageModalOpen] = useState(false);
   const [editingBudget, setEditingBudget] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
   // 3. Calculations
-  const monthlyBudgets = budgets.filter(
-    b => b.month === selectedMonth
-  );
+  const monthlyBudgets = budgets.filter(b => b.month === selectedMonth);
 
   const totalBudget = monthlyBudgets.reduce((sum, b) => {
     return sum + (Number.isFinite(b.limit) ? b.limit : 0);
@@ -80,8 +70,6 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
     const percentage = b.limit > 0 ? (actualSpent / b.limit) * 100 : 0;
     return { ...b, actualSpent, percentage };
   });
-
-  const overBudgetItemsCount = cStats.filter(s => s.actualSpent > s.limit).length;
 
   // High Impact Spending
   const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonth);
@@ -142,7 +130,6 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
       setIsBudgetModalOpen(false);
       setEditingBudget(null);
     } catch (err) {
-      console.error("Failed to save budget:", err);
       setError(err.message || "Failed to save budget");
     } finally {
       setIsSaving(false);
@@ -153,24 +140,24 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   const itemVariants = { hidden: { opacity: 0, y: 10 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } } };
 
   return (
-    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-8 2xl:p-12 max-w-[1600px] mx-auto overflow-x-hidden">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 2xl:mb-16 gap-6">
+    <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 md:p-8 pb-[100px]">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-6">
         <div>
-          <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 2xl:mb-4 ml-1">Strategy Center</p>
-          <h2 className="text-4xl 2xl:text-6xl font-black text-slate-100 tracking-tighter">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">Strategy Center</p>
+          <h2 className="text-3xl font-bold text-white tracking-tight">
             {t('monthlyBudget')} {new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+        <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
           <input 
             type="month" 
             value={selectedMonth} 
             onChange={(e) => setSelectedMonth(e.target.value)} 
-            className="rounded-xl border border-slate-700/40 bg-slate-950/55 px-6 py-3 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer [color-scheme:dark]" 
+            className="h-11 bg-white/[0.03] border border-white/10 rounded-lg px-4 text-white font-medium outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
           />
           <button 
             onClick={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} 
-            className="rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-6 py-3 font-semibold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] flex items-center justify-center gap-2"
+            className="h-11 bg-primary text-black px-6 font-semibold rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined font-bold text-[20px]">add</span> 
             {t('addBudget')}
@@ -178,85 +165,84 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-8 2xl:gap-12 mb-8 2xl:mb-12">
-        <div className="col-span-12 rounded-2xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-8 2xl:p-12 flex flex-col md:flex-row items-start md:items-center justify-between shadow-xl backdrop-blur-xl transition-colors duration-200 ease-out hover:border-emerald-400/30 group min-w-0 gap-8">
-          <div className="relative z-10 min-w-0 flex-1">
-            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6">{t('dailySafeToSpend')}</p>
-            <h3 className={`text-5xl lg:text-6xl 2xl:text-7xl font-black tracking-tighter mb-2 2xl:mb-4 ${safeToSpendPerDay > 0 ? 'text-emerald-400' : 'text-red-300'}`}>
-              {fm(safeToSpendPerDay)} <span className="text-xl 2xl:text-3xl font-bold text-slate-500">/ day</span>
+      <div className="grid grid-cols-12 gap-4 md:gap-6 mb-6">
+        <div className="col-span-12 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 min-w-0">
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-4">{t('dailySafeToSpend')}</p>
+            <h3 className={`text-4xl lg:text-5xl font-bold tracking-tight mb-2 truncate ${safeToSpendPerDay > 0 ? 'text-primary' : 'text-red-400'}`}>
+              {fm(safeToSpendPerDay)} <span className="text-2xl font-semibold text-neutral-500">/ day</span>
             </h3>
-            <p className="text-sm 2xl:text-base font-bold text-slate-500 tracking-tight">Remaining for the next {remainingDays} days.</p>
+            <p className="text-sm font-medium text-neutral-400">Remaining for the next {remainingDays} days.</p>
           </div>
-          <div className="relative z-10 flex-1 w-full md:w-auto mt-4 md:mt-0 lg:max-w-xl 2xl:max-w-2xl mx-auto md:ml-auto">
-            <div className="flex justify-between text-[10px] 2xl:text-xs font-black uppercase tracking-widest mb-3">
-              <span className="text-slate-500">Monthly Utilization</span>
-              <span className={consumedPercent > 100 ? 'text-red-300' : 'text-emerald-400'}>{consumedPercent.toFixed(1)}%</span>
+          <div className="w-full lg:w-[400px] shrink-0">
+            <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider mb-2">
+              <span className="text-neutral-500">Monthly Utilization</span>
+              <span className={consumedPercent > 100 ? 'text-red-400' : 'text-primary'}>{consumedPercent.toFixed(1)}%</span>
             </div>
-            <div className="h-5 w-full bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(consumedPercent, 100)}%` }} className={`h-full bg-gradient-to-r ${consumedPercent > 100 ? 'from-red-400 to-red-500 shadow-[0_0_15px_rgba(248,113,113,0.3)]' : 'from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]'}`}></motion.div>
+            <div className="h-3 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
+              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(consumedPercent, 100)}%` }} className={`h-full ${consumedPercent > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
             </div>
           </div>
         </div>
 
-        <motion.div variants={itemVariants} className="col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-8 2xl:gap-12 min-w-0">
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-emerald-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
-            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-emerald-400 transition-colors truncate">Total Budget</p>
-            <p className="text-3xl lg:text-4xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalBudget)}</p>
+        <motion.div variants={itemVariants} className="col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 min-w-0">
+          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-primary min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Total Budget</p>
+            <p className="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate">{fm(totalBudget)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-sky-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
-            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-sky-400 transition-colors truncate">Actual Spending</p>
-            <p className="text-3xl lg:text-4xl 2xl:text-5xl font-black text-slate-100 tracking-tighter truncate">{fm(totalActual)}</p>
+          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-blue-400 min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Actual Spending</p>
+            <p className="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate">{fm(totalActual)}</p>
           </div>
-          <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-6 lg:p-8 2xl:p-12 flex flex-col border-l-4 border-l-red-400 shadow-xl transition-colors duration-200 hover:bg-slate-900/70 group min-w-0">
-            <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-2 2xl:mb-4 group-hover:text-red-400 transition-colors truncate">Remaining Budget</p>
-            <p className={`text-3xl lg:text-4xl 2xl:text-5xl font-black tracking-tighter truncate ${remainingBudget >= 0 ? 'text-emerald-400' : 'text-red-300'}`}>{fm(remainingBudget)}</p>
+          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-red-400 min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Remaining Budget</p>
+            <p className={`text-2xl lg:text-3xl font-bold tracking-tight truncate ${remainingBudget >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(remainingBudget)}</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
-          <div className="flex items-center justify-between mb-10 2xl:mb-14">
-            <h4 className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tight">{t('categoryBreakdown')}</h4>
-            <span onClick={() => setIsManageModalOpen(true)} className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400 hover:text-emerald-300 underline cursor-pointer transition-colors">{t('manageLimits')}</span>
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 glass-card-premium rounded-3xl p-6 lg:p-8 min-w-0">
+          <div className="flex items-center justify-between mb-8">
+            <h4 className="text-xl font-bold text-white tracking-tight">{t('categoryBreakdown')}</h4>
+            <span onClick={() => setIsManageModalOpen(true)} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:text-primary-dark cursor-pointer transition-colors">{t('manageLimits')}</span>
           </div>
-          <div className="space-y-8 2xl:space-y-12 max-h-[500px] 2xl:max-h-[700px] overflow-y-auto pr-4 no-scrollbar">
+          <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
             {cStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : cStats.map((sObj, sIdx) => (
-              <motion.div key={sObj.id} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (sIdx * 0.05) }} className="group">
-                <div className="flex justify-between items-end mb-3 2xl:mb-5">
-                  <div className="flex-1">
-                    <p className={`text-[10px] 2xl:text-xs font-black uppercase tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-500'}`}>{sObj.category}</p>
-                    <p className={`text-xl 2xl:text-3xl font-black tracking-tight ${sObj.percentage > 100 ? 'text-red-300' : 'text-slate-100'}`}>
-                      {fm(sObj.actualSpent)} <span className="text-xs 2xl:text-base font-bold text-slate-500 tracking-tight">/ {fm(sObj.limit)}</span>
+              <motion.div key={sObj.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * sIdx }} className="min-w-0">
+                <div className="flex justify-between items-end mb-2 min-w-0">
+                  <div className="min-w-0 flex-1 pr-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 truncate">{sObj.category}</p>
+                    <p className={`text-lg font-bold tracking-tight truncate ${sObj.percentage > 100 ? 'text-red-400' : 'text-white'}`}>
+                      {fm(sObj.actualSpent)} <span className="text-sm font-medium text-neutral-500 tracking-normal">/ {fm(sObj.limit)}</span>
                     </p>
                   </div>
-                  <p className={`text-sm 2xl:text-lg font-black tracking-widest ${sObj.percentage > 100 ? 'text-red-300' : 'text-emerald-400'}`}>{sObj.percentage.toFixed(0)}%</p>
+                  <p className={`text-sm font-bold shrink-0 ${sObj.percentage > 100 ? 'text-red-400' : 'text-primary'}`}>{sObj.percentage.toFixed(0)}%</p>
                 </div>
-                <div className="h-2.5 w-full bg-slate-700/45 rounded-full overflow-hidden border border-slate-700/20 shadow-inner">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full bg-gradient-to-r ${sObj.percentage > 100 ? 'from-red-400 to-red-500' : 'from-emerald-400 to-sky-400'}`}></motion.div>
+                <div className="h-2 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
+                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full ${sObj.percentage > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
                 </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30 hover:bg-slate-900/70">
-          <h4 className="text-2xl font-black text-slate-100 tracking-tight mb-10">Budget vs Actual</h4>
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 glass-card-premium rounded-3xl p-6 lg:p-8">
+          <h4 className="text-xl font-bold text-white tracking-tight mb-8">Budget vs Actual</h4>
           {chartData.every(d => d.budgeted === 0 && d.actual === 0) ? (
-            <div className="flex flex-col items-center justify-center h-[220px] text-center px-4">
-              <span className="material-symbols-outlined text-slate-700 text-4xl mb-3">query_stats</span>
-              <p className="text-sm font-bold text-slate-400 tracking-tight leading-relaxed">
-                Not enough budget history yet.<br/>
-                <span className="text-emerald-400/70 text-[11px] uppercase tracking-widest">Track at least 2 months to unlock budget trend analysis.</span>
+            <div className="flex flex-col items-center justify-center h-[200px] text-center">
+              <span className="material-symbols-outlined text-neutral-600 text-3xl mb-2">query_stats</span>
+              <p className="text-sm font-medium text-neutral-400">
+                Not enough budget history yet.
               </p>
             </div>
           ) : (
-            <div className="relative h-[220px] flex items-end justify-around gap-4 px-2">
+            <div className="relative h-[200px] flex items-end justify-around gap-4">
               {chartData.map((d, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[50px]">
-                  <div className="flex gap-2 w-full h-[150px] items-end justify-center">
-                    <div className="w-3.5 bg-slate-700/45 rounded-t-lg transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
-                    <div className={`w-3.5 rounded-t-lg shadow-[0_0_15px_rgba(74,222,128,0.2)] transition-all duration-500 ${d.actual > d.budgeted ? 'bg-gradient-to-b from-red-400 to-red-600' : 'bg-gradient-to-b from-emerald-400 to-emerald-600'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
+                <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[40px]">
+                  <div className="flex gap-1.5 w-full h-[140px] items-end justify-center">
+                    <div className="w-3 bg-white/[0.05] rounded-t-sm transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
+                    <div className={`w-3 rounded-t-sm transition-all duration-500 ${d.actual > d.budgeted ? 'bg-red-400' : 'bg-primary'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
                   </div>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">{d.monthLabel}</p>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">{d.monthLabel}</p>
                 </div>
               ))}
             </div>
@@ -264,20 +250,20 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </motion.div>
 
         {/* High Impact Spending */}
-        <motion.div variants={itemVariants} className="col-span-12 rounded-2xl border border-slate-700/30 bg-slate-900/55 shadow-xl backdrop-blur-xl overflow-hidden transition-colors duration-200 hover:border-emerald-400/30">
-          <div className="p-8 2xl:p-12 border-b border-slate-700/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 2xl:gap-10">
-            <h4 className="text-2xl 2xl:text-4xl font-black text-slate-100 tracking-tight">Recent High-Impact Spending</h4>
-            <div className="relative w-full md:w-64 2xl:w-80 group transition-all duration-300">
-              <span className="material-symbols-outlined absolute left-4 2xl:left-5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-emerald-400 transition-colors 2xl:text-2xl">search</span>
+        <motion.div variants={itemVariants} className="col-span-12 glass-card-premium rounded-3xl overflow-hidden">
+          <div className="p-6 lg:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <h4 className="text-xl font-bold text-white tracking-tight">Recent High-Impact Spending</h4>
+            <div className="relative w-full md:w-64 group">
+              <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary transition-colors text-[18px]">search</span>
               <input 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full h-11 bg-slate-950/55 border border-slate-700/40 rounded-xl pl-12 pr-4 text-slate-100 placeholder:text-slate-500 outline-none backdrop-blur transition-all duration-200 focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-sm shadow-inner" 
+                className="w-full h-10 bg-white/[0.03] border border-white/10 rounded-lg pl-10 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-primary/50 text-sm" 
                 placeholder="Search impacts..." 
               />
             </div>
           </div>
-          <div className="overflow-x-auto no-scrollbar">
+          <div className="overflow-x-auto">
             {highImpact.length === 0 ? (
               <EmptyState 
                 title="No impacts found" 
@@ -285,59 +271,59 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                 icon="search_off" 
               />
             ) : (
-              <table className="w-full text-left border-collapse min-w-[600px] md:min-w-0">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-slate-950/35">
-                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('description')}</th>
-                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('category')}</th>
-                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">{t('amount')}</th>
-                    <th className="px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-sm font-black uppercase tracking-[0.2em] text-slate-500">Budget Impact</th>
+                  <tr className="border-b border-white/5">
+                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('description')}</th>
+                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('category')}</th>
+                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('amount')}</th>
+                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Impact</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/50">
+                <tbody className="divide-y divide-white/5">
                   {highImpact.map((tItem, idx) => {
                     const bMatch = monthlyBudgets.find(b => b.category === tItem.category);
                     const cActualVal = monthlyExpenses.filter(x => x.category === tItem.category).reduce((acc, x) => acc + x.amount, 0);
                     
                     let iLabel = 'No Budget';
-                    let iLabelColor = 'text-slate-500';
+                    let iLabelColor = 'text-neutral-500';
                     
                     if (bMatch) {
                       if (cActualVal > bMatch.limit) {
                         iLabel = 'Over Budget';
-                        iLabelColor = 'text-red-300 font-black';
+                        iLabelColor = 'text-red-400 font-bold';
                       } else {
                         iLabel = 'Within Limits';
-                        iLabelColor = 'text-emerald-400 font-black';
+                        iLabelColor = 'text-primary font-bold';
                       }
                     }
 
                     return (
                       <motion.tr 
                         key={tItem.id} 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.6 + (idx * 0.05) }}
-                        className="hover:bg-slate-800/30 transition-colors duration-200 group"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 * idx }}
+                        className="hover:bg-white/[0.02] transition-colors group"
                       >
-                        <td className="px-8 2xl:px-12 py-5 2xl:py-6">
-                          <div className="flex items-center gap-4 2xl:gap-6">
-                            <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-slate-800/50 border border-slate-700/30 flex items-center justify-center text-emerald-400 transition-colors duration-200">
-                              <span className="material-symbols-outlined font-bold text-[20px] 2xl:text-[24px]">payments</span>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/5 flex items-center justify-center text-primary shrink-0">
+                              <span className="material-symbols-outlined font-medium text-[20px]">payments</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm 2xl:text-lg font-bold text-slate-100 truncate group-hover:text-emerald-400 transition-colors tracking-tight">{tItem.notes || tItem.category}</p>
-                              <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{formatDate(tItem.date)}</p>
+                              <p className="text-sm font-semibold text-white truncate group-hover:text-primary transition-colors">{tItem.notes || tItem.category}</p>
+                              <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{formatDate(tItem.date)}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 2xl:px-12 py-5 2xl:py-6">
-                          <span className={`px-3 py-1 2xl:px-4 2xl:py-1.5 rounded-lg text-[9px] 2xl:text-xs font-black uppercase tracking-widest inline-block border ${iLabel === 'Over Budget' ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20'}`}>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider inline-block border ${iLabel === 'Over Budget' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
                             {tItem.category}
                           </span>
                         </td>
-                        <td className="px-8 2xl:px-12 py-5 2xl:py-6 text-right font-black tracking-tighter text-lg 2xl:text-2xl text-slate-100 group-hover:text-emerald-400 transition-colors">{fm(tItem.amount)}</td>
-                        <td className={`px-8 2xl:px-12 py-5 2xl:py-6 text-right text-[10px] 2xl:text-xs font-black uppercase tracking-widest ${iLabelColor}`}>{iLabel}</td>
+                        <td className="px-6 py-4 text-right font-bold text-base text-white group-hover:text-primary transition-colors">{fm(tItem.amount)}</td>
+                        <td className={`px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider ${iLabelColor}`}>{iLabel}</td>
                       </motion.tr>
                     );
                   })}
@@ -380,56 +366,45 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose}></div>
       <motion.div 
-        initial={{ opacity: 0, y: 16 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        exit={{ opacity: 0, y: 12 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-[201] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl"
-        style={{
-          width: "100%",
-          maxWidth: "560px",
-          minWidth: "320px"
-        }}
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        className="relative z-[201] w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 shadow-2xl"
       >
         <div className="mb-8 flex items-start justify-between gap-4">
-          <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">
+          <h2 className="text-2xl font-bold text-white tracking-tight">
             {initialData ? t('editBudget') : t('addBudget')}
           </h2>
-
-          <button 
-            onClick={onClose}
-            className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
-          >
+          <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>
         </div>
 
         {error && (
-          <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+          <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400 flex items-center gap-3">
             <span className="material-symbols-outlined text-[18px]">error</span>
             {error}
           </div>
         )}
 
-        <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
-          <div className="w-full space-y-2">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+        <form className="w-full space-y-5" onSubmit={(e) => { e.preventDefault(); onSave(formData); }}>
+          <div className="space-y-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
               {t('category')}
             </label>
             <select 
               value={formData.category} 
               onChange={e => setFormData({...formData, category: e.target.value})}
-              className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
+              className="block h-11 w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 text-white outline-none transition focus:border-primary/50 text-sm"
             >
-              {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+              {categories.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
             </select>
           </div>
 
-          <div className="w-full space-y-2">
-            <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+          <div className="space-y-2">
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
               {t('monthlyLimit')}
             </label>
             <div className="relative group">
@@ -440,32 +415,32 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
                 value={formData.limit} 
                 onChange={e => setFormData({...formData, limit: e.target.value.replace(/[^\d]/g, '')})} 
                 placeholder="e.g. 1.000.000" 
-                className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 text-lg font-bold"
+                className="block h-11 w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 text-white outline-none transition focus:border-primary/50 text-base font-medium"
               />
-              <div className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-500 font-bold pointer-events-none group-focus-within:text-emerald-400/50 transition-colors">IDR</div>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-semibold text-sm">IDR</div>
             </div>
-            <p className="text-[10px] font-bold text-emerald-400/70 mt-2 ml-1 italic tracking-tight">
+            <p className="text-[10px] font-semibold text-primary mt-1.5 ml-1">
               Format: {formatRupiah(parseAmount(formData.limit))}
             </p>
           </div>
 
-          <div className="mt-10 flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-end">
+          <div className="mt-8 flex w-full flex-col sm:flex-row gap-3 pt-2">
             <button 
               type="button" 
               onClick={onClose} 
-              className="h-12 w-full rounded-xl border border-slate-700/50 px-8 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+              className="h-11 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm"
             >
               {t('cancel')}
             </button>
             <button 
               type="submit" 
               disabled={isSaving}
-              className={`h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-10 font-black text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`h-11 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSaving ? (
-                <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
               ) : (
-                <span className="material-symbols-outlined font-bold">save</span>
+                <span className="material-symbols-outlined text-[18px]">save</span>
               )}
               {initialData ? t('update') : t('save')}
             </button>
@@ -479,54 +454,44 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
 function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, onAdd, t }) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm">
       <div className="absolute inset-0" onClick={onClose}></div>
       <motion.div 
-        initial={{ opacity: 0, y: 16 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        exit={{ opacity: 0, y: 12 }}
-        transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-[151] w-full max-w-[560px] min-w-[320px] rounded-3xl border border-slate-700/30 bg-slate-900/95 shadow-2xl backdrop-blur-xl overflow-hidden"
-        style={{
-          width: "100%",
-          maxWidth: "560px",
-          minWidth: "320px"
-        }}
+        initial={{ opacity: 0, scale: 0.95 }} 
+        animate={{ opacity: 1, scale: 1 }} 
+        className="relative z-[151] w-full max-w-lg rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl overflow-hidden"
       >
-        <div className="p-8 border-b border-slate-700/30 flex justify-between items-center gap-4">
-          <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">{t('manageLimits')}</h2>
-          <button 
-            onClick={onClose} 
-            className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
-          >
-            <span className="material-symbols-outlined font-bold">close</span>
+        <div className="p-6 border-b border-white/5 flex justify-between items-center">
+          <h2 className="text-xl font-bold text-white tracking-tight">{t('manageLimits')}</h2>
+          <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
+            <span className="material-symbols-outlined">close</span>
           </button>
         </div>
-        <div className="p-8 space-y-5 max-h-[50vh] overflow-y-auto no-scrollbar bg-slate-950/20">
+        <div className="p-6 space-y-3 max-h-[50vh] overflow-y-auto custom-scrollbar">
           {monthlyBudgets.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <span className="material-symbols-outlined text-slate-700 text-5xl mb-4">analytics</span>
-              <p className="text-slate-500 italic font-bold tracking-tight">{t('noLimitsSet')}</p>
+            <div className="flex flex-col items-center justify-center py-10">
+              <span className="material-symbols-outlined text-neutral-600 text-4xl mb-3">analytics</span>
+              <p className="text-neutral-500 font-medium text-sm">{t('noLimitsSet')}</p>
             </div>
           ) : (
             monthlyBudgets.map(bItem => (
-              <div key={bItem.id} className="flex justify-between items-center p-6 bg-slate-900/40 rounded-2xl border border-slate-700/30 hover:border-emerald-400/30 transition-all group">
+              <div key={bItem.id} className="flex justify-between items-center p-4 bg-white/[0.02] rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                 <div>
-                  <p className="font-black text-slate-100 tracking-tight group-hover:text-emerald-400 transition-colors mb-1">{bItem.category}</p>
-                  <p className="text-lg font-black text-emerald-400 tracking-tighter">{formatRupiah(bItem.limit)}</p>
+                  <p className="font-semibold text-white mb-0.5 text-sm">{bItem.category}</p>
+                  <p className="font-bold text-primary">{formatRupiah(bItem.limit)}</p>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={() => onEdit(bItem)} className="w-11 h-11 flex items-center justify-center text-emerald-400 hover:bg-emerald-400/10 rounded-xl border border-emerald-400/10 transition-all"><span className="material-symbols-outlined font-bold text-xl">edit</span></button>
-                  <button onClick={() => onDelete(bItem.id)} className="w-11 h-11 flex items-center justify-center text-red-400 hover:bg-red-400/10 rounded-xl border border-red-400/10 transition-all"><span className="material-symbols-outlined font-bold text-xl">delete</span></button>
+                <div className="flex gap-2">
+                  <button onClick={() => onEdit(bItem)} className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-white hover:bg-white/[0.05] rounded-lg transition-colors"><span className="material-symbols-outlined text-[18px]">edit</span></button>
+                  <button onClick={() => onDelete(bItem.id)} className="w-9 h-9 flex items-center justify-center text-neutral-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"><span className="material-symbols-outlined text-[18px]">delete</span></button>
                 </div>
               </div>
             ))
           )}
         </div>
-        <div className="p-8 border-t border-slate-700/30 flex flex-col sm:flex-row gap-4 bg-slate-900/80">
-          <button onClick={onClose} className="flex-1 h-12 rounded-xl border border-slate-700/50 text-slate-400 font-bold hover:bg-slate-800 hover:text-slate-100 transition-all">{t('close')}</button>
-          <button onClick={() => { onClose(); onAdd(); }} className="flex-1 h-12 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black shadow-[0_0_20px_rgba(74,222,128,0.2)] hover:from-emerald-300 hover:to-emerald-400 transition-all flex items-center justify-center gap-2">
-            <span className="material-symbols-outlined font-bold">add</span>
+        <div className="p-6 border-t border-white/5 flex flex-col sm:flex-row gap-3">
+          <button onClick={onClose} className="flex-1 h-11 rounded-lg border border-white/10 text-white font-semibold hover:bg-white/[0.05] transition-colors text-sm">{t('close')}</button>
+          <button onClick={() => { onClose(); onAdd(); }} className="flex-1 h-11 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm">
+            <span className="material-symbols-outlined text-[18px]">add</span>
             {t('addNew')}
           </button>
         </div>
@@ -536,3 +501,15 @@ function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, 
 }
 
 export default Budget;
+
+const EmptyState = ({ title, desc, icon }) => (
+  <div className="flex flex-col items-center justify-center py-12 px-4">
+    <div className="w-16 h-16 bg-white/[0.03] rounded-full flex items-center justify-center mb-4 border border-white/5">
+      <span className="material-symbols-outlined text-neutral-600 text-3xl">{icon}</span>
+    </div>
+    <h3 className="text-white font-semibold text-base mb-1">{title}</h3>
+    <p className="text-neutral-500 text-sm text-center max-w-[280px]">
+      {desc}
+    </p>
+  </div>
+);

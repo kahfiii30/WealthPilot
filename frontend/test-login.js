@@ -11,7 +11,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 async function testLogin() {
   const email = 'kulbetfiii@gmail.com';
-  const password = 'Biharaga2005.';
+  const password = 'Bihara2005';
 
   console.log('Testing login for:', email);
   const { data, error } = await supabase.auth.signInWithPassword({

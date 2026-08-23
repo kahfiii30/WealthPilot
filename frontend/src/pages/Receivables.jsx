@@ -5,6 +5,7 @@ import { formatDate } from '../utils/dateUtils';
 
 function Receivables({ 
   receivables = [], 
+  assets = [],
   onAddReceivable, 
   onUpdateReceivable, 
   onDeleteReceivable, 
@@ -107,8 +108,8 @@ function Receivables({
       </motion.div>
 
       {/* Toolbar */}
-      <motion.div variants={item} className="flex flex-col md:flex-row gap-4 2xl:gap-6 mb-6 2xl:mb-8 items-center justify-between bg-slate-900/40 p-2 2xl:p-3 rounded-2xl border border-slate-700/30">
-        <div className="flex flex-wrap gap-2 w-full">
+      <motion.div variants={item} className="flex flex-col md:flex-row gap-4 2xl:gap-6 mb-6 2xl:mb-8 items-center justify-between glass-card-premium p-4 2xl:p-6 rounded-3xl">
+        <div className="flex flex-wrap gap-4 w-full">
           <div className="relative flex-1 md:min-w-[300px]">
             <span className="material-symbols-outlined absolute left-3 2xl:left-5 top-1/2 -translate-y-1/2 text-slate-500 text-[20px] 2xl:text-[24px]">search</span>
             <input 
@@ -143,7 +144,7 @@ function Receivables({
       </motion.div>
 
       {/* Table */}
-      <motion.div variants={item} className="bg-slate-900/40 border border-slate-700/30 rounded-2xl overflow-hidden backdrop-blur-xl">
+      <motion.div variants={item} className="glass-card-premium rounded-3xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
@@ -225,6 +226,7 @@ function Receivables({
       >
         <ReceivableForm 
           initialData={editingItem}
+          assets={assets}
           onSave={async (data) => {
             try {
               setIsSaving(true);
@@ -251,10 +253,11 @@ function Receivables({
       >
         <PaymentForm 
           receivable={selectedItem}
-          onSave={async (amount) => {
+          assets={assets}
+          onSave={async (amount, assetId) => {
             try {
               setIsSaving(true);
-              await onMarkPayment(selectedItem.id, selectedItem.paidAmount, amount);
+              await onMarkPayment(selectedItem.id, selectedItem.paidAmount, amount, assetId);
               setIsPaymentModalOpen(false);
             } catch (err) {
               setError(err.message);
@@ -322,14 +325,15 @@ function Modal({ isOpen, onClose, title, children }) {
   );
 }
 
-function ReceivableForm({ initialData, onSave, onCancel, isSaving, error }) {
+function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || {
     debtorName: '',
     amount: '',
     paidAmount: 0,
     debtDate: new Date().toISOString().split('T')[0],
     dueDate: '',
-    notes: ''
+    notes: '',
+    assetId: ''
   });
 
   return (
@@ -346,6 +350,24 @@ function ReceivableForm({ initialData, onSave, onCancel, isSaving, error }) {
           onChange={e => setFormData({...formData, debtorName: e.target.value})}
         />
       </div>
+
+      {!initialData && (
+        <div className="space-y-2">
+          <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Fund Source (Asset)</label>
+          <select 
+            required
+            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all appearance-none"
+            value={formData.assetId}
+            onChange={e => setFormData({...formData, assetId: e.target.value})}
+          >
+            <option value="" disabled>Select Asset to Deduct</option>
+            {assets.map(a => (
+              <option key={a.id} value={a.id}>{a.name} ({a.amount.toLocaleString()})</option>
+            ))}
+          </select>
+          <p className="text-[10px] text-slate-500 ml-1">Money will be deducted from this asset, and an expense transaction will be recorded.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         <div className="space-y-2">
@@ -418,8 +440,9 @@ function ReceivableForm({ initialData, onSave, onCancel, isSaving, error }) {
   );
 }
 
-function PaymentForm({ receivable, onSave, onCancel, isSaving, error, fm }) {
+function PaymentForm({ receivable, assets = [], onSave, onCancel, isSaving, error, fm }) {
   const [paymentAmount, setPaymentAmount] = useState('');
+  const [assetId, setAssetId] = useState('');
   const remaining = receivable?.remainingAmount || 0;
 
   const handleSubmit = (e) => {
@@ -429,7 +452,7 @@ function PaymentForm({ receivable, onSave, onCancel, isSaving, error, fm }) {
       alert("Payment amount cannot exceed remaining debt.");
       return;
     }
-    onSave(amount);
+    onSave(amount, assetId);
   };
 
   return (
@@ -466,6 +489,22 @@ function PaymentForm({ receivable, onSave, onCancel, isSaving, error, fm }) {
             Full Pay
           </button>
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Destination (Asset)</label>
+        <select 
+          required
+          className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all appearance-none"
+          value={assetId}
+          onChange={e => setAssetId(e.target.value)}
+        >
+          <option value="" disabled>Select Asset to Receive Money</option>
+          {assets.map(a => (
+            <option key={a.id} value={a.id}>{a.name} ({a.amount.toLocaleString()})</option>
+          ))}
+        </select>
+        <p className="text-[10px] text-slate-500 ml-1">Money will be added to this asset, and an income transaction will be recorded.</p>
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">

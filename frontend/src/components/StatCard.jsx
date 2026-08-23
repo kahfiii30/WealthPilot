@@ -1,21 +1,18 @@
 import React from 'react';
 
-import { motion } from 'framer-motion';
-
 function StatCard({ title, amount, icon, isError }) {
   return (
-    <motion.div 
-      whileHover={{ y: -2 }}
-      className="flex items-center gap-4 group cursor-default"
-    >
-      <div className={`p-3 rounded-xl transition-colors duration-200 border ${isError ? 'bg-red-500/10 text-red-300 border-red-500/20' : 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20'}`}>
-        <span className="material-symbols-outlined font-bold">{icon}</span>
+    <div className="flex items-center gap-4">
+      <div className="w-10 h-10 rounded-full flex items-center justify-center bg-white/[0.03] border border-white/5 shrink-0">
+        <span className={`material-symbols-outlined text-[20px] ${isError ? 'text-red-400' : 'text-primary'}`}>
+          {icon}
+        </span>
       </div>
-      <div>
-        <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 group-hover:text-slate-400 transition-colors">{title}</p>
-        <p className={`text-lg font-black tracking-tight transition-colors ${isError ? 'text-slate-100 group-hover:text-red-300' : 'text-slate-100 group-hover:text-emerald-400'}`}>{amount}</p>
+      <div className="min-w-0">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 truncate">{title}</p>
+        <p className={`text-lg font-bold truncate text-white`}>{amount}</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

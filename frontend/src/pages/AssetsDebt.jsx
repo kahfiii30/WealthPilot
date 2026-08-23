@@ -16,24 +16,8 @@ function AssetsDebt({
   t,
   fm
 }) {
-  const [isAssetModalOpen, setIsAssetModalOpen] = useState(() => {
-    const flag = localStorage.getItem("openAssetModalOnLoad");
-    if (flag === "true") {
-      localStorage.removeItem("openAssetModalOnLoad");
-      return true;
-    }
-    return false;
-  });
-
-  const [isDebtModalOpen, setIsDebtModalOpen] = useState(() => {
-    const flag = localStorage.getItem("openDebtModalOnLoad");
-    if (flag === "true") {
-      localStorage.removeItem("openDebtModalOnLoad");
-      return true;
-    }
-    return false;
-  });
-
+  const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);
+  const [isDebtModalOpen, setIsDebtModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -85,89 +69,69 @@ function AssetsDebt({
     setIsDebtModalOpen(true);
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 15 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } }
-  };
+  const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const item = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } } };
 
   return (
-    <motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="max-w-[1600px] mx-auto p-4 md:p-8 2xl:p-12"
-    >
+    <motion.div variants={container} initial="hidden" animate="show" className="p-4 md:p-8 pb-[100px]">
       {/* Header / Summary Section */}
-      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6 2xl:gap-10 mb-10 2xl:mb-16">
-        <div className="lg:col-span-2 rounded-3xl border border-slate-700/30 bg-gradient-to-br from-slate-900/80 via-slate-900/55 to-blue-950/30 p-10 2xl:p-14 flex flex-col justify-between overflow-hidden relative group shadow-2xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
-          <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-400/5 rounded-full blur-[120px] -mr-40 -mt-40 group-hover:bg-emerald-400/10 transition-colors duration-500"></div>
-          <div className="relative z-10">
-            <h2 className="text-[11px] 2xl:text-xs font-black uppercase tracking-[0.4em] text-slate-500 mb-6 2xl:mb-8 truncate block">Total Net Worth</h2>
-            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-10 2xl:mb-14 min-w-0">
-              <span className={`text-5xl md:text-6xl 2xl:text-8xl font-black tracking-tighter leading-none truncate ${netWorth >= 0 ? 'text-slate-100' : 'text-red-300'}`}>
+      <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+        <div className="lg:col-span-2 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col justify-between">
+          <div>
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2">Total Net Worth</h2>
+            <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8">
+              <span className={`text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none truncate ${netWorth >= 0 ? 'text-white' : 'text-red-400'}`}>
                 {fm(netWorth)}
               </span>
-              <p className="text-xs 2xl:text-sm font-bold text-slate-500 uppercase tracking-widest mb-2 2xl:mb-3">Liquid + Portfolio</p>
+              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Liquid + Portfolio</p>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 2xl:gap-6 mt-4 relative z-10">
-            <div className="p-5 2xl:p-7 bg-emerald-400/10 rounded-2xl border border-emerald-400/20 backdrop-blur-md min-w-0">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-emerald-400/70 mb-2 truncate block">Cash Balance</p>
-              <p className="text-xl 2xl:text-3xl font-black text-emerald-400 tracking-tight truncate">{fm(cashBalance)}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+            <div className="p-4 bg-white/[0.03] rounded-lg border border-white/5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">Cash Balance</p>
+              <p className="text-xl font-bold text-primary tracking-tight truncate">{fm(cashBalance)}</p>
             </div>
-            <div className="p-5 2xl:p-7 bg-blue-400/10 rounded-2xl border border-blue-400/20 backdrop-blur-md min-w-0">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-blue-400/70 mb-2 truncate block">Portfolio Assets</p>
-              <p className="text-xl 2xl:text-3xl font-black text-blue-400 tracking-tight truncate">{fm(totalAssets)}</p>
+            <div className="p-4 bg-white/[0.03] rounded-lg border border-white/5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 mb-1">Portfolio Assets</p>
+              <p className="text-xl font-bold text-blue-400 tracking-tight truncate">{fm(totalAssets)}</p>
             </div>
-            <div className="p-5 2xl:p-7 bg-red-400/10 rounded-2xl border border-red-500/20 backdrop-blur-md min-w-0">
-              <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-widest text-red-300/70 mb-2 truncate block">Total Liabilities</p>
-              <p className="text-xl 2xl:text-3xl font-black text-red-300 tracking-tight truncate">{fm(totalDebts)}</p>
+            <div className="p-4 bg-white/[0.03] rounded-lg border border-white/5">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-red-400 mb-1">Total Liabilities</p>
+              <p className="text-xl font-bold text-red-400 tracking-tight truncate">{fm(totalDebts)}</p>
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 flex flex-col gap-8 2xl:gap-12 shadow-xl backdrop-blur-xl transition-colors duration-200 hover:border-emerald-400/30">
+        <div className="glass-card-premium rounded-3xl p-6 lg:p-8 flex flex-col justify-center gap-8">
           <div>
-            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6 truncate block">Asset Ratio</h3>
-            <div className="flex items-center justify-between min-w-0">
-              <span className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight truncate mr-4 min-w-0">{fm(totalAssets)}</span>
-              <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-3">Asset Ratio</h3>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-primary tracking-tight truncate pr-4">{fm(totalAssets)}</span>
+              <span className="text-xs font-semibold text-neutral-400">
                 {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
-            <div className="w-full h-3 2xl:h-4 bg-slate-700/45 rounded-full mt-4 2xl:mt-6 overflow-hidden border border-slate-700/20 shadow-inner">
+            <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalAssets / (totalAssets + totalDebts)) * 100 : 100}%` }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 shadow-[0_0_15px_rgba(74,222,128,0.3)]"
+                className="h-full bg-primary"
               ></motion.div>
             </div>
           </div>
           <div>
-            <h3 className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-slate-500 mb-4 2xl:mb-6 truncate block">Debt Exposure</h3>
-            <div className="flex items-center justify-between min-w-0">
-              <span className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight truncate mr-4 min-w-0">{fm(totalDebts)}</span>
-              <span className="text-[10px] 2xl:text-sm font-black text-slate-400 tracking-widest shrink-0">
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-3">Debt Exposure</h3>
+            <div className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-red-400 tracking-tight truncate pr-4">{fm(totalDebts)}</span>
+              <span className="text-xs font-semibold text-neutral-400">
                 {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
-            <div className="w-full h-3 2xl:h-4 bg-slate-700/45 rounded-full mt-4 2xl:mt-6 overflow-hidden border border-slate-700/20 shadow-inner">
+            <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
                 animate={{ width: `${totalAssets + totalDebts > 0 ? (totalDebts / (totalAssets + totalDebts)) * 100 : 0}%` }}
-                transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
-                className="h-full bg-gradient-to-r from-red-400 to-red-500 shadow-[0_0_15px_rgba(248,113,113,0.3)]"
+                className="h-full bg-red-500"
               ></motion.div>
             </div>
           </div>
@@ -175,59 +139,58 @@ function AssetsDebt({
       </motion.div>
 
       {/* Bento Grid: Assets vs Liabilities */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 2xl:gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
         {/* Assets Section */}
-        <motion.section variants={item} className="space-y-6 2xl:space-y-8">
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl 2xl:text-4xl font-black text-emerald-400 tracking-tight flex items-center gap-3">
-              <span className="material-symbols-outlined font-bold 2xl:text-3xl">account_balance_wallet</span>
+        <motion.section variants={item} className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="material-symbols-outlined text-[24px]">account_balance_wallet</span>
               Assets Portfolio
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsAssetModalOpen(true); }}
-              className="bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 hover:bg-emerald-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
+              className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:text-primary-dark transition-colors flex items-center gap-1"
             >
-              <span className="material-symbols-outlined font-bold text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[16px]">add</span>
               {t('addAsset')}
             </button>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {assets.length === 0 ? (
               <EmptyState 
                 title="No assets listed" 
                 desc="Start tracking your wealth by adding your first asset today." 
                 icon="account_balance" 
-                colorClass="text-emerald-400"
               />
             ) : (
               assets.map((asset, i) => (
                 <motion.div 
                   key={asset.id} 
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 2xl:p-7 flex items-center justify-between group hover:border-emerald-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                  className="glass-card-premium rounded-2xl p-4 flex items-center justify-between group transition-colors"
                 >
-                  <div className="flex items-center gap-5 2xl:gap-6">
-                    <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-emerald-400/10 border border-emerald-400/20 flex items-center justify-center text-emerald-400 transition-colors duration-200">
-                      <span className="material-symbols-outlined font-bold 2xl:text-[24px]">{getAssetIcon(asset.category)}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <span className="material-symbols-outlined font-medium text-[20px]">{getAssetIcon(asset.category)}</span>
                     </div>
-                    <div>
-                      <h4 className="font-bold 2xl:text-xl text-slate-100 group-hover:text-emerald-400 transition-colors tracking-tight">{asset.name}</h4>
-                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{asset.category} • {asset.note || 'No notes'}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-white group-hover:text-primary transition-colors text-sm truncate">{asset.name}</h4>
+                      <p className="text-[11px] font-medium text-neutral-500 mt-0.5 truncate">{asset.category} • {asset.note || 'No notes'}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 2xl:gap-8">
+                  <div className="flex items-center gap-4 pl-4 shrink-0">
                     <div className="text-right">
-                      <p className="text-lg 2xl:text-2xl font-black text-emerald-400 tracking-tighter">{fm(asset.amount)}</p>
-                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(asset.updatedAt)}</p>
+                      <p className="text-base font-bold text-primary">{fm(asset.amount)}</p>
+                      <p className="text-[10px] font-medium text-neutral-500">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditAsset(asset)} className="p-2 2xl:p-3 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">edit</span>
+                    <div className="flex flex-col sm:flex-row gap-1">
+                      <button onClick={() => handleEditAsset(asset)} className="p-1.5 text-neutral-500 hover:text-white transition-colors rounded">
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteAsset(asset.id)} className="p-2 2xl:p-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">delete</span>
+                      <button onClick={() => onDeleteAsset(asset.id)} className="p-1.5 text-neutral-500 hover:text-red-400 transition-colors rounded">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
                   </div>
@@ -238,57 +201,56 @@ function AssetsDebt({
         </motion.section>
 
         {/* Debt Section */}
-        <motion.section variants={item} className="space-y-6 2xl:space-y-8">
-          <div className="flex items-center justify-between">
-            <h3 className="text-2xl 2xl:text-4xl font-black text-red-300 tracking-tight flex items-center gap-3">
-              <span className="material-symbols-outlined font-bold 2xl:text-3xl">credit_card_off</span>
+        <motion.section variants={item} className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              <span className="material-symbols-outlined text-[24px]">credit_card_off</span>
               Total Liabilities
             </h3>
             <button 
               onClick={() => { setEditingItem(null); setIsDebtModalOpen(true); }}
-              className="bg-red-400/10 text-red-300 border border-red-500/20 hover:bg-red-400/20 px-4 py-2 rounded-xl font-bold text-sm transition-colors duration-200 flex items-center gap-2"
+              className="text-[11px] font-semibold uppercase tracking-wider text-red-400 hover:text-red-500 transition-colors flex items-center gap-1"
             >
-              <span className="material-symbols-outlined font-bold text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[16px]">add</span>
               {t('addDebt')}
             </button>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             {debts.length === 0 ? (
               <EmptyState 
                 title="No liabilities listed" 
                 desc="Good job! You currently have no debts to track." 
                 icon="credit_card_off" 
-                colorClass="text-red-300"
               />
             ) : (
               debts.map((debt, i) => (
                 <motion.div 
                   key={debt.id} 
-                  initial={{ opacity: 0, x: 10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + (i * 0.05) }}
-                  className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-5 2xl:p-7 flex items-center justify-between group hover:border-red-400/50 hover:bg-slate-900/70 transition-colors duration-200 shadow-lg border-l-4 border-l-red-400"
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * i }}
+                  className="glass-card-premium rounded-2xl p-4 flex items-center justify-between group transition-colors border-l-2 border-l-red-500"
                 >
-                  <div className="flex items-center gap-5 2xl:gap-6">
-                    <div className="w-11 h-11 2xl:w-14 2xl:h-14 rounded-xl bg-red-400/10 border border-red-500/20 flex items-center justify-center text-red-300 transition-colors duration-200">
-                      <span className="material-symbols-outlined font-bold 2xl:text-[24px]">{getDebtIcon(debt.category)}</span>
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 shrink-0">
+                      <span className="material-symbols-outlined font-medium text-[20px]">{getDebtIcon(debt.category)}</span>
                     </div>
-                    <div>
-                      <h4 className="font-bold 2xl:text-xl text-slate-100 group-hover:text-red-300 transition-colors tracking-tight">{debt.name}</h4>
-                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-[0.2em]">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
+                    <div className="min-w-0">
+                      <h4 className="font-semibold text-white group-hover:text-red-400 transition-colors text-sm truncate">{debt.name}</h4>
+                      <p className="text-[11px] font-medium text-neutral-500 mt-0.5 truncate">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 2xl:gap-8">
+                  <div className="flex items-center gap-4 pl-4 shrink-0">
                     <div className="text-right">
-                      <p className="text-lg 2xl:text-2xl font-black text-red-300 tracking-tighter">{fm(debt.amount)}</p>
-                      <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest">Updated {formatDate(debt.updatedAt)}</p>
+                      <p className="text-base font-bold text-red-400">{fm(debt.amount)}</p>
+                      <p className="text-[10px] font-medium text-neutral-500">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                      <button onClick={() => handleEditDebt(debt)} className="p-2 2xl:p-3 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">edit</span>
+                    <div className="flex flex-col sm:flex-row gap-1">
+                      <button onClick={() => handleEditDebt(debt)} className="p-1.5 text-neutral-500 hover:text-white transition-colors rounded">
+                        <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteDebt(debt.id)} className="p-2 2xl:p-3 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-colors">
-                        <span className="material-symbols-outlined font-bold text-[18px] 2xl:text-[22px]">delete</span>
+                      <button onClick={() => onDeleteDebt(debt.id)} className="p-1.5 text-neutral-500 hover:text-red-400 transition-colors rounded">
+                        <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
                   </div>
@@ -317,7 +279,6 @@ function AssetsDebt({
               else await onAddAsset(data);
               setIsAssetModalOpen(false);
             } catch (err) {
-              console.error("Failed to save asset:", err);
               setError(err.message || "Failed to save asset");
             } finally {
               setIsSaving(false);
@@ -348,7 +309,6 @@ function AssetsDebt({
               else await onAddDebt(data);
               setIsDebtModalOpen(false);
             } catch (err) {
-              console.error("Failed to save liability:", err);
               setError(err.message || "Failed to save liability");
             } finally {
               setIsSaving(false);
@@ -364,20 +324,16 @@ function AssetsDebt({
   );
 }
 
-const EmptyState = ({ title, desc, icon, colorClass }) => (
-  <motion.div 
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="flex flex-col items-center justify-center py-16 px-6 glass-card rounded-2xl border-dashed border-2 border-outline-variant/30 text-center"
-  >
-    <div className={`w-14 h-14 bg-surface-container-highest rounded-full flex items-center justify-center mb-md border border-outline-variant/20 shadow-inner`}>
-      <span className={`material-symbols-outlined ${colorClass} text-[28px] opacity-50`}>{icon}</span>
+const EmptyState = ({ title, desc, icon }) => (
+  <div className="flex flex-col items-center justify-center py-10 px-4 rounded-xl border border-white/5 bg-white/[0.02]">
+    <div className="w-12 h-12 bg-white/[0.03] rounded-full flex items-center justify-center mb-3">
+      <span className="material-symbols-outlined text-neutral-600 text-[24px]">{icon}</span>
     </div>
-    <h3 className="text-on-surface font-headline-lg text-lg mb-2">{title}</h3>
-    <p className="text-on-surface-variant text-sm max-w-[240px] opacity-70">
+    <h3 className="text-white font-semibold text-sm mb-1">{title}</h3>
+    <p className="text-neutral-500 text-xs text-center max-w-[240px]">
       {desc}
     </p>
-  </motion.div>
+  </div>
 );
 
 // Sub-components for better organization
@@ -385,27 +341,18 @@ function Modal({ isOpen, onClose, title, children, t }) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={onClose}></div>
           <motion.div 
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 12 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
-            style={{
-              width: "100%",
-              maxWidth: "560px",
-              minWidth: "320px"
-            }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative z-[201] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl custom-scrollbar"
           >
-            <div className="mb-8 flex items-start justify-between gap-4">
-              <h2 className="text-3xl font-black text-slate-100 tracking-tight whitespace-normal">{title}</h2>
-              <button 
-                onClick={onClose} 
-                className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
-              >
-                <span className="material-symbols-outlined font-bold text-[24px]">close</span>
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
+              <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
             {children}
@@ -419,73 +366,59 @@ function Modal({ isOpen, onClose, title, children, t }) {
 function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', note: '' });
   return (
-    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+    <form className="w-full space-y-4" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
       {error && (
-        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+        <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400 flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
           {error}
         </div>
       )}
-      <div className="w-full space-y-2">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('assets')})</label>
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} ({t('assets')})</label>
         <input 
           required 
-          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
           value={formData.name} 
           onChange={e => setFormData({...formData, name: e.target.value})} 
           placeholder="e.g. Bank Account" 
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="w-full space-y-2">
-          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('category')}</label>
           <select 
-            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
             value={formData.category} 
             onChange={e => setFormData({...formData, category: e.target.value})}
           >
-            {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+            {categories.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
           </select>
         </div>
-        <div className="w-full space-y-2">
-          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('amount')}</label>
           <input 
             required 
             type="number" 
-            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
             value={formData.amount} 
             onChange={e => setFormData({...formData, amount: e.target.value})} 
             placeholder="0" 
           />
         </div>
       </div>
-      <div className="w-full space-y-2">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} (Optional)</label>
         <textarea 
-          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          className="block h-24 w-full resize-none rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-white outline-none transition focus:border-primary/50 text-sm custom-scrollbar" 
           value={formData.note} 
           onChange={e => setFormData({...formData, note: e.target.value})} 
           placeholder="Description..." 
         />
       </div>
-      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
-        >
-          {t('cancel')}
-        </button>
-        <button 
-          type="submit" 
-          disabled={isSaving}
-          className={`h-12 w-full rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(74,222,128,0.20)] transition hover:from-emerald-300 hover:to-emerald-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isSaving ? (
-            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <span className="material-symbols-outlined font-bold">save</span>
-          )}
+      <div className="mt-6 flex gap-3 pt-2">
+        <button type="button" onClick={onCancel} className="h-10 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm">{t('cancel')}</button>
+        <button type="submit" disabled={isSaving} className={`h-10 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50' : ''}`}>
+          {isSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined text-[18px]">save</span>}
           {t('save')}
         </button>
       </div>
@@ -496,83 +429,69 @@ function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, err
 function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, error }) {
   const [formData, setFormData] = useState(initialData || { name: '', category: categories[0], amount: '', dueDate: '', note: '' });
   return (
-    <form className="w-full space-y-6" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
+    <form className="w-full space-y-4" onSubmit={(e) => { e.preventDefault(); onSave({ ...formData, amount: parseFloat(formData.amount) }); }}>
       {error && (
-        <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
+        <div className="mb-4 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-400 flex items-center gap-2">
           <span className="material-symbols-outlined text-[18px]">error</span>
           {error}
         </div>
       )}
-      <div className="w-full space-y-2">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} ({t('debts')})</label>
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} ({t('debts')})</label>
         <input 
           required 
-          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
           value={formData.name} 
           onChange={e => setFormData({...formData, name: e.target.value})} 
           placeholder="e.g. Credit Card" 
         />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-        <div className="w-full space-y-2">
-          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('category')}</label>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('category')}</label>
           <select 
-            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold" 
+            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
             value={formData.category} 
             onChange={e => setFormData({...formData, category: e.target.value})}
           >
-            {categories.map(c => <option key={c} value={c} className="bg-slate-900">{c}</option>)}
+            {categories.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
           </select>
         </div>
-        <div className="w-full space-y-2">
-          <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('amount')}</label>
+        <div className="space-y-1.5">
+          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('amount')}</label>
           <input 
             required 
             type="number" 
-            className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-black" 
+            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
             value={formData.amount} 
             onChange={e => setFormData({...formData, amount: e.target.value})} 
             placeholder="0" 
           />
         </div>
       </div>
-      <div className="w-full space-y-2">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('date')}</label>
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('date')}</label>
         <input 
           required 
           type="date" 
-          className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer [color-scheme:dark] font-bold" 
+          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm [color-scheme:dark]" 
           value={formData.dueDate} 
           onChange={e => setFormData({...formData, dueDate: e.target.value})} 
         />
       </div>
-      <div className="w-full space-y-2">
-        <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">{t('note')} (Optional)</label>
+      <div className="space-y-1.5">
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} (Optional)</label>
         <textarea 
-          className="block min-h-[110px] w-full min-w-0 resize-none rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10" 
+          className="block h-24 w-full resize-none rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-white outline-none transition focus:border-primary/50 text-sm custom-scrollbar" 
           value={formData.note} 
           onChange={e => setFormData({...formData, note: e.target.value})} 
           placeholder="Description..." 
         />
       </div>
-      <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end">
-        <button 
-          type="button" 
-          onClick={onCancel} 
-          className="h-12 w-full rounded-xl border border-slate-700/50 px-5 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
-        >
-          {t('cancel')}
-        </button>
-        <button 
-          type="submit" 
-          disabled={isSaving}
-          className={`h-12 w-full rounded-xl bg-gradient-to-r from-red-400 to-red-500 px-8 font-bold text-slate-950 shadow-[0_0_30px_rgba(248,113,113,0.20)] transition hover:from-red-300 hover:to-red-400 sm:w-auto flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
-        >
-          {isSaving ? (
-            <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
-          ) : (
-            <span className="material-symbols-outlined font-bold">save</span>
-          )}
+      <div className="mt-6 flex gap-3 pt-2">
+        <button type="button" onClick={onCancel} className="h-10 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm">{t('cancel')}</button>
+        <button type="submit" disabled={isSaving} className={`h-10 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50' : ''}`}>
+          {isSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined text-[18px]">save</span>}
           {t('save')}
         </button>
       </div>
@@ -581,3 +500,4 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
 }
 
 export default AssetsDebt;
+

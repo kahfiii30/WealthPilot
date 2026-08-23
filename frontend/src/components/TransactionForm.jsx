@@ -66,64 +66,59 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/70 px-4 py-6 backdrop-blur-sm">
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
           <div className="absolute inset-0" onClick={onClose}></div>
           
           <motion.div 
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 15 }}
-            className="relative z-[201] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar"
-            style={{
-              width: "100%",
-              maxWidth: "560px",
-              minWidth: "320px"
-            }}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="relative z-[201] w-full max-w-[480px] max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl p-6 custom-scrollbar"
           >
-            <div className="mb-8 flex items-start justify-between gap-4">
+            <div className="mb-6 flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-emerald-400 mb-1">Financial Intelligence</p>
-                <h2 className="text-3xl font-black text-slate-100 tracking-tighter whitespace-normal">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-1">Financial Intelligence</p>
+                <h2 className="text-xl font-bold text-white tracking-tight">
                   {t('addTransaction')}
                 </h2>
               </div>
               <button 
                 onClick={onClose} 
-                className="shrink-0 rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors"
+                className="shrink-0 p-2 text-neutral-400 hover:text-white transition-colors"
               >
-                <span className="material-symbols-outlined text-[24px]">close</span>
+                <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>
 
             {error && (
-              <div className="mb-6 rounded-xl border border-red-400/20 bg-red-500/10 px-4 py-3 text-sm text-red-300 flex items-center gap-3">
-                <span className="material-symbols-outlined text-[18px]">error</span>
+              <div className="mb-6 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3 text-xs text-red-400 flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px]">error</span>
                 {error}
               </div>
             )}
 
-            <form className="w-full space-y-6" onSubmit={handleSubmit}>
+            <form className="w-full space-y-5" onSubmit={handleSubmit}>
               {/* Type Switcher */}
-              <div className="grid grid-cols-2 gap-3 p-1.5 bg-slate-950/50 rounded-2xl border border-slate-700/30">
+              <div className="grid grid-cols-2 gap-2 p-1 bg-white/[0.02] rounded-lg border border-white/5">
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('expense')} 
-                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-colors duration-200 ${type === 'expense' ? 'bg-red-500 text-slate-950 shadow-[0_0_20px_rgba(239,68,68,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors duration-200 ${type === 'expense' ? 'bg-red-500 text-white' : 'text-neutral-500 hover:text-white'}`}
                 >
                   {t('expense')}
                 </button>
                 <button 
                   type="button" 
                   onClick={() => handleTypeChange('income')} 
-                  className={`py-3.5 text-center text-xs font-black uppercase tracking-widest rounded-xl transition-colors duration-200 ${type === 'income' ? 'bg-emerald-400 text-slate-950 shadow-[0_0_20px_rgba(74,222,128,0.3)]' : 'text-slate-500 hover:text-slate-300'}`}
+                  className={`py-2.5 text-center text-[11px] font-semibold uppercase tracking-wider rounded-md transition-colors duration-200 ${type === 'income' ? 'bg-primary text-black' : 'text-neutral-500 hover:text-white'}`}
                 >
                   {t('income')}
                 </button>
               </div>
 
               {/* Transaction Name Field */}
-              <div className="w-full space-y-2">
-                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              <div className="w-full space-y-1.5">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                   TRANSACTION NAME
                 </label>
                 <input 
@@ -131,18 +126,18 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                   required
                   value={title} 
                   onChange={(e) => setTitle(e.target.value)} 
-                  className="block h-14 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-5 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold text-lg" 
+                  className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-white placeholder:text-neutral-600 outline-none transition focus:border-primary/50 text-sm" 
                   placeholder={type === 'income' ? "e.g., Salary from OG Store" : "e.g., Food at KFC"} 
                 />
               </div>
 
               {/* Amount Field */}
-              <div className="w-full space-y-2">
-                <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              <div className="w-full space-y-1.5">
+                <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                   {t('amount')}
                 </label>
-                <div className="flex items-center bg-slate-950/70 border border-slate-700/50 focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 rounded-xl overflow-hidden h-14 transition-colors duration-200">
-                  <span className="px-6 text-emerald-400 font-black h-full flex items-center bg-slate-950/80 border-r border-slate-700/50 select-none">
+                <div className="flex items-center bg-white/[0.02] border border-white/10 focus-within:border-primary/50 rounded-lg overflow-hidden transition-colors duration-200">
+                  <span className="px-4 py-3 text-primary font-bold bg-white/[0.03] border-r border-white/10 select-none text-sm">
                     {currency === 'USD' ? '$' : 'Rp'}
                   </span>
                   <input 
@@ -150,65 +145,65 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     required 
                     value={amount} 
                     onChange={(e) => setAmount(e.target.value)} 
-                    className="flex-1 bg-transparent px-5 h-full text-slate-100 font-black text-xl outline-none w-full min-w-0 tracking-tight" 
+                    className="flex-1 bg-transparent px-4 py-3 text-white font-bold outline-none tracking-tight text-sm" 
                     placeholder="0" 
                   />
                 </div>
               </div>
 
               {/* Category & Method Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="w-full space-y-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="w-full space-y-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                     {t('category')}
                   </label>
                   <select 
                     value={category} 
                     onChange={(e) => setCategory(e.target.value)} 
-                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
+                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 appearance-none cursor-pointer text-sm"
                   >
                     {type === 'expense' ? (
                       <>
-                        <option value="Food & Dining" className="bg-slate-900">Food & Dining</option>
-                        <option value="Trading" className="bg-slate-900">Trading</option>
-                        <option value="Kebutuhan" className="bg-slate-900">Kebutuhan</option>
-                        <option value="Transportasi" className="bg-slate-900">Transportasi</option>
-                        <option value="Investasi" className="bg-slate-900">Investasi</option>
-                        <option value="Lainnya" className="bg-slate-900">Lainnya</option>
+                        <option value="Food & Dining" className="bg-[#0a0a0a]">Food & Dining</option>
+                        <option value="Trading" className="bg-[#0a0a0a]">Trading</option>
+                        <option value="Kebutuhan" className="bg-[#0a0a0a]">Kebutuhan</option>
+                        <option value="Transportasi" className="bg-[#0a0a0a]">Transportasi</option>
+                        <option value="Investasi" className="bg-[#0a0a0a]">Investasi</option>
+                        <option value="Lainnya" className="bg-[#0a0a0a]">Lainnya</option>
                       </>
                     ) : (
                       <>
-                        <option value="Salary" className="bg-slate-900">Salary</option>
-                        <option value="Business" className="bg-slate-900">Business</option>
-                        <option value="Bonus" className="bg-slate-900">Bonus</option>
-                        <option value="Freelance" className="bg-slate-900">Freelance</option>
-                        <option value="Investment" className="bg-slate-900">Investment</option>
-                        <option value="Gift" className="bg-slate-900">Gift</option>
-                        <option value="Other Income" className="bg-slate-900">Other Income</option>
+                        <option value="Salary" className="bg-[#0a0a0a]">Salary</option>
+                        <option value="Business" className="bg-[#0a0a0a]">Business</option>
+                        <option value="Bonus" className="bg-[#0a0a0a]">Bonus</option>
+                        <option value="Freelance" className="bg-[#0a0a0a]">Freelance</option>
+                        <option value="Investment" className="bg-[#0a0a0a]">Investment</option>
+                        <option value="Gift" className="bg-[#0a0a0a]">Gift</option>
+                        <option value="Other Income" className="bg-[#0a0a0a]">Other Income</option>
                       </>
                     )}
                   </select>
                 </div>
-                <div className="w-full space-y-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                <div className="w-full space-y-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                     Method
                   </label>
                   <select 
                     value={method} 
                     onChange={(e) => setMethod(e.target.value)} 
-                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 appearance-none cursor-pointer font-bold"
+                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 appearance-none cursor-pointer text-sm"
                   >
                     {combinedMethods.map(m => (
-                      <option key={m} value={m} className="bg-slate-900">{m}</option>
+                      <option key={m} value={m} className="bg-[#0a0a0a]">{m}</option>
                     ))}
                   </select>
                 </div>
               </div>
 
               {/* Date & Note Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="w-full space-y-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="w-full space-y-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                     {t('date')}
                   </label>
                   <input 
@@ -216,41 +211,41 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     required 
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
-                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 cursor-pointer font-bold" 
+                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 cursor-pointer text-sm" 
                   />
                 </div>
-                <div className="w-full space-y-2">
-                  <label className="mb-2 block text-xs font-bold uppercase tracking-[0.18em] text-slate-400 ml-1">
+                <div className="w-full space-y-1.5">
+                  <label className="block text-[10px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">
                     {t('note')}
                   </label>
                   <input 
                     type="text" 
                     value={note} 
                     onChange={(e) => setNote(e.target.value)} 
-                    className="block h-12 w-full min-w-0 rounded-xl border border-slate-700/50 bg-slate-950/70 px-4 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-emerald-400/70 focus:ring-2 focus:ring-emerald-400/10 font-bold" 
+                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white placeholder:text-neutral-600 outline-none transition focus:border-primary/50 text-sm" 
                     placeholder="Brief description..." 
                   />
                 </div>
               </div>
 
-              <div className="mt-10 flex w-full flex-col-reverse gap-4 sm:flex-row sm:justify-end">
+              <div className="mt-8 flex w-full flex-col-reverse gap-3 sm:flex-row sm:justify-end pt-4 border-t border-white/5">
                 <button 
                   type="button" 
                   onClick={onClose} 
-                  className="h-12 w-full rounded-xl border border-slate-700/50 px-8 font-semibold text-slate-300 transition hover:bg-slate-800 sm:w-auto"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-neutral-400 hover:text-white transition-colors"
                 >
                   {t('cancel')}
                 </button>
                 <button 
                   type="submit" 
                   disabled={isSaving}
-                  className={`h-12 w-full rounded-xl px-10 font-bold text-slate-950 shadow-xl transition-all duration-200 sm:w-auto flex items-center justify-center gap-2 ${type === 'income' ? 'bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 shadow-emerald-400/20' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 shadow-red-500/20'} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold transition-colors flex items-center justify-center gap-2 ${type === 'income' ? 'bg-white text-black hover:bg-neutral-200' : 'bg-red-500 text-white hover:bg-red-600'} ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {isSaving ? (
-                    <div className="w-5 h-5 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                   ) : (
                     <>
-                      <span className="material-symbols-outlined font-bold">save</span>
+                      <span className="material-symbols-outlined text-[18px]">save</span>
                       Confirm
                     </>
                   )}

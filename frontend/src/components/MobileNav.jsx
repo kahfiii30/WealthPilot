@@ -10,37 +10,37 @@ function MobileNav({ activePage, setActivePage, onQuickAdd, t }) {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[80px] bg-surface-container/95 backdrop-blur-xl border-t border-outline-variant/30 flex items-center justify-around px-2 z-[60] pb-safe">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[72px] bg-black/80 backdrop-blur-md border-t border-white/5 flex items-center justify-around px-2 z-[60] pb-safe">
       {navItems.slice(0, 2).map(item => (
         <a 
           key={item.id}
-          className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-on-surface-variant'}`} 
+          className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-neutral-500 hover:text-white'}`} 
           href="#" 
           onClick={(e) => { e.preventDefault(); setActivePage(item.id); }}
         >
-          <span className="material-symbols-outlined text-[24px]" style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
-          <span className={`text-[10px] text-center ${activePage === item.id ? 'font-bold' : ''}`}>{item.label}</span>
+          <span className={`material-symbols-outlined text-[24px] ${activePage === item.id ? 'text-primary' : ''}`} style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
+          <span className={`text-[10px] text-center ${activePage === item.id ? 'font-semibold' : ''}`}>{item.label}</span>
         </a>
       ))}
 
-      <div className="relative -top-5">
+      <div className="relative -top-4">
         <button 
           onClick={onQuickAdd}
-          className="w-14 h-14 bg-primary text-on-primary rounded-full shadow-[0_8px_20px_rgba(75,226,119,0.3)] flex items-center justify-center hover:brightness-110 transition-colors duration-200 cursor-pointer"
+          className="w-12 h-12 bg-white text-black rounded-full shadow-lg flex items-center justify-center hover:bg-neutral-200 transition-colors duration-200 cursor-pointer border border-white/10"
         >
-          <span className="material-symbols-outlined text-3xl">add</span>
+          <span className="material-symbols-outlined text-2xl font-bold">add</span>
         </button>
       </div>
 
       {navItems.slice(2).map(item => (
         <a 
           key={item.id}
-          className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-on-surface-variant'}`} 
+          className={`flex flex-col items-center gap-1 min-w-[60px] ${activePage === item.id ? 'text-primary' : 'text-neutral-500 hover:text-white'}`} 
           href="#" 
           onClick={(e) => { e.preventDefault(); setActivePage(item.id); }}
         >
-          <span className="material-symbols-outlined text-[24px]" style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
-          <span className={`text-[10px] text-center ${activePage === item.id ? 'font-bold' : ''}`}>{item.label}</span>
+          <span className={`material-symbols-outlined text-[24px] ${activePage === item.id ? 'text-primary' : ''}`} style={activePage === item.id ? {fontVariationSettings: "'FILL' 1"} : {}}>{item.icon}</span>
+          <span className={`text-[10px] text-center ${activePage === item.id ? 'font-semibold' : ''}`}>{item.label}</span>
         </a>
       ))}
     </nav>

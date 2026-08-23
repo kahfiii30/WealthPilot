@@ -192,38 +192,38 @@ function Settings({
   };
 
   return (
-    <div className="max-w-[1000px] 2xl:max-w-[1400px] mx-auto p-8 2xl:p-12 pb-32">
+    <div className="p-4 md:p-8 pb-[100px]">
       <motion.div 
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col mb-10 2xl:mb-14"
+        className="flex flex-col mb-8"
       >
-        <p className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.3em] text-emerald-400 mb-2 2xl:mb-3 ml-1">Configuration</p>
-        <h2 className="text-4xl 2xl:text-6xl font-black text-slate-100 tracking-tighter">{t('settings')}</h2>
-        <p className="text-sm 2xl:text-lg font-bold text-slate-500 tracking-tight mt-1 2xl:mt-3">Manage your command center and personal preferences.</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1 ml-1">Configuration</p>
+        <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">{t('settings')}</h2>
+        <p className="text-sm font-medium text-neutral-500 tracking-tight mt-1">Manage your command center and personal preferences.</p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-8 2xl:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
         {/* Settings Navigation */}
         <motion.div 
           variants={container}
           initial="hidden"
           animate="show"
-          className="md:col-span-1 flex md:flex-col gap-2 2xl:gap-4 overflow-x-auto md:overflow-visible no-scrollbar pb-2 md:pb-0"
+          className="md:col-span-1 flex md:flex-col gap-2 overflow-x-auto md:overflow-visible custom-scrollbar pb-2 md:pb-0"
         >
           {tabs.map(tab => (
             <motion.button 
               variants={item}
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex-none md:w-full flex items-center gap-4 px-5 2xl:px-6 py-4 2xl:py-5 transition-colors duration-200 rounded-2xl cursor-pointer whitespace-nowrap ${
+              className={`flex-none md:w-full flex items-center gap-3 px-4 py-3 transition-colors duration-200 rounded-lg cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id 
-                ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20 font-black shadow-[0_0_20px_rgba(74,222,128,0.05)]' 
-                : 'text-slate-500 border-transparent hover:text-slate-300 hover:bg-slate-900/50'
+                ? 'bg-primary/10 text-primary font-semibold' 
+                : 'text-neutral-500 hover:text-white hover:bg-white/[0.05]'
               }`}
             >
-              <span className={`material-symbols-outlined text-[22px] 2xl:text-3xl font-bold ${activeTab === tab.id ? 'text-emerald-400' : 'text-slate-500'}`}>{tab.icon}</span>
-              <span className="text-[10px] 2xl:text-sm font-black uppercase tracking-widest">{tab.label}</span>
+              <span className={`material-symbols-outlined text-[20px] ${activeTab === tab.id ? 'text-primary' : 'text-neutral-500'}`}>{tab.icon}</span>
+              <span className="text-sm font-semibold">{tab.label}</span>
             </motion.button>
           ))}
         </motion.div>
@@ -236,30 +236,30 @@ function Settings({
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              transition={{ duration: 0.2 }}
             >
               {activeTab === 'profile' && (
-                <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                  <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Personal Information</h3>
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Personal Information</h3>
                   
                   <form onSubmit={handleProfileSave}>
-                    <div className="space-y-8 2xl:space-y-12">
-                      <div className="flex flex-col sm:flex-row items-center gap-8 2xl:gap-12 mb-10 2xl:mb-14">
-                        <div className="h-24 w-24 2xl:h-32 2xl:w-32 rounded-3xl overflow-hidden border-2 border-emerald-400/20 bg-slate-950/50 shadow-inner shrink-0 relative group">
+                    <div className="space-y-8">
+                      <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
+                        <div className="h-24 w-24 rounded-full overflow-hidden border border-white/10 bg-white/[0.02] shrink-0 relative group">
                           <img 
                             alt="User Avatar" 
                             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                             src={userProfile.avatarUrl || "https://lh3.googleusercontent.com/aida-public/AB6AXuCZ_OXPH6lIRbjpy2ahFWztRDnU3cTGstfntAjv2D6IG_NKdZrO62xpA8NcAGNi0uNc9ZLNDHEiRnndTYwMkUq9OSq5o9VwFIpkelPTLkv5FJL3nM74iT8m2TZLfqHpDLKAVEfQta8DOCPbUphTDvrvBPQjAtK-3zRD7Gu7nIQ31brcMuTQUYCzfyzJSD3NpqsVKeAFbj34ER9D6vZxV0QrGTIDmHbpaE1E2eLcSQegXGD68q3xNxe41IYOnDGGGJZtG53q2gX8AQ"} 
                           />
                         </div>
-                        <div className="flex flex-col items-center sm:items-start gap-3 2xl:gap-4">
+                        <div className="flex flex-col items-center sm:items-start gap-2">
                           <button 
                             type="button"
                             disabled={isUploadingAvatar}
                             onClick={() => fileInputRef.current.click()}
-                            className="px-5 2xl:px-6 py-2.5 2xl:py-3.5 bg-slate-950/50 border border-slate-700/50 text-slate-300 rounded-xl hover:bg-slate-800 transition-colors cursor-pointer text-xs 2xl:text-sm font-black uppercase tracking-widest disabled:opacity-50"
+                            className="px-4 py-2 bg-white/[0.05] border border-white/10 text-white rounded-lg hover:bg-white/[0.1] transition-colors cursor-pointer text-xs font-semibold uppercase tracking-wider disabled:opacity-50"
                           >
-                            {isUploadingAvatar ? "Uploading..." : "Update Command Avatar"}
+                            {isUploadingAvatar ? "Uploading..." : "Update Avatar"}
                           </button>
                           <input 
                             type="file" 
@@ -268,48 +268,48 @@ function Settings({
                             accept="image/*" 
                             onChange={handlePhotoChange} 
                           />
-                          <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest">PNG, JPG or WEBP • Max 2MB</p>
+                          <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">PNG, JPG or WEBP • Max 2MB</p>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 2xl:gap-10">
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('firstName')}</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('firstName')}</label>
                           <input 
                             name="firstName" 
                             required
                             type="text" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                             value={form.firstName} 
                             onChange={e => setForm({...form, firstName: e.target.value})}
                           />
                         </div>
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('lastName')}</label>
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('lastName')}</label>
                           <input 
                             name="lastName" 
                             type="text" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                             value={form.lastName} 
                             onChange={e => setForm({...form, lastName: e.target.value})}
                           />
                         </div>
                       </div>
                       
-                      <div className="space-y-2 2xl:space-y-3">
-                        <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('email')}</label>
+                      <div className="space-y-2">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('email')}</label>
                         <input 
                           name="email" 
                           required
                           type="email" 
-                          className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold 2xl:text-lg" 
+                          className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                           value={form.email} 
                           onChange={e => setForm({...form, email: e.target.value})}
                         />
                       </div>
                     </div>
-                    <div className="mt-12 2xl:mt-16 pt-8 2xl:pt-10 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-6 2xl:gap-8">
-                      <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-10 2xl:px-12 py-3.5 2xl:py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs 2xl:text-sm disabled:opacity-50">
+                    <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-4">
+                      <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm disabled:opacity-50">
                         {isSaving ? "Saving..." : "Commit Changes"}
                       </button>
                     </div>
@@ -318,53 +318,53 @@ function Settings({
               )}
 
               {activeTab === 'preferences' && (
-                <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                  <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Localization & Visuals</h3>
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Localization & Visuals</h3>
                   <form onSubmit={handlePrefSave}>
-                    <div className="space-y-8 2xl:space-y-12">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 2xl:gap-10">
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('currency')}</label>
+                    <div className="space-y-8">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('currency')}</label>
                           <select 
                             name="currency" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 appearance-none cursor-pointer font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 appearance-none cursor-pointer text-sm" 
                             value={localPrefs.currency}
                             onChange={(e) => setLocalPrefs({...localPrefs, currency: e.target.value})}
                           >
-                            <option value="IDR" className="bg-slate-900">IDR - Indonesian Rupiah</option>
-                            <option value="USD" className="bg-slate-900">USD - US Dollar</option>
+                            <option value="IDR" className="bg-[#0a0a0a]">IDR - Indonesian Rupiah</option>
+                            <option value="USD" className="bg-[#0a0a0a]">USD - US Dollar</option>
                           </select>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 2xl:gap-10">
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">{t('exchangeRate')} (1 USD = ? IDR)</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('exchangeRate')} (1 USD = ? IDR)</label>
                           <input 
                             name="exchangeRate" 
                             type="number" 
                             step="0.01"
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 font-black 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                             value={localPrefs.exchangeRate}
                             onChange={(e) => setLocalPrefs({...localPrefs, exchangeRate: parseFloat(e.target.value) || 0})}
                           />
                         </div>
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Appearance Theme</label>
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Appearance Theme</label>
                           <select 
                             name="theme" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 transition-colors duration-200 appearance-none cursor-pointer font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 appearance-none cursor-pointer text-sm" 
                             value={localPrefs.theme}
                             onChange={(e) => setLocalPrefs({...localPrefs, theme: e.target.value})}
                           >
-                            <option value="Dark" className="bg-slate-900">Midnight Emerald (Premium)</option>
-                            <option value="Light" className="bg-slate-900">Corporate Crystal</option>
+                            <option value="Dark" className="bg-[#0a0a0a]">Minimalist Premium (Dark)</option>
+                            <option value="Light" className="bg-[#0a0a0a]">Light Theme</option>
                           </select>
                         </div>
                       </div>
                     </div>
-                    <div className="mt-12 2xl:mt-16 pt-8 2xl:pt-10 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-end gap-6 2xl:gap-8">
-                      <button className="w-full sm:w-auto px-10 2xl:px-12 py-3.5 2xl:py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs 2xl:text-sm">
+                    <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-4">
+                      <button className="w-full sm:w-auto px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm">
                         Update Preferences
                       </button>
                     </div>
@@ -373,10 +373,10 @@ function Settings({
               )}
 
               {activeTab === 'notifications' && (
-                <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                  <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Intelligence Alerts</h3>
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Intelligence Alerts</h3>
                   <form onSubmit={handleNotifSave}>
-                    <div className="space-y-4 2xl:space-y-6">
+                    <div className="space-y-4">
                       {[
                         { id: 'budgetWarning', label: 'Budget Warning', desc: 'Notify me when I exceed 80% of my budget' },
                         { id: 'monthlyReport', label: 'Monthly Report', desc: 'Receive a summary of my financial health every month' },
@@ -384,22 +384,22 @@ function Settings({
                         { id: 'goalProgress', label: 'Goal Progress', desc: 'Updates on my financial goals status' },
                         { id: 'largeExpenseAlert', label: 'Large Expense Alert', desc: 'Notify me of any expense over ' + fm(1000000, preferences) }
                       ].map(notif => (
-                        <label key={notif.id} className="flex items-center gap-5 2xl:gap-6 p-5 2xl:p-6 bg-slate-950/40 rounded-2xl cursor-pointer hover:bg-slate-950/60 transition-colors duration-200 border border-slate-700/30 group">
+                        <label key={notif.id} className="flex items-center gap-4 p-4 bg-white/[0.02] rounded-lg cursor-pointer hover:bg-white/[0.04] transition-colors duration-200 border border-white/5 group">
                           <input 
                             name={notif.id} 
                             type="checkbox" 
-                            className="w-6 h-6 2xl:w-8 2xl:h-8 rounded-lg accent-emerald-400 border-slate-700 bg-slate-900" 
+                            className="w-5 h-5 rounded border-white/10 bg-white/[0.05] accent-primary" 
                             defaultChecked={notifications[notif.id]} 
                           />
                           <div className="flex-1">
-                            <p className="font-bold text-slate-100 text-sm 2xl:text-lg group-hover:text-emerald-400 transition-colors">{notif.label}</p>
-                            <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest mt-1 2xl:mt-2">{notif.desc}</p>
+                            <p className="font-semibold text-white text-sm">{notif.label}</p>
+                            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{notif.desc}</p>
                           </div>
                         </label>
                       ))}
                     </div>
-                    <div className="mt-12 2xl:mt-16 pt-8 2xl:pt-10 border-t border-slate-800 flex items-center justify-end">
-                      <button className="px-10 2xl:px-12 py-3.5 2xl:py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs 2xl:text-sm">
+                    <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-end">
+                      <button className="px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm">
                         Commit Alerts
                       </button>
                     </div>
@@ -408,52 +408,52 @@ function Settings({
               )}
 
               {activeTab === 'security' && (
-                <div className="space-y-8 2xl:space-y-12">
-                  <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                    <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Access Control</h3>
-                    <div className="space-y-6 2xl:space-y-8">
-                      <div className="flex justify-between items-center p-6 2xl:p-8 bg-slate-950/40 rounded-2xl border border-slate-700/30">
+                <div className="space-y-6">
+                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                    <h3 className="text-xl font-bold text-white tracking-tight mb-6">Access Control</h3>
+                    <div className="space-y-6">
+                      <div className="flex justify-between items-center p-4 bg-white/[0.02] rounded-lg border border-white/5">
                         <div>
-                          <p className="font-black text-slate-100 text-sm 2xl:text-lg tracking-tight">Active Command Session</p>
-                          <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest mt-1 2xl:mt-2">Chrome Protocol • Windows OS</p>
+                          <p className="font-semibold text-white text-sm tracking-tight">Active Command Session</p>
+                          <p className="text-[11px] font-medium text-neutral-500 mt-1">Chrome Protocol • Windows OS</p>
                         </div>
-                        <span className="px-3 2xl:px-4 py-1 2xl:py-1.5 bg-emerald-400/10 text-emerald-400 text-[9px] 2xl:text-[11px] font-black rounded-lg uppercase tracking-widest border border-emerald-400/20 shadow-[0_0_10px_rgba(74,222,128,0.1)]">Authorized</span>
+                        <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider border border-primary/20">Authorized</span>
                       </div>
                       
-                      <div className="flex gap-4 2xl:gap-6 pt-4 2xl:pt-6">
-                        <button onClick={onLogout} className="flex-1 py-4 2xl:py-5 bg-slate-950/40 border border-red-500/20 text-red-300 rounded-xl font-black uppercase tracking-widest text-xs 2xl:text-sm hover:bg-red-500/10 transition-colors duration-200 cursor-pointer">
+                      <div className="flex gap-4 pt-2">
+                        <button onClick={onLogout} className="flex-1 py-3 bg-white/[0.02] border border-red-500/20 text-red-400 rounded-lg font-semibold text-sm hover:bg-red-500/10 transition-colors duration-200 cursor-pointer">
                           Terminate Session
                         </button>
                       </div>
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                    <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Update Password</h3>
+                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                    <h3 className="text-xl font-bold text-white tracking-tight mb-6">Update Password</h3>
                     <form onSubmit={handlePasswordUpdate}>
-                      <div className="space-y-6 2xl:space-y-8">
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">New Password</label>
+                      <div className="space-y-6">
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">New Password</label>
                           <input 
                             required
                             type="password" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                             value={passwordForm.newPassword} 
                             onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})}
                           />
                         </div>
-                        <div className="space-y-2 2xl:space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Confirm New Password</label>
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Confirm New Password</label>
                           <input 
                             required
                             type="password" 
-                            className="w-full bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 2xl:px-6 py-3 2xl:py-4 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors duration-200 font-bold 2xl:text-lg" 
+                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
                             value={passwordForm.confirmPassword} 
                             onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
                           />
                         </div>
-                        <div className="pt-4 2xl:pt-6 flex justify-end">
-                          <button type="submit" disabled={isUpdatingPassword} className="px-10 2xl:px-12 py-3.5 2xl:py-4 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30px_rgba(74,222,128,0.2)] uppercase tracking-widest text-xs 2xl:text-sm disabled:opacity-50">
+                        <div className="pt-4 flex justify-end">
+                          <button type="submit" disabled={isUpdatingPassword} className="px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm disabled:opacity-50">
                             {isUpdatingPassword ? "Updating..." : "Update Password"}
                           </button>
                         </div>
@@ -461,12 +461,12 @@ function Settings({
                     </form>
                   </div>
 
-                  <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                    <h3 className="text-xl 2xl:text-3xl font-black text-red-300 tracking-tight mb-4 2xl:mb-6">Protocol Zero</h3>
-                    <p className="text-sm 2xl:text-lg font-bold text-slate-400 mb-8 2xl:mb-10 tracking-tight">{t('confirmReset')}</p>
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-6 lg:p-8">
+                    <h3 className="text-xl font-bold text-red-400 tracking-tight mb-3">Protocol Zero</h3>
+                    <p className="text-sm font-medium text-neutral-400 mb-6 tracking-tight">{t('confirmReset')}</p>
                     <button 
                       onClick={onResetData}
-                      className="w-full py-4 2xl:py-5 bg-gradient-to-r from-red-400 to-red-500 text-slate-950 font-black rounded-xl hover:from-red-300 hover:to-red-400 transition-colors duration-200 cursor-pointer shadow-[0_0_30_rgba(248,113,113,0.2)] uppercase tracking-[0.2em] text-xs 2xl:text-sm"
+                      className="w-full py-3 bg-red-500 text-white font-semibold rounded-lg hover:bg-red-600 transition-colors duration-200 cursor-pointer text-sm"
                     >
                       Purge Financial Repository
                     </button>
@@ -475,30 +475,30 @@ function Settings({
               )}
 
               {activeTab === 'integrations' && (
-                <div className="rounded-2xl border border-slate-700/30 bg-slate-900/55 p-8 2xl:p-12 shadow-xl backdrop-blur-xl">
-                  <h3 className="text-xl 2xl:text-3xl font-black text-slate-100 tracking-tight mb-8 2xl:mb-10">Integrations</h3>
+                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Integrations</h3>
                   
-                  <div className="space-y-6 2xl:space-y-8">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-6 2xl:p-8 bg-slate-950/40 rounded-2xl border border-slate-700/30">
+                  <div className="space-y-6">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-white/[0.02] rounded-lg border border-white/5">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-[#2AABEE]/10 flex items-center justify-center shrink-0">
-                          <span className="material-symbols-outlined text-[#2AABEE] text-2xl">send</span>
+                        <div className="w-10 h-10 rounded-lg bg-[#2AABEE]/10 flex items-center justify-center shrink-0">
+                          <span className="material-symbols-outlined text-[#2AABEE] text-xl">send</span>
                         </div>
                         <div>
-                          <p className="font-black text-slate-100 text-sm 2xl:text-lg tracking-tight">Telegram Bot</p>
-                          <p className="text-[10px] 2xl:text-xs font-black text-slate-500 uppercase tracking-widest mt-1">Chat to log finances</p>
+                          <p className="font-semibold text-white text-sm tracking-tight">Telegram Bot</p>
+                          <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Chat to log finances</p>
                         </div>
                       </div>
-                      <span className={`px-3 2xl:px-4 py-1 2xl:py-1.5 ${linkedTelegramId ? 'bg-emerald-400/10 text-emerald-400 border-emerald-400/20 shadow-[0_0_10px_rgba(74,222,128,0.1)]' : 'bg-slate-800 text-slate-400 border-slate-700'} text-[9px] 2xl:text-[11px] font-black rounded-lg uppercase tracking-widest border`}>
+                      <span className={`px-3 py-1 ${linkedTelegramId ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/[0.05] text-neutral-400 border-white/10'} text-[10px] font-bold rounded uppercase tracking-wider border`}>
                         {linkedTelegramId ? 'Connected' : 'Not Connected'}
                       </span>
                     </div>
 
-                    <div className="p-6 2xl:p-8 bg-slate-950/20 rounded-2xl border border-slate-800">
-                      <h4 className="text-sm font-bold text-slate-200 mb-2">How to connect:</h4>
-                      <ol className="list-decimal list-inside text-xs text-slate-400 space-y-2 mb-6">
+                    <div className="p-5 bg-white/[0.01] rounded-lg border border-white/5">
+                      <h4 className="text-sm font-semibold text-white mb-2">How to connect:</h4>
+                      <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-2 mb-6">
                         <li>Open Telegram and search for your bot.</li>
-                        <li>Type <code className="bg-slate-800 px-1 py-0.5 rounded text-emerald-400">/start</code></li>
+                        <li>Type <code className="bg-white/[0.05] px-1 py-0.5 rounded text-primary border border-white/10">/start</code></li>
                         <li>The bot will reply with your <strong>Telegram ID</strong>.</li>
                         <li>Paste that ID below and click Connect.</li>
                       </ol>
@@ -516,18 +516,18 @@ function Settings({
                           setIsLinkingTelegram(false);
                         }
                       }}>
-                        <div className="space-y-3">
-                          <label className="text-[10px] 2xl:text-xs font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Telegram ID</label>
-                          <div className="flex gap-4">
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Telegram ID</label>
+                          <div className="flex gap-3">
                             <input 
                               required
                               type="text" 
                               placeholder="e.g. 123456789"
-                              className="flex-1 bg-slate-950/50 border border-slate-700/50 rounded-xl px-5 py-3 text-slate-100 outline-none focus:border-emerald-400/50 focus:ring-2 focus:ring-emerald-400/10 transition-colors font-bold" 
+                              className="flex-1 bg-white/[0.02] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary/50 transition-colors text-sm" 
                               value={telegramId} 
                               onChange={e => setTelegramId(e.target.value)}
                             />
-                            <button type="submit" disabled={isLinkingTelegram || telegramId === linkedTelegramId} className="px-8 py-3 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black rounded-xl hover:from-emerald-300 hover:to-emerald-400 transition-colors shadow-[0_0_20px_rgba(74,222,128,0.2)] disabled:opacity-50">
+                            <button type="submit" disabled={isLinkingTelegram || telegramId === linkedTelegramId} className="px-6 py-2 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors text-sm disabled:opacity-50">
                               {isLinkingTelegram ? "..." : (linkedTelegramId ? "Update" : "Connect")}
                             </button>
                           </div>

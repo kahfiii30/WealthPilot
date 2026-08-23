@@ -12,69 +12,77 @@ function Sidebar({ activePage, setActivePage, onQuickAdd, onLogout, onUpgrade, t
   ];
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r border-slate-700/30 bg-slate-950/50 backdrop-blur-xl z-50 flex flex-col py-8 shadow-2xl">
+    <aside className="fixed left-0 top-0 h-screen w-[240px] border-r border-white/5 bg-[#050505] z-50 flex flex-col py-8 shadow-2xl">
       <div className="px-8 mb-10 flex flex-col gap-1">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-[0_0_20px_rgba(74,222,128,0.2)]">
-            <span className="material-symbols-outlined text-slate-950 font-bold">rocket_launch</span>
+          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+            <span className="material-symbols-outlined text-on-primary font-bold text-[18px]">rocket_launch</span>
           </div>
-          <h1 className="text-xl font-black tracking-tighter text-slate-100">WealthPilot</h1>
+          <h1 className="text-xl font-bold tracking-tight text-white">WealthPilot</h1>
         </div>
-        <p className="text-[10px] uppercase tracking-[0.3em] text-slate-500 font-black mt-2 ml-1">Fleet Commander</p>
       </div>
 
-      <nav className="flex-1 space-y-2 px-4">
+      <nav className="flex-1 space-y-1 px-4 mt-4">
         {navItems.map(item => {
           const isActive = activePage === item.id;
           return (
             <button
               key={item.id}
               onClick={() => setActivePage(item.id)}
-              className={`relative w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-colors duration-200 ease-out border ${
+              className={`relative w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group ${
                 isActive 
-                  ? 'bg-emerald-400/12 text-emerald-400 border-emerald-400/20 shadow-[0_0_28px_rgba(16,185,129,0.08)]' 
-                  : 'text-slate-400 border-transparent hover:bg-slate-800/60 hover:text-slate-100'
+                  ? 'text-white bg-white/[0.03]' 
+                  : 'text-neutral-400 hover:text-white'
               }`}
             >
-              <span className={`material-symbols-outlined transition-colors duration-200 ${isActive ? 'font-bold' : ''}`}>
+              {isActive && (
+                <motion.div 
+                  layoutId="sidebar-active-indicator"
+                  className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
+                />
+              )}
+              <span className={`material-symbols-outlined transition-colors duration-200 ${isActive ? 'text-primary' : 'group-hover:text-neutral-300'}`}>
                 {item.icon}
               </span>
-              <span className="font-bold tracking-tight text-sm">{item.label}</span>
-              {isActive && (
-                <span className="pointer-events-none absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-emerald-400" />
-              )}
+              <span className="font-medium text-sm tracking-wide">{item.label}</span>
             </button>
           );
         })}
       </nav>
 
-      <div className="mt-auto px-4 pt-6 space-y-3 border-t border-slate-800/50">
+      <div className="mt-auto px-4 pt-6 space-y-2 border-t border-white/5">
         <button 
           onClick={onQuickAdd} 
-          className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 py-3.5 rounded-xl font-bold shadow-[0_0_30px_rgba(74,222,128,0.20)] transition-all duration-200 hover:from-emerald-300 hover:to-emerald-400 hover:shadow-[0_0_40px_rgba(74,222,128,0.28)] text-sm mb-4"
+          className="w-full flex items-center justify-center gap-2 bg-primary text-black py-3 rounded-lg font-semibold transition-transform duration-200 hover:scale-[1.02] text-sm mb-4 shadow-lg shadow-primary/10"
         >
-          <span className="material-symbols-outlined text-[20px] font-bold">add</span>
+          <span className="material-symbols-outlined text-[18px] font-bold">add</span>
           {t('addTransaction')}
         </button>
 
         <button 
           onClick={() => setActivePage('settings')}
-          className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-colors duration-200 border ${
+          className={`relative w-full flex items-center gap-4 px-4 py-3 rounded-lg transition-colors duration-200 group ${
             activePage === 'settings' 
-              ? 'bg-emerald-400/12 text-emerald-400 border-emerald-400/20 shadow-[0_0_28px_rgba(16,185,129,0.08)]' 
-              : 'text-slate-400 border-transparent hover:bg-slate-800/60 hover:text-slate-100'
+              ? 'text-white bg-white/[0.03]' 
+              : 'text-neutral-400 hover:text-white'
           }`}
         >
-          <span className={`material-symbols-outlined ${activePage === 'settings' ? 'font-bold' : ''}`}>settings</span>
-          <span className="font-bold tracking-tight text-sm">{t('settings')}</span>
+          {activePage === 'settings' && (
+            <motion.div 
+              layoutId="sidebar-active-indicator"
+              className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-primary rounded-r-full"
+            />
+          )}
+          <span className={`material-symbols-outlined transition-colors duration-200 ${activePage === 'settings' ? 'text-primary' : 'group-hover:text-neutral-300'}`}>settings</span>
+          <span className="font-medium text-sm tracking-wide">{t('settings')}</span>
         </button>
 
         <button 
           onClick={onLogout}
-          className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-red-400 hover:bg-red-500/10 transition-colors duration-200"
+          className="w-full flex items-center gap-4 px-4 py-3 rounded-lg text-red-400 hover:bg-red-500/10 transition-colors duration-200"
         >
-          <span className="material-symbols-outlined">logout</span>
-          <span className="font-bold tracking-tight text-sm">Logout</span>
+          <span className="material-symbols-outlined font-light">logout</span>
+          <span className="font-medium text-sm">Logout</span>
         </button>
       </div>
     </aside>

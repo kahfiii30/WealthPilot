@@ -5,7 +5,6 @@ import { supabase, isSupabaseConfigured } from './lib/supabaseClient';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import MobileNav from './components/MobileNav';
-import MeshGradient from './components/MeshGradient';
 import Dashboard from './pages/Dashboard';
 import Transactions from './pages/Transactions';
 import Budget from './pages/Budget';
@@ -375,17 +374,16 @@ function App() {
     }} />;
   }
 
-  if (!isSupabaseConfigured) return <div className="min-h-screen bg-[#0b0f19] flex items-center justify-center text-error">Supabase Configuration Missing</div>;
+  if (!isSupabaseConfigured) return <div className="min-h-screen bg-black flex items-center justify-center text-error">Supabase Configuration Missing</div>;
   if (!isLoggedIn) return <Login />;
 
   return (
-    <div className="relative min-h-screen text-slate-100 bg-[#020617]">
-      <MeshGradient />
+    <div className="relative min-h-screen text-slate-200 selection:bg-primary/30">
       <Toaster position="top-right" toastOptions={{
         style: {
-          background: '#0f172a',
-          color: '#f1f5f9',
-          border: '1px solid rgba(51, 65, 85, 0.5)',
+          background: '#1a1a1a',
+          color: '#ffffff',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
         }
       }} />
       <div className="hidden md:block">
@@ -393,7 +391,7 @@ function App() {
       </div>
       <Header activePage={activePage} onQuickAdd={() => setIsQuickAddOpen(true)} onLogout={handleLogout} userProfile={userProfile} t={t} onUpgrade={() => setIsProModalOpen(true)} />
 
-      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative">
+      <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative w-full md:w-[calc(100%-240px)]">
         <AnimatePresence mode="wait">
           {activePage === 'dashboard' && <AnimatedPage key="dashboard"><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
           {activePage === 'transactions' && <AnimatedPage key="transactions"><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>}
@@ -409,7 +407,7 @@ function App() {
           )}
           {activePage === 'receivables' && (
             <AnimatedPage key="receivables">
-              <Receivables receivables={receivables} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} />
+              <Receivables receivables={receivables} assets={assets} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} />
             </AnimatedPage>
           )}
           {activePage === 'insight' && (

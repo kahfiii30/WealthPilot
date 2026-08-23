@@ -13,17 +13,17 @@ function Header({ activePage, onQuickAdd, userProfile, t, onUpgrade }) {
   };
 
   return (
-    <header className="fixed top-0 right-0 left-0 md:left-[240px] z-40 bg-slate-950/35 backdrop-blur-xl border-b border-slate-700/30 h-[72px] flex justify-between items-center px-8">
+    <header className="fixed top-0 right-0 left-0 md:left-[240px] z-40 bg-black/80 backdrop-blur-md border-b border-white/5 h-[72px] flex justify-between items-center px-4 md:px-8">
       {/* Mobile Logo */}
       <div className="md:hidden">
-        <h1 className="text-lg font-black text-slate-100 tracking-tighter">WealthPilot</h1>
+        <h1 className="text-lg font-bold text-white tracking-tight">WealthPilot</h1>
       </div>
 
       {/* Search Container */}
-      <div className="hidden lg:flex items-center gap-3 bg-slate-950/55 px-4 py-2.5 rounded-xl border border-slate-700/40 w-[300px] xl:w-[400px] focus-within:border-emerald-400/70 focus-within:ring-2 focus-within:ring-emerald-400/10 transition-colors duration-200 group">
-        <span className="material-symbols-outlined text-slate-500 group-focus-within:text-emerald-400 transition-colors">search</span>
+      <div className="hidden lg:flex items-center gap-3 bg-white/[0.03] px-4 py-2 rounded-lg border border-white/5 w-[300px] xl:w-[400px] focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-colors duration-200 group">
+        <span className="material-symbols-outlined text-neutral-500 group-focus-within:text-primary transition-colors text-[18px]">search</span>
         <input 
-          className="bg-transparent border-none focus:ring-0 text-sm w-full text-slate-100 placeholder:text-slate-500 outline-none" 
+          className="bg-transparent border-none focus:ring-0 text-sm w-full text-white placeholder:text-neutral-500 outline-none" 
           placeholder={getSearchPlaceholder()} 
           type="text" 
         />
@@ -31,35 +31,35 @@ function Header({ activePage, onQuickAdd, userProfile, t, onUpgrade }) {
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-4">
-          <button className="p-2 text-slate-400 hover:text-emerald-400 transition-colors duration-200 hidden sm:block">
-            <span className="material-symbols-outlined">notifications</span>
+          <button className="p-2 text-neutral-400 hover:text-white transition-colors duration-200 hidden sm:block">
+            <span className="material-symbols-outlined text-[20px]">notifications</span>
           </button>
           
           <button 
             onClick={onQuickAdd} 
-            className="hidden md:block px-4 py-2 text-emerald-400 font-bold hover:bg-emerald-400/10 rounded-xl transition-all duration-200 text-sm"
+            className="hidden md:block px-4 py-2 text-primary font-medium hover:bg-white/5 rounded-lg transition-all duration-200 text-sm"
           >
             {t('addTransaction')}
           </button>
 
           <button 
             onClick={onUpgrade}
-            className="rounded-xl border border-sky-400/20 bg-sky-400/10 px-4 py-2 font-bold text-sky-200 text-sm transition-all duration-200 hover:bg-sky-400/15 hover:border-sky-300/30 hover:scale-[0.98]"
+            className="rounded-lg border border-secondary/20 bg-secondary/10 px-4 py-2 font-semibold text-secondary text-sm transition-all duration-200 hover:bg-secondary/20"
           >
             Upgrade Pro
           </button>
         </div>
         
-        <div className="flex items-center gap-4 border-l border-slate-700/30 pl-6">
+        <div className="flex items-center gap-4 border-l border-white/5 pl-6">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-black text-slate-100 tracking-tight line-clamp-1">
+            <p className="text-sm font-semibold text-white tracking-tight line-clamp-1">
               {[userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(" ") || 'Pilot'}
             </p>
-            <p className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Platinum</p>
+            <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Platinum</p>
           </div>
           <img 
             alt="User Avatar" 
-            className="w-10 h-10 rounded-xl border-2 border-emerald-400/20 object-cover shadow-[0_0_15px_rgba(74,222,128,0.1)]" 
+            className="w-9 h-9 rounded-full object-cover border border-white/10" 
             src={avatarSrc} 
           />
         </div>

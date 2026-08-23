@@ -368,6 +368,7 @@ export const createReceivable = async (userId, payload) => {
     finalUserId = user.id;
   }
 
+  // 1. Create the Receivable record
   const dbPayload = {
     user_id: finalUserId,
     debtor_name: payload.debtorName,
@@ -385,6 +386,39 @@ export const createReceivable = async (userId, payload) => {
     .single();
   
   if (error) throw error;
+
+  // 2. Automate Asset Deduction & Expense Transaction if assetId is provided
+  if (payload.assetId) {
+    // Fetch the asset
+    const { data: assetData, error: assetError } = await supabase
+      .from('assets')
+      .select('*')
+      .eq('id', payload.assetId)
+      .single();
+      
+    if (!assetError && assetData) {
+      // Deduct amount from asset
+      const newAmount = Number(assetData.amount) - Number(payload.amount);
+      await updateAsset(payload.assetId, {
+        name: assetData.name,
+        category: assetData.category,
+        amount: newAmount,
+        note: assetData.note
+      });
+
+      // Create Expense Transaction
+      await createTransaction(finalUserId, {
+        type: 'expense',
+        title: `Piutang: ${payload.debtorName}`,
+        amount: payload.amount,
+        category: 'Piutang',
+        method: assetData.name,
+        date: payload.debtDate || new Date().toISOString().slice(0, 10),
+        note: `Loaned to ${payload.debtorName}`
+      });
+    }
+  }
+
   return normalizeReceivable(data);
 };
 
@@ -418,7 +452,7 @@ export const deleteReceivable = async (id) => {
   if (error) throw error;
 };
 
-export const markReceivablePayment = async (id, currentPaid, paymentAmount) => {
+export const markReceivablePayment = async (id, currentPaid, paymentAmount, assetId = null) => {
   const newPaid = Number(currentPaid) + Number(paymentAmount);
   
   const { data, error } = await supabase
@@ -432,6 +466,38 @@ export const markReceivablePayment = async (id, currentPaid, paymentAmount) => {
     .single();
     
   if (error) throw error;
+
+  // 1. Automate Asset Addition & Income Transaction if assetId is provided
+  if (assetId) {
+    const { data: assetData, error: assetError } = await supabase
+      .from('assets')
+      .select('*')
+      .eq('id', assetId)
+      .single();
+
+    if (!assetError && assetData) {
+      // Add amount to asset
+      const newAssetAmount = Number(assetData.amount) + Number(paymentAmount);
+      await updateAsset(assetId, {
+        name: assetData.name,
+        category: assetData.category,
+        amount: newAssetAmount,
+        note: assetData.note
+      });
+
+      // Create Income Transaction
+      await createTransaction(data.user_id, {
+        type: 'income',
+        title: `Pelunasan Piutang: ${data.debtor_name}`,
+        amount: paymentAmount,
+        category: 'Pelunasan Piutang',
+        method: assetData.name,
+        date: new Date().toISOString().slice(0, 10),
+        note: `Repayment from ${data.debtor_name}`
+      });
+    }
+  }
+
   return normalizeReceivable(data);
 };
 

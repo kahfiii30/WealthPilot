@@ -3,12 +3,12 @@
 @plugin "@tailwindcss/container-queries";
 
 @theme {
-  --color-primary: #4ade80;
-  --color-primary-dark: #22c55e;
-  --color-secondary: #38bdf8;
-  --color-background: #020617;
-  --color-surface: #0f172a;
-  --color-error: #fca5a5;
+  --color-primary: #10b981; /* Keep the emerald accent, it glows well on black */
+  --color-primary-dark: #059669;
+  --color-secondary: #3b82f6;
+  --color-background: #000000; /* Pure Pitch Black */
+  --color-surface: #030303; /* Almost black */
+  --color-error: #ef4444;
   
   --spacing-base: 4px;
   --spacing-gutter: 24px;
@@ -18,11 +18,11 @@
   --spacing-sm: 10px;
   --spacing-xs: 5px;
 
-  --radius-2xl: 1.5rem;
-  --radius-3xl: 2rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
   
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Plus Jakarta Sans', sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
 }
 
 @layer base {
@@ -40,22 +40,26 @@
 
   html {
     scrollbar-gutter: stable;
-    font-size: 87.5%; /* 14px base for desktop to reduce huge sizing */
+    font-size: 90%; 
   }
 
   @media (max-width: 768px) {
     html {
-      font-size: 100%; /* 16px base for mobile for readability */
+      font-size: 100%; 
     }
   }
 
   body {
-    background-color: #020617;
+    background-color: #000000;
+    /* Very subtle glowing orb in the top center, classic Linear style */
+    background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.15), transparent);
+    background-attachment: fixed;
     color: #e5e7eb;
     font-family: 'Inter', sans-serif;
     overflow-x: hidden;
     overflow-y: scroll;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   button,
@@ -73,45 +77,59 @@
 }
 
 @layer utilities {
-  /* Premium Glassmorphism */
+  /* Linear / Vercel Aesthetic */
   .glass-panel {
-    background: rgba(15, 23, 42, 0.65);
-    backdrop-filter: blur(16px) saturate(180%);
-    -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid rgba(148, 163, 184, 0.12);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+    background: #000000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.5);
   }
 
   .glass-card-premium {
-    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.4));
-    backdrop-filter: blur(20px);
-    border: 1px solid rgba(148, 163, 184, 0.08);
-    transition: border-color 0.2s ease-out, background-color 0.2s ease-out, box-shadow 0.2s ease-out;
+    background: linear-gradient(180deg, rgba(24, 24, 27, 0.4) 0%, rgba(24, 24, 27, 0) 100%), #000000;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02) inset, 0 4px 24px -4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Subtle top-edge glow on cards */
+  .glass-card-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   .glass-card-premium:hover {
-    border-color: rgba(74, 222, 128, 0.3);
-    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.6), 0 0 25px rgba(74, 222, 128, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 8px 32px -4px rgba(0, 0, 0, 0.7);
+    transform: translateY(-2px);
   }
 
-  /* Emerald Glow Effects */
-  .glow-emerald {
-    box-shadow: 0 0 20px rgba(74, 222, 128, 0.15), 0 0 40px rgba(74, 222, 128, 0.05);
+  .glass-card-premium:hover::before {
+    opacity: 1;
   }
 
-  .glow-text-emerald {
-    text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+  /* Cool Floating Animation */
+  @keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0px); }
+  }
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
   }
 
-  .glow-border-emerald {
-    border-color: rgba(74, 222, 128, 0.4);
-    box-shadow: 0 0 15px rgba(74, 222, 128, 0.15);
-  }
-
-  /* Custom Scrollbar */
+  /* Custom Scrollbar - Subtler */
   .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 4px;
+    height: 4px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-track {
@@ -119,12 +137,12 @@
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(74, 222, 128, 0.3);
+    background: rgba(255, 255, 255, 0.2);
   }
 
   .no-scrollbar::-webkit-scrollbar {
@@ -135,71 +153,25 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-
-  /* Shimmer Effect */
-  @keyframes shimmer {
-    0% { transform: translateX(-100%); }
-    100% { transform: translateX(100%); }
-  }
-
-  .shimmer-overlay {
-    position: relative;
-    overflow: hidden;
-  }
-
-  .shimmer-overlay::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.03),
-      transparent
-    );
-    animation: shimmer 2s infinite;
-  }
 }
 
 /* Base Component Overrides */
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(1) brightness(1.5);
   cursor: pointer;
+  opacity: 0.5;
 }
 
 select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='rgba(255,255,255,0.4)'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-position: right 1rem center;
   background-repeat: no-repeat;
-  background-size: 1.5em;
+  background-size: 1.2em;
   padding-right: 2.5rem;
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
 }
-
-/* Animations */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.animate-float-premium {
-  animation: float 5s ease-in-out infinite;
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.6; }
-}
-
-.animate-pulse-glow-premium {
-  animation: pulse-glow 4s ease-in-out infinite;
-}
-
 
 /* Global Reset and Mobile Viewport Fixes */
 * {
@@ -212,34 +184,13 @@ body,
   min-height: 100%;
   width: 100%;
   margin: 0;
-  background-color: #0b0f19;
+  background-color: #000000;
 }
 
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-body {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-/* Auth Debug Helper */
-.auth-debug-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  background: #22c55e;
-  color: #000;
-  text-align: center;
-  font-size: 10px;
-  font-weight: bold;
-  z-index: 9999;
-  padding: 2px 0;
-  pointer-events: none;
 }
 
 /* Autofill styling for dark mode */
@@ -249,6 +200,7 @@ input:-webkit-autofill:focus,
 textarea:-webkit-autofill,
 select:-webkit-autofill {
   -webkit-text-fill-color: #e5e7eb;
-  -webkit-box-shadow: 0 0 0px 1000px rgba(2, 6, 23, 0.95) inset;
+  -webkit-box-shadow: 0 0 0px 1000px rgba(15, 15, 15, 1) inset;
   transition: background-color 9999s ease-in-out 0s;
 }
+

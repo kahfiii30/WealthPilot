@@ -347,7 +347,7 @@ function Modal({ isOpen, onClose, title, children, t }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative z-[201] w-full max-w-md max-h-[90vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0a0a0a] p-6 shadow-2xl custom-scrollbar"
+            className="relative z-[201] w-[90vw] max-w-[480px] max-h-[90vh] overflow-y-auto rounded-2xl glass-card-premium p-6 shadow-2xl custom-scrollbar mx-auto my-auto"
           >
             <div className="mb-6 flex items-center justify-between">
               <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>

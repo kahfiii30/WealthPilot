@@ -371,7 +371,7 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
-        className="relative z-[201] w-full max-w-md rounded-2xl border border-white/10 bg-[#0a0a0a] p-8 shadow-2xl"
+        className="relative z-[201] w-[90vw] max-w-md rounded-2xl glass-card-premium p-8 shadow-2xl mx-auto my-auto"
       >
         <div className="mb-8 flex items-start justify-between gap-4">
           <h2 className="text-2xl font-bold text-white tracking-tight">
@@ -459,7 +459,7 @@ function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
-        className="relative z-[151] w-full max-w-lg rounded-2xl border border-white/10 bg-[#0a0a0a] shadow-2xl overflow-hidden"
+        className="relative z-[151] w-[90vw] max-w-lg rounded-2xl glass-card-premium shadow-2xl overflow-hidden mx-auto my-auto"
       >
         <div className="p-6 border-b border-white/5 flex justify-between items-center">
           <h2 className="text-xl font-bold text-white tracking-tight">{t('manageLimits')}</h2>

@@ -705,7 +705,7 @@ function Modal({ isOpen, onClose, title, children }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative z-[201] w-full max-w-2xl rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar"
+            className="relative z-[201] w-[90vw] max-w-2xl rounded-xl glass-card-premium shadow-2xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar mx-auto my-auto"
           >
             <div className="flex justify-between items-center mb-6">
               <div>

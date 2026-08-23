@@ -73,7 +73,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative z-[201] w-full max-w-[480px] max-h-[90vh] overflow-y-auto rounded-xl border border-white/10 bg-[#0a0a0a] shadow-2xl p-6 custom-scrollbar"
+            className="relative z-[201] w-[90vw] max-w-[480px] max-h-[90vh] overflow-y-auto rounded-xl glass-card-premium shadow-2xl p-6 custom-scrollbar mx-auto my-auto"
           >
             <div className="mb-6 flex items-start justify-between gap-4">
               <div>

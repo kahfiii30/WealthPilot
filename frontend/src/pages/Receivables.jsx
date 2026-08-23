@@ -300,7 +300,7 @@ function Modal({ isOpen, onClose, title, children }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 15 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="relative z-[1000] w-full max-w-[560px] min-w-[320px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700/30 bg-slate-900/95 p-8 shadow-2xl backdrop-blur-xl no-scrollbar mx-auto my-auto"
+            className="relative z-[1000] w-[90vw] max-w-[560px] max-h-[90vh] overflow-y-auto rounded-3xl glass-card-premium p-8 shadow-2xl no-scrollbar mx-auto my-auto"
             style={{
                 width: 'calc(100% - 2rem)',
                 maxWidth: '560px',

@@ -377,7 +377,7 @@ function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, err
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} ({t('assets')})</label>
         <input 
           required 
-          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+          className="glass-input h-10 w-full px-3 text-sm" 
           value={formData.name} 
           onChange={e => setFormData({...formData, name: e.target.value})} 
           placeholder="e.g. Bank Account" 
@@ -387,7 +387,7 @@ function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, err
         <div className="space-y-1.5">
           <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('category')}</label>
           <select 
-            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+            className="glass-input h-10 w-full px-3 text-sm appearance-none" 
             value={formData.category} 
             onChange={e => setFormData({...formData, category: e.target.value})}
           >
@@ -399,7 +399,7 @@ function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, err
           <input 
             required 
             type="number" 
-            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+            className="glass-input h-10 w-full px-3 text-sm" 
             value={formData.amount} 
             onChange={e => setFormData({...formData, amount: e.target.value})} 
             placeholder="0" 
@@ -409,15 +409,15 @@ function AssetForm({ initialData, categories, onSave, onCancel, t, isSaving, err
       <div className="space-y-1.5">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} (Optional)</label>
         <textarea 
-          className="block h-24 w-full resize-none rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-white outline-none transition focus:border-primary/50 text-sm custom-scrollbar" 
+          className="glass-input h-24 w-full px-3 py-2 text-sm resize-none custom-scrollbar" 
           value={formData.note} 
           onChange={e => setFormData({...formData, note: e.target.value})} 
           placeholder="Description..." 
         />
       </div>
       <div className="mt-6 flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="h-10 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm">{t('cancel')}</button>
-        <button type="submit" disabled={isSaving} className={`h-10 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50' : ''}`}>
+        <button type="button" onClick={onCancel} className="btn-ghost flex-1 h-10 text-sm">{t('cancel')}</button>
+        <button type="submit" disabled={isSaving} className={`btn-primary flex-1 h-10 text-sm ${isSaving ? 'opacity-50' : ''}`}>
           {isSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined text-[18px]">save</span>}
           {t('save')}
         </button>
@@ -440,7 +440,7 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} ({t('debts')})</label>
         <input 
           required 
-          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+          className="glass-input h-10 w-full px-3 text-sm" 
           value={formData.name} 
           onChange={e => setFormData({...formData, name: e.target.value})} 
           placeholder="e.g. Credit Card" 
@@ -450,7 +450,7 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
         <div className="space-y-1.5">
           <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('category')}</label>
           <select 
-            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+            className="glass-input h-10 w-full px-3 text-sm appearance-none" 
             value={formData.category} 
             onChange={e => setFormData({...formData, category: e.target.value})}
           >
@@ -462,7 +462,7 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
           <input 
             required 
             type="number" 
-            className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm" 
+            className="glass-input h-10 w-full px-3 text-sm" 
             value={formData.amount} 
             onChange={e => setFormData({...formData, amount: e.target.value})} 
             placeholder="0" 
@@ -474,7 +474,7 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
         <input 
           required 
           type="date" 
-          className="block h-10 w-full rounded-lg border border-white/10 bg-white/[0.03] px-3 text-white outline-none transition focus:border-primary/50 text-sm [color-scheme:dark]" 
+          className="glass-input h-10 w-full px-3 text-sm [color-scheme:dark]" 
           value={formData.dueDate} 
           onChange={e => setFormData({...formData, dueDate: e.target.value})} 
         />
@@ -482,15 +482,15 @@ function DebtForm({ initialData, categories, onSave, onCancel, t, isSaving, erro
       <div className="space-y-1.5">
         <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('note')} (Optional)</label>
         <textarea 
-          className="block h-24 w-full resize-none rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-white outline-none transition focus:border-primary/50 text-sm custom-scrollbar" 
+          className="glass-input h-24 w-full px-3 py-2 text-sm resize-none custom-scrollbar" 
           value={formData.note} 
           onChange={e => setFormData({...formData, note: e.target.value})} 
           placeholder="Description..." 
         />
       </div>
       <div className="mt-6 flex gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="h-10 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm">{t('cancel')}</button>
-        <button type="submit" disabled={isSaving} className={`h-10 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50' : ''}`}>
+        <button type="button" onClick={onCancel} className="btn-ghost flex-1 h-10 text-sm">{t('cancel')}</button>
+        <button type="submit" disabled={isSaving} className={`btn-primary flex-1 h-10 text-sm ${isSaving ? 'opacity-50' : ''}`}>
           {isSaving ? <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined text-[18px]">save</span>}
           {t('save')}
         </button>

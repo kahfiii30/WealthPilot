@@ -67,7 +67,7 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
             type="month" 
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(e.target.value)}
-            className="h-11 bg-white/[0.03] border border-white/10 rounded-lg px-4 text-white font-medium outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+            className="glass-input h-11 px-4 cursor-pointer [color-scheme:dark]"
           />
           <div className="relative w-full sm:w-64 lg:w-80 group">
             <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary transition-colors text-[20px]">search</span>
@@ -76,7 +76,7 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
               placeholder="Search transactions..." 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full h-11 bg-white/[0.03] border border-white/10 rounded-lg pl-12 pr-4 text-white placeholder:text-neutral-500 outline-none transition-colors focus:border-primary/50 text-sm"
+              className="glass-input h-11 w-full pl-12 pr-4 text-sm"
             />
           </div>
         </div>

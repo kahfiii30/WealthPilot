@@ -153,11 +153,11 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
             type="month" 
             value={selectedMonth} 
             onChange={(e) => setSelectedMonth(e.target.value)} 
-            className="h-11 bg-white/[0.03] border border-white/10 rounded-lg px-4 text-white font-medium outline-none focus:border-primary/50 transition-colors [color-scheme:dark]"
+            className="glass-input h-11 px-4 cursor-pointer [color-scheme:dark]"
           />
           <button 
             onClick={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} 
-            className="h-11 bg-primary text-black px-6 font-semibold rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
+            className="btn-primary h-11 px-6 text-sm"
           >
             <span className="material-symbols-outlined font-bold text-[20px]">add</span> 
             {t('addBudget')}
@@ -397,7 +397,7 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
             <select 
               value={formData.category} 
               onChange={e => setFormData({...formData, category: e.target.value})}
-              className="block h-11 w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 text-white outline-none transition focus:border-primary/50 text-sm"
+              className="glass-input h-11 w-full px-4 text-sm appearance-none cursor-pointer"
             >
               {categories.map(c => <option key={c} value={c} className="bg-[#0a0a0a]">{c}</option>)}
             </select>
@@ -415,7 +415,7 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
                 value={formData.limit} 
                 onChange={e => setFormData({...formData, limit: e.target.value.replace(/[^\d]/g, '')})} 
                 placeholder="e.g. 1.000.000" 
-                className="block h-11 w-full rounded-lg border border-white/10 bg-white/[0.03] px-4 text-white outline-none transition focus:border-primary/50 text-base font-medium"
+                className="glass-input h-11 w-full px-4 text-base font-medium"
               />
               <div className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-500 font-semibold text-sm">IDR</div>
             </div>
@@ -428,14 +428,14 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
             <button 
               type="button" 
               onClick={onClose} 
-              className="h-11 flex-1 rounded-lg border border-white/10 font-semibold text-white hover:bg-white/[0.05] transition-colors text-sm"
+              className="btn-ghost flex-1 h-11 text-sm"
             >
               {t('cancel')}
             </button>
             <button 
               type="submit" 
               disabled={isSaving}
-              className={`h-11 flex-1 rounded-lg bg-white text-black font-semibold hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 text-sm ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`btn-primary flex-1 h-11 text-sm ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSaving ? (
                 <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>

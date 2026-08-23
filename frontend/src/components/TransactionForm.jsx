@@ -126,7 +126,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                   required
                   value={title} 
                   onChange={(e) => setTitle(e.target.value)} 
-                  className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-4 py-3 text-white placeholder:text-neutral-600 outline-none transition focus:border-primary/50 text-sm" 
+                  className="glass-input px-4 py-3 text-sm w-full" 
                   placeholder={type === 'income' ? "e.g., Salary from OG Store" : "e.g., Food at KFC"} 
                 />
               </div>
@@ -160,7 +160,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                   <select 
                     value={category} 
                     onChange={(e) => setCategory(e.target.value)} 
-                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 appearance-none cursor-pointer text-sm"
+                    className="glass-input px-4 py-3 text-sm w-full appearance-none cursor-pointer"
                   >
                     {type === 'expense' ? (
                       <>
@@ -191,7 +191,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                   <select 
                     value={method} 
                     onChange={(e) => setMethod(e.target.value)} 
-                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 appearance-none cursor-pointer text-sm"
+                    className="glass-input px-4 py-3 text-sm w-full appearance-none cursor-pointer"
                   >
                     {combinedMethods.map(m => (
                       <option key={m} value={m} className="bg-[#0a0a0a]">{m}</option>
@@ -211,7 +211,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     required 
                     value={date} 
                     onChange={(e) => setDate(e.target.value)} 
-                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white outline-none transition focus:border-primary/50 cursor-pointer text-sm" 
+                    className="glass-input px-4 py-3 text-sm w-full cursor-pointer [color-scheme:dark]" 
                   />
                 </div>
                 <div className="w-full space-y-1.5">
@@ -222,7 +222,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                     type="text" 
                     value={note} 
                     onChange={(e) => setNote(e.target.value)} 
-                    className="block w-full rounded-lg border border-white/10 bg-white/[0.02] px-3 py-3 text-white placeholder:text-neutral-600 outline-none transition focus:border-primary/50 text-sm" 
+                    className="glass-input px-4 py-3 text-sm w-full" 
                     placeholder="Brief description..." 
                   />
                 </div>
@@ -232,7 +232,7 @@ function TransactionForm({ isOpen, onClose, onAddTransaction, t, currency, asset
                 <button 
                   type="button" 
                   onClick={onClose} 
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-neutral-400 hover:text-white transition-colors"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-lg text-sm font-semibold text-neutral-400 hover:text-white hover:bg-white/[0.05] transition-colors"
                 >
                   {t('cancel')}
                 </button>

@@ -92,9 +92,9 @@ function Receivables({
         </div>
         <button 
           onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
-          className="bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 px-6 2xl:px-8 h-12 2xl:h-16 rounded-xl font-black flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 hover:scale-[1.02] active:scale-95 transition-all 2xl:text-lg"
+          className="btn-primary h-12 px-6 text-sm"
         >
-          <span className="material-symbols-outlined font-black 2xl:text-2xl">add</span>
+          <span className="material-symbols-outlined font-bold text-[20px]">add</span>
           Add Receivable
         </button>
       </motion.div>
@@ -115,14 +115,14 @@ function Receivables({
             <input 
               type="text" 
               placeholder="Search debtor name..." 
-              className="w-full pl-10 2xl:pl-14 pr-4 2xl:pr-6 h-11 2xl:h-14 bg-slate-950/50 border border-slate-700/30 rounded-xl text-sm 2xl:text-base focus:border-emerald-400/50 outline-none transition-colors font-bold"
+              className="glass-input h-11 w-full pl-10 pr-4 text-sm font-medium"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
           <div className="flex gap-2 2xl:gap-4">
             <select 
-              className="h-11 2xl:h-14 px-4 2xl:px-6 bg-slate-950/50 border border-slate-700/30 rounded-xl text-xs 2xl:text-sm font-black uppercase tracking-widest text-slate-400 focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[140px] 2xl:min-w-[180px]"
+              className="glass-input h-11 px-4 text-xs font-semibold uppercase tracking-wider appearance-none cursor-pointer min-w-[140px]"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
             >
@@ -132,7 +132,7 @@ function Receivables({
               <option value="paid">Paid</option>
             </select>
             <select 
-              className="h-11 2xl:h-14 px-4 2xl:px-6 bg-slate-950/50 border border-slate-700/30 rounded-xl text-xs 2xl:text-sm font-black uppercase tracking-widest text-slate-400 focus:border-emerald-400/50 outline-none transition-colors appearance-none cursor-pointer min-w-[140px] 2xl:min-w-[180px]"
+              className="glass-input h-11 px-4 text-xs font-semibold uppercase tracking-wider appearance-none cursor-pointer min-w-[140px]"
               value={monthFilter}
               onChange={(e) => setMonthFilter(e.target.value)}
             >
@@ -344,13 +344,13 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Debtor Name</label>
         <input 
           required
-          className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all"
-          placeholder="Who borrowed the money?"
+          type="text"
+          className="glass-input h-14 w-full px-5 text-lg font-bold"
+          placeholder="e.g. John Doe"
           value={formData.debtorName}
           onChange={e => setFormData({...formData, debtorName: e.target.value})}
         />
       </div>
-
 
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -359,7 +359,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
           <input 
             required
             type="number"
-            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-black text-lg focus:border-emerald-400/70 outline-none transition-all"
+            className="glass-input h-14 w-full px-5 text-lg font-bold"
             placeholder="0"
             value={formData.amount}
             onChange={e => setFormData({...formData, amount: parseFloat(e.target.value)})}
@@ -369,7 +369,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Initial Paid</label>
           <input 
             type="number"
-            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-black text-lg focus:border-emerald-400/70 outline-none transition-all"
+            className="glass-input h-14 w-full px-5 text-lg font-bold"
             placeholder="0"
             value={formData.paidAmount}
             onChange={e => setFormData({...formData, paidAmount: parseFloat(e.target.value)})}
@@ -383,7 +383,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
           <input 
             required
             type="date"
-            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all [color-scheme:dark]"
+            className="glass-input h-14 w-full px-5 font-bold [color-scheme:dark]"
             value={formData.debtDate}
             onChange={e => setFormData({...formData, debtDate: e.target.value})}
           />
@@ -392,7 +392,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
           <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Due Date (Optional)</label>
           <input 
             type="date"
-            className="w-full h-14 px-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 font-bold focus:border-emerald-400/70 outline-none transition-all [color-scheme:dark]"
+            className="glass-input h-14 w-full px-5 font-bold [color-scheme:dark]"
             value={formData.dueDate}
             onChange={e => setFormData({...formData, dueDate: e.target.value})}
           />
@@ -402,7 +402,7 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
       <div className="space-y-2">
         <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Notes</label>
         <textarea 
-          className="w-full min-h-[100px] p-5 bg-slate-950/70 border border-slate-700/50 rounded-xl text-slate-100 text-sm focus:border-emerald-400/70 outline-none resize-none transition-all"
+          className="glass-input min-h-[100px] w-full p-5 text-sm resize-none custom-scrollbar"
           placeholder="Extra details..."
           value={formData.notes}
           onChange={e => setFormData({...formData, notes: e.target.value})}
@@ -410,13 +410,13 @@ function ReceivableForm({ initialData, assets = [], onSave, onCancel, isSaving, 
       </div>
 
       <div className="flex flex-col-reverse sm:flex-row gap-4 pt-4">
-        <button type="button" onClick={onCancel} className="flex-1 h-14 rounded-xl border border-slate-700/50 font-bold text-slate-400 hover:bg-slate-800 transition-all">Cancel</button>
+        <button type="button" onClick={onCancel} className="btn-ghost flex-1 h-14 text-sm">Cancel</button>
         <button 
           type="submit" 
           disabled={isSaving}
-          className="flex-[2] h-14 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 text-slate-950 font-black shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+          className={`btn-primary flex-[2] h-14 text-sm ${isSaving ? 'opacity-50' : ''}`}
         >
-          {isSaving ? <div className="w-6 h-6 border-2 border-slate-950 border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined font-bold text-[22px]">save</span>}
+          {isSaving ? <div className="w-6 h-6 border-2 border-black border-t-transparent rounded-full animate-spin"></div> : <span className="material-symbols-outlined font-bold text-[22px]">save</span>}
           {initialData ? 'Update' : 'Save'} Receivable
         </button>
       </div>

@@ -461,7 +461,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         </div>
 
         {/* Goal Tracker Card */}
-        <div className="col-span-1 md:col-span-12 rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-10">
+        <div className="col-span-1 md:col-span-12 glass-card-premium rounded-3xl p-6 lg:p-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
             <div>
               <h3 className="text-2xl font-bold text-white tracking-tight">Strategic Goal Tracker</h3>
@@ -519,7 +519,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         </div>
 
         {/* Capital Accumulation Trend */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-8 rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-10 flex flex-col justify-between">
+        <div className="col-span-1 lg:col-span-6 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col justify-center">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
             <h3 className="text-2xl font-bold text-white tracking-tight">Monthly Flow Analysis</h3>
             <div className="flex gap-6">

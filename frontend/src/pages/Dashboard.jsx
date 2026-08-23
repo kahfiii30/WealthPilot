@@ -7,386 +7,346 @@ import CategoryChart from '../components/CategoryChart';
 import { getMonthKey } from '../services/financeService';
 import { exportToCSV, exportToPDF } from '../utils/export';
 
+// ─── Category config ────────────────────────────────────────────────────────
+const CATEGORIES = [
+  { name: 'Food & Dining',  icon: 'restaurant',     gradient: 'from-emerald-500 to-teal-500',    bar: 'bg-gradient-to-r from-emerald-500 to-teal-400' },
+  { name: 'Trading',        icon: 'show_chart',      gradient: 'from-blue-500 to-indigo-500',      bar: 'bg-gradient-to-r from-blue-500 to-indigo-400' },
+  { name: 'Kebutuhan',      icon: 'shopping_bag',    gradient: 'from-orange-400 to-amber-500',    bar: 'bg-gradient-to-r from-orange-400 to-amber-400' },
+  { name: 'Transportasi',   icon: 'directions_car',  gradient: 'from-yellow-400 to-orange-400',   bar: 'bg-gradient-to-r from-yellow-400 to-orange-300' },
+  { name: 'Investasi',      icon: 'trending_up',     gradient: 'from-purple-500 to-violet-500',   bar: 'bg-gradient-to-r from-purple-500 to-violet-400' },
+  { name: 'Lainnya',        icon: 'more_horiz',      gradient: 'from-slate-500 to-slate-400',     bar: 'bg-gradient-to-r from-slate-500 to-slate-400' },
+];
+
+// ─── Animation variants ──────────────────────────────────────────────────────
+const container = {
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
+};
+
+// ─── Main Component ──────────────────────────────────────────────────────────
 function Dashboard({ transactions, assets = [], debts = [], receivables = [], onDeleteTransaction, t, fm, userProfile, selectedMonth, setSelectedMonth }) {
-  const displayName = [userProfile?.firstName, userProfile?.lastName]
-    .filter(Boolean)
-    .join(" ")
-    .trim() || "Pilot";
+  const displayName = [userProfile?.firstName, userProfile?.lastName].filter(Boolean).join(" ").trim() || "Pilot";
 
-  // 1. Filter transactions by selected month
-  const filteredTransactions = useMemo(() => {
-    return transactions.filter((transaction) => {
-      if (!transaction.date) return false;
-      const transactionMonth = getMonthKey(transaction.date);
-      return transactionMonth === selectedMonth;
-    });
-  }, [transactions, selectedMonth]);
+  // Filtered transactions
+  const filteredTransactions = useMemo(() =>
+    transactions.filter(tx => tx.date && getMonthKey(tx.date) === selectedMonth),
+    [transactions, selectedMonth]
+  );
 
-  // 2. Metrics for selected month
+  // Monthly metrics
   const { totalIncome, totalExpense, savings, savingsRate } = useMemo(() => {
-    const income = filteredTransactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-    const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    const income  = filteredTransactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+    const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
     const sav = income - expense;
     const rate = income > 0 ? ((sav / income) * 100).toFixed(1) : 0;
     return { totalIncome: income, totalExpense: expense, savings: sav, savingsRate: rate };
   }, [filteredTransactions]);
-  
-  const totalAssets = useMemo(() => assets.reduce((acc, a) => acc + a.amount, 0), [assets]);
-  const totalDebts = useMemo(() => debts.reduce((acc, d) => acc + d.amount, 0), [debts]);
 
-  // Receivables Metrics
-  const { totalReceivablesActive, outstandingReceivables, paidThisMonth } = useMemo(() => {
+  const totalAssets = useMemo(() => assets.reduce((a, x) => a + x.amount, 0), [assets]);
+  const totalDebts  = useMemo(() => debts.reduce((a, d) => a + d.amount, 0), [debts]);
+
+  const { outstandingReceivables } = useMemo(() => {
     const active = (receivables || []).filter(r => r.status !== 'paid');
-    const totalActive = active.reduce((acc, r) => acc + r.amount, 0);
-    const outstanding = active.reduce((acc, r) => acc + r.remainingAmount, 0);
-    const paid = (receivables || []).reduce((acc, r) => {
-      const isPaidThisMonth = r.status === 'paid' && getMonthKey(r.updatedAt) === selectedMonth;
-      return isPaidThisMonth ? acc + r.paidAmount : acc;
-    }, 0);
-    return { totalReceivablesActive: totalActive, outstandingReceivables: outstanding, paidThisMonth: paid };
-  }, [receivables, selectedMonth]);
+    return { outstandingReceivables: active.reduce((a, r) => a + r.remainingAmount, 0) };
+  }, [receivables]);
 
   const { cashBalance, netWorth } = useMemo(() => {
-    const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
-    const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+    const income  = transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
+    const expense = transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
     const cash = income - expense;
     const net = cash + totalAssets + outstandingReceivables - totalDebts;
     return { cashBalance: cash, netWorth: net };
   }, [transactions, totalAssets, totalDebts, outstandingReceivables]);
 
-  // Account Balances Calculation
-  const accountBalances = useMemo(() => {
-    const balances = {};
-    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
-    
-    // Initialize with assets
-    assets.forEach(a => {
-      const key = a.name.toUpperCase();
-      balances[key] = { name: a.name, amount: a.amount, category: a.category };
-    });
+  // Spending breakdown
+  const expensesByCategory = useMemo(() => {
+    return CATEGORIES.map(cat => {
+      const amount = filteredTransactions
+        .filter(t => t.type === 'expense' && t.category === cat.name)
+        .reduce((sum, t) => sum + t.amount, 0);
+      return { ...cat, amount };
+    }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
+  }, [filteredTransactions]);
 
-    // Ensure core methods exist
-    coreMethods.forEach(m => {
-      const key = m.toUpperCase();
-      if (!balances[key]) {
-        balances[key] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
-      }
-    });
-
-    // Process all transactions
-    transactions.forEach(t => {
-      let method = (t.method || '').trim();
-      const upperMethod = method.toUpperCase();
-      
-      // Map empty, -, 0, Bank Transfer to 'Cash'
-      if (!method || upperMethod === '-' || upperMethod === '0' || upperMethod === 'BANK TRANSFER') {
-        method = 'Cash';
-      }
-      
-      const key = method.toUpperCase();
-      if (!balances[key]) {
-        balances[key] = { name: method, amount: 0, category: 'Other' };
-      }
-      if (t.type === 'income') {
-        balances[key].amount += t.amount;
-      } else if (t.type === 'expense') {
-        balances[key].amount -= t.amount;
-      }
-    });
-
-    return Object.values(balances)
-      .filter(b => {
-        // Keep core methods
-        if (coreMethods.some(m => m.toUpperCase() === b.name.toUpperCase())) return true;
-        // Explicitly hide assets from the wallets view to prevent double-counting
-        if (assets.some(a => a.name.toUpperCase() === b.name.toUpperCase())) return false;
-        // Hide others if amount is 0 or if it's a weird artifact
-        if (b.amount === 0) return false;
-        if (b.name === '-' || b.name === '0') return false;
-        return true;
-      })
-      .sort((a, b) => b.amount - a.amount);
-  }, [transactions, assets]);
-
-  const totalAccountBalance = useMemo(() => accountBalances.reduce((acc, a) => acc + a.amount, 0), [accountBalances]);
-
-  const [isReportOpen, setIsReportOpen] = useState(false);
-
-  // 3. Monthly History (from ALL transactions)
+  // Monthly history
   const monthlySummaryList = useMemo(() => {
-    const summary = transactions.reduce((acc, transaction) => {
-      if (!transaction.date) return acc;
-      const month = getMonthKey(transaction.date);
-      if (!acc[month]) {
-        acc[month] = { month, income: 0, expense: 0, balance: 0 };
-      }
-      const amount = Number(transaction.amount) || 0;
-      if (transaction.type === "income") acc[month].income += amount;
-      if (transaction.type === "expense") acc[month].expense += amount;
+    const summary = transactions.reduce((acc, tx) => {
+      if (!tx.date) return acc;
+      const month = getMonthKey(tx.date);
+      if (!acc[month]) acc[month] = { month, income: 0, expense: 0, balance: 0 };
+      const amt = Number(tx.amount) || 0;
+      if (tx.type === 'income')  acc[month].income  += amt;
+      if (tx.type === 'expense') acc[month].expense += amt;
       acc[month].balance = acc[month].income - acc[month].expense;
       return acc;
     }, {});
     return Object.values(summary).sort((a, b) => b.month.localeCompare(a.month));
   }, [transactions]);
 
-  // Spending Breakdown Categories
-  const categories = useMemo(() => [
-    { name: 'Food & Dining', icon: 'restaurant', color: 'bg-emerald-400', text: 'text-emerald-400' },
-    { name: 'Trading', icon: 'show_chart', color: 'bg-blue-500', text: 'text-blue-500' },
-    { name: 'Kebutuhan', icon: 'shopping_bag', color: 'bg-orange-400', text: 'text-orange-400' },
-    { name: 'Transportasi', icon: 'directions_car', color: 'bg-yellow-500', text: 'text-yellow-500' },
-    { name: 'Investasi', icon: 'trending_up', color: 'bg-purple-500', text: 'text-purple-500' },
-    { name: 'Lainnya', icon: 'more_horiz', color: 'bg-slate-500', text: 'text-slate-500' },
-  ], []);
-
-  const expensesByCategory = useMemo(() => {
-    if (!filteredTransactions) return [];
-    
-    return categories.map(cat => {
-      const amount = filteredTransactions
-        .filter(t => t.type === 'expense' && t.category === cat.name)
-        .reduce((sum, t) => sum + t.amount, 0);
-      
-      return {
-        category: cat.name,
-        icon: cat.icon,
-        amount: amount,
-      };
-    }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
-  }, [filteredTransactions, categories]);
-
-  const container = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 10 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } }
-  };
+  const [isReportOpen, setIsReportOpen] = useState(false);
+  const incomeRatio = totalIncome > 0 ? Math.max(0, 100 - (totalExpense / totalIncome) * 100) : 0;
+  const expenseRatio = totalIncome > 0 ? Math.min(100, (totalExpense / totalIncome) * 100) : 100;
 
   return (
-    <motion.div 
-      variants={container}
-      initial="hidden"
-      animate="show"
-      className="p-4 md:p-8"
-    >
-      {/* Welcome Header */}
-      <motion.section variants={item} className="mb-6 md:mb-8 2xl:mb-12 flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
-        <div className="flex flex-col gap-1 2xl:gap-2">
-          <h2 className="text-3xl 2xl:text-4xl font-semibold text-white tracking-tight">
-            {t('welcome')}, {displayName}.
+    <motion.div variants={container} initial="hidden" animate="show" className="p-4 md:p-7 2xl:p-10">
+
+      {/* ── Welcome Header ─────────────────────────────────────────── */}
+      <motion.section variants={item} className="mb-7 md:mb-9 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-2">
+            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+          </p>
+          <h2 className="text-3xl 2xl:text-4xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+            {t('welcome')}, <span className="text-gradient-emerald">{displayName}</span>.
           </h2>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-            <p className="text-sm 2xl:text-base font-medium text-neutral-400 tracking-tight">{t('healthStatus')}</p>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
+            <p className="text-sm font-medium text-slate-400">{t('healthStatus')}</p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button 
+        <div className="flex items-center gap-3">
+          <button
             onClick={() => setIsReportOpen(true)}
-            className="h-10 px-5 bg-white/[0.03] border border-white/10 rounded-lg text-white font-medium text-sm hover:bg-white/[0.06] transition-all flex items-center gap-2"
+            className="btn-ghost h-10 px-4 rounded-xl text-sm"
           >
-            <span className="material-symbols-outlined text-primary text-[18px]">analytics</span>
+            <span className="material-symbols-outlined text-emerald-400 text-[17px]">analytics</span>
             Report
           </button>
           <div className="flex flex-col gap-1">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-neutral-500 ml-1">Period</label>
-            <input 
-              type="month" 
+            <label className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-600 ml-1">Period</label>
+            <input
+              type="month"
               value={selectedMonth}
-              onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2 text-white font-medium outline-none focus:border-primary/50 transition-colors [color-scheme:dark] h-10"
+              onChange={e => setSelectedMonth(e.target.value)}
+              className="glass-input h-10 px-4 text-sm font-semibold rounded-xl [color-scheme:dark] cursor-pointer min-w-[160px]"
             />
           </div>
         </div>
       </motion.section>
 
-      {/* Primary Metrics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 2xl:gap-8 mb-6 md:mb-8 2xl:mb-12">
-        {/* Total Net Worth Card */}
-        <motion.div variants={item} className="rounded-2xl glass-card-premium p-6 md:p-8 flex flex-col min-w-0">
-          <div className="flex justify-between items-start mb-6 min-w-0">
-            <div className="min-w-0 w-full overflow-hidden">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 truncate block">{t('totalNetWorth')}</span>
-              <p className="text-4xl 2xl:text-5xl font-bold text-white tracking-tight mt-2 truncate">{fm(netWorth)}</p>
-            </div>
-            <div className="p-2.5 rounded-lg bg-primary/10 border border-primary/20 text-primary">
-              <span className="material-symbols-outlined font-medium">account_balance_wallet</span>
-            </div>
-          </div>
+      {/* ── Primary Metrics Row ─────────────────────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-6">
 
-          <div className="mt-auto space-y-3 pt-6 border-t border-white/5">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-neutral-400">Cash Balance</span>
-              <span className="font-medium text-white">{fm(cashBalance)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-neutral-400">Assets</span>
-              <span className="text-primary font-medium">+ {fm(totalAssets)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-neutral-400">Receivables</span>
-              <span className="text-primary font-medium">+ {fm(outstandingReceivables)}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-neutral-400">Debts</span>
-              <span className="text-red-400 font-medium">- {fm(totalDebts)}</span>
-            </div>
-          </div>
+        {/* Net Worth Card */}
+        <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 flex flex-col min-w-0 relative overflow-hidden">
+          {/* Ambient glow blob */}
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-emerald-500/8 blur-3xl pointer-events-none" />
 
-          <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/5 pt-6">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1 truncate block">{t('savingsRate')}</p>
-              <p className="text-2xl font-bold text-white tracking-tight truncate">{savingsRate}%</p>
-            </div>
+          <div className="flex justify-between items-start mb-5 min-w-0 relative z-10">
             <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-1 truncate block">Monthly Savings</p>
-              <p className={`text-2xl font-bold tracking-tight truncate ${savings >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(savings)}</p>
+              <span className="text-label mb-2 block">
+                {t('totalNetWorth')}
+              </span>
+              <p className="text-4xl 2xl:text-5xl font-bold tracking-tight mt-1 truncate text-gradient-silver" style={{ fontFamily: 'Syne, sans-serif' }}>
+                {fm(netWorth)}
+              </p>
+            </div>
+            <div className="p-2.5 rounded-xl bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 shrink-0 glow-emerald-sm">
+              <span className="material-symbols-outlined font-medium" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
+            </div>
+          </div>
+
+          {/* Breakdown rows */}
+          <div className="space-y-2.5 border-t border-white/5 pt-5 relative z-10">
+            {[
+              { label: 'Cash Balance',  val: fm(cashBalance),            color: 'text-slate-200' },
+              { label: 'Assets',        val: `+${fm(totalAssets)}`,       color: 'text-emerald-400' },
+              { label: 'Receivables',   val: `+${fm(outstandingReceivables)}`, color: 'text-cyan-400' },
+              { label: 'Debts',         val: `−${fm(totalDebts)}`,        color: 'text-red-400' },
+            ].map(row => (
+              <div key={row.label} className="flex justify-between items-center text-sm">
+                <span className="text-slate-500 font-medium">{row.label}</span>
+                <span className={`font-bold tracking-tight ${row.color}`}>{row.val}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom metrics */}
+          <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/5 pt-5 relative z-10">
+            <div className="gradient-border-card p-3 rounded-xl">
+              <p className="text-label mb-1">Savings Rate</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{savingsRate}%</p>
+            </div>
+            <div className="gradient-border-card p-3 rounded-xl">
+              <p className="text-label mb-1">Monthly Savings</p>
+              <p className={`text-2xl font-bold tracking-tight ${savings >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fm(savings)}</p>
             </div>
           </div>
         </motion.div>
 
         {/* Cashflow Card */}
-        <motion.div variants={item} className="rounded-2xl glass-card-premium p-6 md:p-8 flex flex-col">
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-white tracking-tight mb-1">{t('cashflowOverview')}</h3>
-            <p className="text-sm text-neutral-400">Income vs expenses</p>
+        <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 flex flex-col relative overflow-hidden">
+          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-indigo-500/6 blur-3xl pointer-events-none" />
+
+          <div className="mb-5 relative z-10">
+            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>{t('cashflowOverview')}</h3>
+            <p className="text-sm text-slate-500 mt-0.5 font-medium">Income vs expenses this period</p>
           </div>
-          
-          <div className="grid grid-cols-2 gap-6 my-auto border-white/5 border-y py-6 mb-6">
-            <StatCard title={t('totalIncome')} amount={fm(totalIncome)} icon="south_west" isError={false} />
-            <StatCard title={t('totalExpense')} amount={fm(totalExpense)} icon="north_east" isError={true} />
+
+          <div className="grid grid-cols-2 gap-5 border-y border-white/5 py-5 my-auto relative z-10">
+            <StatCard title={t('totalIncome')}  amount={fm(totalIncome)}  icon="south_west" isError={false} />
+            <StatCard title={t('totalExpense')} amount={fm(totalExpense)} icon="north_east"  isError={true} />
           </div>
-          
-          <div>
-            <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2">
-              <span className="truncate mr-4">{t('totalIncome')} {fm(totalIncome)}</span>
-              <span className="truncate">{t('totalExpense')} {fm(totalExpense)}</span>
+
+          {/* Premium ratio bar */}
+          <div className="relative z-10 mt-5">
+            <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.12em] text-slate-600 mb-2">
+              <span>Income {fm(totalIncome)}</span>
+              <span>Expense {fm(totalExpense)}</span>
             </div>
-            <div className="w-full h-3 bg-white/[0.03] rounded-full overflow-hidden flex mb-6">
-              {totalIncome > 0 ? (
-                <>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(0, 100 - (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }} className="h-full bg-primary"></motion.div>
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(100, (totalExpense / totalIncome) * 100)}%` }} transition={{ duration: 1, ease: [0.22, 1, 0.36, 1], delay: 0.2 }} className="h-full bg-red-500"></motion.div>
-                </>
-              ) : (
-                <div className="h-full bg-red-500/20 w-full"></div>
-              )}
+            <div className="w-full h-2.5 bg-white/[0.04] rounded-full overflow-hidden flex gap-0.5">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${incomeRatio}%` }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full"
+              />
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${expenseRatio}%` }}
+                transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.1 }}
+                className="h-full bg-gradient-to-r from-red-500 to-rose-400 rounded-full"
+              />
             </div>
-            
-            <div className="mt-4 pt-4 border-t border-white/5">
-              <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-3">6-Month Trend</h4>
-              <CashflowChart transactions={transactions} />
-            </div>
+          </div>
+
+          <div className="mt-5 pt-5 border-t border-white/5 relative z-10">
+            <h4 className="text-label mb-3">6-Month Trend</h4>
+            <CashflowChart transactions={transactions} />
           </div>
         </motion.div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 2xl:gap-8 mb-6 md:mb-8 2xl:mb-12">
-        {/* Wallets & Accounts */}
-        <motion.div variants={item} className="rounded-2xl glass-card-premium p-6 md:p-8 lg:col-span-2">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-white tracking-tight">Wallets & Accounts</h3>
-            <button className="text-primary hover:text-primary-dark transition-colors text-sm font-medium">View All</button>
+      {/* ── Wallets & Accounts ─────────────────────────────────────── */}
+      <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 mb-6 relative overflow-hidden">
+        <div className="absolute -top-16 right-8 w-48 h-48 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+
+        <div className="flex justify-between items-center mb-6 relative z-10">
+          <div>
+            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Wallets & Accounts</h3>
+            <p className="text-sm text-slate-500 font-medium mt-0.5">Your asset portfolio</p>
           </div>
-          <div className="space-y-3">
-            {assets.slice(0,4).map((asset) => (
-              <div key={asset.id} className="flex items-center justify-between p-4 rounded-lg bg-white/[0.02] border border-white/5 hover:bg-white/[0.04] transition-colors min-w-0">
-                <div className="flex items-center gap-4 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-white/[0.05] border border-white/10 flex items-center justify-center shrink-0">
-                    <span className="material-symbols-outlined text-white text-[20px]">account_balance</span>
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-white truncate">{asset.name}</p>
-                    <p className="text-[11px] font-medium text-neutral-500 uppercase tracking-wider truncate">{asset.type}</p>
-                  </div>
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 bg-white/3 border border-white/6 px-2.5 py-1 rounded-lg">
+            {assets.length} accounts
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative z-10">
+          {assets.slice(0, 4).map((asset, idx) => {
+            const colors = [
+              { ring: 'ring-emerald-400/20', icon: 'text-emerald-400', bg: 'bg-emerald-400/10' },
+              { ring: 'ring-blue-400/20',    icon: 'text-blue-400',    bg: 'bg-blue-400/10' },
+              { ring: 'ring-purple-400/20',  icon: 'text-purple-400',  bg: 'bg-purple-400/10' },
+              { ring: 'ring-amber-400/20',   icon: 'text-amber-400',   bg: 'bg-amber-400/10' },
+            ];
+            const c = colors[idx % colors.length];
+            return (
+              <div key={asset.id}
+                className="flex items-center gap-3.5 p-4 rounded-xl bg-white/[0.025] border border-white/[0.06] hover:bg-white/[0.045] hover:border-white/10 transition-all duration-200 cursor-default group"
+              >
+                <div className={`w-10 h-10 rounded-xl ${c.bg} border ${c.ring} ring-1 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-200`}>
+                  <span className={`material-symbols-outlined text-[18px] ${c.icon}`} style={{ fontVariationSettings: "'FILL' 1" }}>account_balance</span>
                 </div>
-                <p className="font-bold text-white shrink-0 ml-4">{fm(asset.value)}</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-slate-100 text-sm truncate">{asset.name}</p>
+                  <p className="text-[10px] font-black uppercase tracking-wider text-slate-600 truncate">{asset.type || asset.category}</p>
+                  <p className="font-bold text-white text-sm mt-0.5">{fm(asset.amount)}</p>
+                </div>
               </div>
-            ))}
-            {assets.length === 0 && (
-              <div className="text-center py-8 text-neutral-500 text-sm">
-                No accounts added yet.
-              </div>
-            )}
-          </div>
-        </motion.div>
+            );
+          })}
+          {assets.length === 0 && (
+            <div className="col-span-full py-10 text-center text-slate-600 text-sm font-medium">
+              No accounts added yet.
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* ── Bottom Grid: Spending + Transactions ───────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
 
         {/* Spending Breakdown */}
-        <motion.div variants={item} className="rounded-xl border border-white/5 bg-white/[0.02] p-5 md:p-8 flex flex-col min-w-0">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-white tracking-tight">{t('spendingBreakdown')}</h3>
+        <motion.div variants={item} className="lg:col-span-4 glass-card-premium rounded-2xl p-6 flex flex-col">
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="text-lg font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>{t('spendingBreakdown')}</h3>
+            <span className="text-[10px] text-slate-600 font-black uppercase tracking-wider">{selectedMonth}</span>
           </div>
-          
-          <div className="flex-1 flex flex-col justify-center">
+
+          <div className="flex-1">
             {expensesByCategory.length > 0 ? (
               <div className="space-y-4">
-                {expensesByCategory.map((cat, index) => (
-                  <div key={index} className="min-w-0">
-                    <div className="flex justify-between text-sm mb-1.5 min-w-0">
-                      <span className="font-medium text-white flex items-center gap-2 truncate pr-2">
-                        <span className="material-symbols-outlined text-[16px] text-neutral-400">{cat.icon}</span>
-                        {cat.category}
-                      </span>
-                      <span className="font-medium text-white shrink-0">{fm(cat.amount)}</span>
+                {expensesByCategory.map((cat, index) => {
+                  const pct = totalExpense > 0 ? Math.min(100, (cat.amount / totalExpense) * 100) : 0;
+                  return (
+                    <div key={index}>
+                      <div className="flex justify-between items-center text-sm mb-1.5">
+                        <span className="font-semibold text-slate-300 flex items-center gap-2">
+                          <span className={`w-6 h-6 rounded-lg bg-gradient-to-br ${cat.gradient} flex items-center justify-center shrink-0`}>
+                            <span className="material-symbols-outlined text-[12px] text-white">{cat.icon}</span>
+                          </span>
+                          {cat.name}
+                        </span>
+                        <span className="font-bold text-white">{fm(cat.amount)}</span>
+                      </div>
+                      <div className="w-full bg-white/[0.04] rounded-full h-1.5 overflow-hidden">
+                        <motion.div
+                          initial={{ width: 0 }}
+                          animate={{ width: `${pct}%` }}
+                          transition={{ duration: 0.9, delay: 0.08 * index, ease: [0.22, 1, 0.36, 1] }}
+                          className={`h-full rounded-full ${cat.bar}`}
+                        />
+                      </div>
+                      <p className="text-[10px] text-slate-600 mt-0.5 text-right">{pct.toFixed(1)}%</p>
                     </div>
-                    <div className="w-full bg-white/[0.03] rounded-full h-2 overflow-hidden border border-white/5">
-                      <motion.div 
-                        initial={{ width: 0 }} 
-                        animate={{ width: `${Math.min(100, (cat.amount / totalExpense) * 100)}%` }} 
-                        transition={{ duration: 1, delay: 0.1 * index }}
-                        className="bg-primary h-2 rounded-full"
-                      ></motion.div>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
-              <div className="h-full flex flex-col items-center justify-center text-neutral-500 space-y-3 py-8">
+              <div className="h-full flex flex-col items-center justify-center text-slate-600 space-y-3 py-10">
                 <span className="material-symbols-outlined text-[48px] opacity-20">receipt_long</span>
-                <p className="text-sm">No expenses this month.</p>
+                <p className="text-sm font-medium">No expenses this month.</p>
               </div>
             )}
           </div>
         </motion.div>
-      </div>
 
-      {/* Bento Grid: Transactions */}
-      <div className="grid grid-cols-12 gap-4 md:gap-8 2xl:gap-12">
-        <motion.div variants={item} className="col-span-12 lg:col-span-8">
+        {/* Recent Transactions */}
+        <motion.div variants={item} className="lg:col-span-8">
           <RecentTransactions transactions={filteredTransactions} onDelete={onDeleteTransaction} t={t} fm={fm} />
         </motion.div>
       </div>
 
-      <motion.section variants={item} className="mt-12">
-        <h3 className="text-xl font-bold text-white tracking-tight mb-6 flex items-center gap-3">
-          <span className="material-symbols-outlined text-neutral-400">history</span>
-          Monthly History
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ── Monthly History ────────────────────────────────────────── */}
+      <motion.section variants={item} className="mt-4">
+        <div className="flex items-center gap-3 mb-5">
+          <span className="material-symbols-outlined text-slate-600" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
+          <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Monthly History</h3>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {monthlySummaryList.map((summary) => (
-            <div key={summary.month} className="rounded-2xl glass-card-premium p-6 group">
-              <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-4">{summary.month}</p>
-              <div className="space-y-3">
+            <div key={summary.month} className="glass-card-premium rounded-xl p-5 group relative overflow-hidden">
+              {/* Subtle background blob */}
+              <div className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${summary.balance >= 0 ? 'bg-emerald-500/15' : 'bg-red-500/15'}`} />
+
+              <p className="text-label mb-4 relative z-10">{summary.month}</p>
+              <div className="space-y-2.5 relative z-10">
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-neutral-400">Income</span>
-                  <span className="text-sm font-semibold text-white tracking-tight">{fm(summary.income)}</span>
+                  <span className="text-sm font-medium text-slate-500">Income</span>
+                  <span className="text-sm font-bold text-emerald-400">{fm(summary.income)}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-neutral-400">Expense</span>
-                  <span className="text-sm font-semibold text-white tracking-tight">{fm(summary.expense)}</span>
+                  <span className="text-sm font-medium text-slate-500">Expense</span>
+                  <span className="text-sm font-bold text-red-400">{fm(summary.expense)}</span>
                 </div>
-                <div className="pt-3 border-t border-white/5 flex justify-between items-center">
-                  <span className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Balance</span>
-                  <span className={`text-sm font-bold tracking-tight ${summary.balance >= 0 ? 'text-primary' : 'text-red-400'}`}>
+                <div className="pt-2.5 border-t border-white/5 flex justify-between items-center">
+                  <span className="text-label">Balance</span>
+                  <span className={`text-sm font-bold tracking-tight ${summary.balance >= 0 ? 'text-white' : 'text-red-400'}`}>
                     {fm(summary.balance)}
                   </span>
                 </div>
@@ -394,25 +354,18 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             </div>
           ))}
           {monthlySummaryList.length === 0 && (
-            <div className="col-span-full py-12 text-center rounded-xl border border-dashed border-white/10 text-neutral-500 font-semibold uppercase tracking-wider text-[11px]">
+            <div className="col-span-full py-14 text-center rounded-xl border border-dashed border-white/8 text-slate-600 font-semibold uppercase tracking-wider text-[11px]">
               No historical data available
             </div>
           )}
         </div>
       </motion.section>
-      <ReportModal 
-        isOpen={isReportOpen} 
-        onClose={() => setIsReportOpen(false)} 
-        data={{
-          income: totalIncome,
-          expense: totalExpense,
-          cashflow: savings,
-          cashBalance,
-          assets: totalAssets,
-          debts: totalDebts,
-          receivables: outstandingReceivables,
-          savingsRate
-        }}
+
+      {/* ── Report Modal ───────────────────────────────────────────── */}
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        data={{ income: totalIncome, expense: totalExpense, cashflow: savings, cashBalance, assets: totalAssets, debts: totalDebts, receivables: outstandingReceivables, savingsRate }}
         fm={fm}
         month={selectedMonth}
         transactions={filteredTransactions}
@@ -421,65 +374,81 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
   );
 }
 
+// ─── Report Modal ────────────────────────────────────────────────────────────
 function ReportModal({ isOpen, onClose, data, fm, month, transactions }) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="absolute inset-0" onClick={onClose}></div>
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-md p-4">
+      <div className="absolute inset-0" onClick={onClose} />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
-        className="relative z-10 w-full max-w-2xl glass-card-premium rounded-3xl p-8 overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
+        transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+        className="relative z-10 w-full max-w-2xl glass-card-premium rounded-3xl p-8 max-h-[88vh] overflow-y-auto no-scrollbar"
       >
+        {/* Top hairline */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent rounded-t-3xl" />
+
         <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">Monthly Report</h2>
-            <p className="text-neutral-500 font-semibold uppercase tracking-wider text-[11px] mt-1">{month}</p>
+            <h2 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Monthly Report</h2>
+            <p className="text-label mt-1">{month}</p>
           </div>
-          <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
             <span className="material-symbols-outlined font-medium">close</span>
           </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-8 mb-10">
-          <div className="space-y-6">
-            <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-l-2 border-primary pl-3">Cashflow Analysis</h4>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center"><span className="text-neutral-400 text-sm">Total Income</span><span className="text-white font-medium">{fm(data.income)}</span></div>
-              <div className="flex justify-between items-center"><span className="text-neutral-400 text-sm">Total Expenses</span><span className="text-white font-medium">{fm(data.expense)}</span></div>
-              <div className="flex justify-between items-center pt-2 border-t border-white/5"><span className="text-white font-medium">Net Cashflow</span><span className={`font-semibold ${data.cashflow >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(data.cashflow)}</span></div>
-              <div className="flex justify-between items-center"><span className="text-white font-medium">Savings Rate</span><span className="text-white font-semibold">{data.savingsRate}%</span></div>
-            </div>
+        <div className="grid grid-cols-2 gap-8 mb-8">
+          <div className="space-y-5">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 border-l-2 border-emerald-400 pl-3">Cashflow Analysis</h4>
+            {[
+              { label: 'Total Income',   val: fm(data.income),    color: 'text-emerald-400' },
+              { label: 'Total Expenses', val: fm(data.expense),   color: 'text-red-400' },
+              { label: 'Net Cashflow',   val: fm(data.cashflow),  color: data.cashflow >= 0 ? 'text-emerald-400' : 'text-red-400', border: true },
+              { label: 'Savings Rate',   val: `${data.savingsRate}%`, color: 'text-white' },
+            ].map(r => (
+              <div key={r.label} className={`flex justify-between items-center text-sm ${r.border ? 'pt-2 border-t border-white/5' : ''}`}>
+                <span className="text-slate-400 font-medium">{r.label}</span>
+                <span className={`font-bold ${r.color}`}>{r.val}</span>
+              </div>
+            ))}
           </div>
-          <div className="space-y-6">
-            <h4 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 border-l-2 border-secondary pl-3">Asset & Debt Summary</h4>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center"><span className="text-neutral-400 text-sm">Cash Balance</span><span className="text-white font-medium">{fm(data.cashBalance)}</span></div>
-              <div className="flex justify-between items-center"><span className="text-neutral-400 text-sm">Total Assets</span><span className="text-white font-medium">{fm(data.assets)}</span></div>
-              <div className="flex justify-between items-center"><span className="text-neutral-400 text-sm">Total Debts</span><span className="text-red-400 font-medium">{fm(data.debts)}</span></div>
-              <div className="flex justify-between items-center pt-2 border-t border-white/5"><span className="text-white font-medium">Outstanding Piutang</span><span className="text-primary font-semibold">{fm(data.receivables)}</span></div>
-            </div>
+          <div className="space-y-5">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 border-l-2 border-indigo-400 pl-3">Asset & Debt Summary</h4>
+            {[
+              { label: 'Cash Balance',  val: fm(data.cashBalance),   color: 'text-white' },
+              { label: 'Total Assets',  val: fm(data.assets),        color: 'text-emerald-400' },
+              { label: 'Total Debts',   val: fm(data.debts),         color: 'text-red-400' },
+              { label: 'Receivables',   val: fm(data.receivables),   color: 'text-cyan-400', border: true },
+            ].map(r => (
+              <div key={r.label} className={`flex justify-between items-center text-sm ${r.border ? 'pt-2 border-t border-white/5' : ''}`}>
+                <span className="text-slate-400 font-medium">{r.label}</span>
+                <span className={`font-bold ${r.color}`}>{r.val}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="bg-white/[0.02] border border-white/5 rounded-xl p-6 mb-8">
-           <div className="flex items-center gap-3 mb-4">
-             <span className="material-symbols-outlined text-secondary text-[18px]">info</span>
-             <h5 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-300">Financial Risk Notes</h5>
-           </div>
-           <div className="space-y-3">
-             {data.debts > data.assets && <p className="text-sm text-red-400 font-medium">⚠️ Critical: Your total debts exceed your assets. Focus on debt reduction.</p>}
-             {data.cashflow < 0 && <p className="text-sm text-orange-400 font-medium">⚠️ Warning: Negative cashflow this month. Review your expenses.</p>}
-             {data.savingsRate < 20 && data.cashflow > 0 && <p className="text-sm text-blue-400 font-medium">💡 Tip: Your savings rate is below 20%. Try to optimize smaller expenses.</p>}
-             {data.cashflow > 0 && data.savingsRate >= 20 && <p className="text-sm text-primary font-medium">✅ Excellent: Your savings rate is healthy. Consider investing the surplus.</p>}
-           </div>
+        {/* Risk notes */}
+        <div className="glass-card-premium rounded-2xl p-5 mb-7">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="material-symbols-outlined text-indigo-400 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>shield</span>
+            <h5 className="text-label">Financial Risk Notes</h5>
+          </div>
+          <div className="space-y-2.5 text-sm">
+            {data.debts > data.assets && <p className="text-red-400 font-medium flex items-center gap-2"><span>⚠️</span> Critical: Total debts exceed assets. Focus on debt reduction.</p>}
+            {data.cashflow < 0 && <p className="text-orange-400 font-medium flex items-center gap-2"><span>⚠️</span> Warning: Negative cashflow this month. Review your expenses.</p>}
+            {data.savingsRate < 20 && data.cashflow > 0 && <p className="text-blue-400 font-medium flex items-center gap-2"><span>💡</span> Tip: Savings rate below 20%. Try to optimize smaller expenses.</p>}
+            {data.cashflow > 0 && data.savingsRate >= 20 && <p className="text-emerald-400 font-medium flex items-center gap-2"><span>✅</span> Excellent: Savings rate is healthy. Consider investing the surplus.</p>}
+          </div>
         </div>
 
-        <button 
+        <button
           onClick={() => exportToCSV(transactions, `WealthPilot_Report_${month}`)}
-          className="w-full py-3.5 bg-white border border-white/10 text-black font-semibold rounded-lg hover:bg-neutral-200 transition-all flex items-center justify-center gap-2"
+          className="btn-primary w-full py-3.5 rounded-xl text-sm"
         >
-          <span className="material-symbols-outlined font-medium">download</span>
+          <span className="material-symbols-outlined font-medium text-[18px]">download</span>
           Export CSV (Full Report)
         </button>
       </motion.div>

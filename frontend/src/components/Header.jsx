@@ -37,7 +37,7 @@ function Header({ onQuickAdd, userProfile, t, onUpgrade }) {
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
           <span className="material-symbols-outlined text-black font-bold text-[14px]">rocket_launch</span>
         </div>
-        <h1 className="text-base font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>WealthPilot</h1>
+        <h1 className="text-base font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>WealthPilot</h1>
       </div>
 
       {/* Search Bar */}

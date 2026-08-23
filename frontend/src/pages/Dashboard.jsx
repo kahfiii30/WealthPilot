@@ -100,7 +100,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-2">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h2 className="text-3xl 2xl:text-4xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h2 className="text-3xl 2xl:text-4xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
             {t('welcome')}, <span className="text-gradient-emerald">{displayName}</span>.
           </h2>
           <div className="flex items-center gap-2 mt-2">
@@ -142,7 +142,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
               <span className="text-label mb-2 block">
                 {t('totalNetWorth')}
               </span>
-              <p className="text-4xl 2xl:text-5xl font-bold tracking-tight mt-1 truncate text-gradient-silver" style={{ fontFamily: 'Syne, sans-serif' }}>
+              <p className="text-4xl 2xl:text-5xl font-bold tracking-tight mt-1 truncate text-gradient-silver" style={{ fontFamily: 'Outfit, sans-serif' }}>
                 {fm(netWorth)}
               </p>
             </div>
@@ -184,7 +184,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-indigo-500/6 blur-3xl pointer-events-none" />
 
           <div className="mb-5 relative z-10">
-            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>{t('cashflowOverview')}</h3>
+            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>{t('cashflowOverview')}</h3>
             <p className="text-sm text-slate-500 mt-0.5 font-medium">Income vs expenses this period</p>
           </div>
 
@@ -228,7 +228,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
         <div className="flex justify-between items-center mb-6 relative z-10">
           <div>
-            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Wallets & Accounts</h3>
+            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Wallets & Accounts</h3>
             <p className="text-sm text-slate-500 font-medium mt-0.5">Your asset portfolio</p>
           </div>
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 bg-white/3 border border-white/6 px-2.5 py-1 rounded-lg">
@@ -274,7 +274,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
         {/* Spending Breakdown */}
         <motion.div variants={item} className="lg:col-span-4 glass-card-premium rounded-2xl p-6 flex flex-col">
           <div className="flex justify-between items-center mb-5">
-            <h3 className="text-lg font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>{t('spendingBreakdown')}</h3>
+            <h3 className="text-lg font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>{t('spendingBreakdown')}</h3>
             <span className="text-[10px] text-slate-600 font-black uppercase tracking-wider">{selectedMonth}</span>
           </div>
 
@@ -326,7 +326,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       <motion.section variants={item} className="mt-4">
         <div className="flex items-center gap-3 mb-5">
           <span className="material-symbols-outlined text-slate-600" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
-          <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Monthly History</h3>
+          <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Monthly History</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {monthlySummaryList.map((summary) => (
@@ -391,7 +391,7 @@ function ReportModal({ isOpen, onClose, data, fm, month, transactions }) {
 
         <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Syne, sans-serif' }}>Monthly Report</h2>
+            <h2 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Monthly Report</h2>
             <p className="text-label mt-1">{month}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">

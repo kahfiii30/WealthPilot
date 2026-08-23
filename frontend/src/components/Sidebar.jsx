@@ -31,7 +31,7 @@ function Sidebar({ onQuickAdd, onLogout, onUpgrade, t }) {
             </div>
           </div>
           <div>
-            <h1 className="text-[17px] font-bold tracking-tight text-white leading-none" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="text-[17px] font-bold tracking-tight text-white leading-none" style={{ fontFamily: 'Outfit, sans-serif' }}>
               WealthPilot
             </h1>
             <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-gradient-emerald mt-0.5">
@@ -52,9 +52,9 @@ function Sidebar({ onQuickAdd, onLogout, onUpgrade, t }) {
             <Link
               key={navItem.id}
               to={navItem.path}
-              className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+              className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group z-10 ${
                 isActive
-                  ? 'nav-active-pill text-emerald-300'
+                  ? 'text-emerald-300'
                   : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
               }`}
             >
@@ -103,9 +103,9 @@ function Sidebar({ onQuickAdd, onLogout, onUpgrade, t }) {
         {/* Settings */}
         <Link
           to="/settings"
-          className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group ${
+          className={`relative w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group z-10 ${
             activePage === 'settings'
-              ? 'nav-active-pill text-emerald-300'
+              ? 'text-emerald-300'
               : 'text-slate-500 hover:text-slate-200 hover:bg-white/[0.03]'
           }`}
         >

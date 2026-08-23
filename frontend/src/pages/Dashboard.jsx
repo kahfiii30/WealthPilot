@@ -289,8 +289,8 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative z-10">
-          {accountBalances.slice(0, 8).map((asset, idx) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-4 relative z-10">
+          {accountBalances.slice(0, 9).map((asset, idx) => {
             const colors = [
               { ring: 'ring-emerald-400/20', icon: 'text-emerald-400', bg: 'bg-emerald-400/10' },
               { ring: 'ring-blue-400/20',    icon: 'text-blue-400',    bg: 'bg-blue-400/10' },

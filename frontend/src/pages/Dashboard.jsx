@@ -49,6 +49,59 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
   const totalAssets = useMemo(() => assets.reduce((a, x) => a + x.amount, 0), [assets]);
   const totalDebts  = useMemo(() => debts.reduce((a, d) => a + d.amount, 0), [debts]);
 
+  const accountBalances = useMemo(() => {
+    const balances = {};
+    const coreMethods = ['Cash', 'BCA', 'Mandiri', 'Seabank'];
+    
+    // Initialize with assets
+    assets.forEach(a => {
+      const key = a.name.toUpperCase();
+      balances[key] = { name: a.name, amount: a.amount, category: a.category };
+    });
+
+    // Ensure core methods exist
+    coreMethods.forEach(m => {
+      const key = m.toUpperCase();
+      if (!balances[key]) {
+        balances[key] = { name: m, amount: 0, category: m === 'Cash' ? 'Cash' : 'Bank' };
+      }
+    });
+
+    // Process all transactions
+    transactions.forEach(t => {
+      let method = (t.method || '').trim();
+      const upperMethod = method.toUpperCase();
+      
+      // Map empty, -, 0, Bank Transfer to 'Cash'
+      if (!method || upperMethod === '-' || upperMethod === '0' || upperMethod === 'BANK TRANSFER') {
+        method = 'Cash';
+      }
+      
+      const key = method.toUpperCase();
+      if (!balances[key]) {
+        balances[key] = { name: method, amount: 0, category: 'Other' };
+      }
+      if (t.type === 'income') {
+        balances[key].amount += t.amount;
+      } else if (t.type === 'expense') {
+        balances[key].amount -= t.amount;
+      }
+    });
+
+    return Object.values(balances)
+      .filter(b => {
+        // Keep core methods
+        if (coreMethods.some(m => m.toUpperCase() === b.name.toUpperCase())) return true;
+        // Keep explicitly added assets
+        if (assets.some(a => a.name.toUpperCase() === b.name.toUpperCase())) return true;
+        // Hide others if amount is 0 or if it's a weird artifact
+        if (b.amount === 0) return false;
+        if (b.name === '-' || b.name === '0') return false;
+        return true;
+      })
+      .sort((a, b) => b.amount - a.amount);
+  }, [transactions, assets]);
+
   const { outstandingReceivables } = useMemo(() => {
     const active = (receivables || []).filter(r => r.status !== 'paid');
     return { outstandingReceivables: active.reduce((a, r) => a + r.remainingAmount, 0) };
@@ -232,12 +285,12 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             <p className="text-sm text-slate-500 font-medium mt-0.5">Your asset portfolio</p>
           </div>
           <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 bg-white/3 border border-white/6 px-2.5 py-1 rounded-lg">
-            {assets.length} accounts
+            {accountBalances.length} accounts
           </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 relative z-10">
-          {assets.slice(0, 4).map((asset, idx) => {
+          {accountBalances.slice(0, 8).map((asset, idx) => {
             const colors = [
               { ring: 'ring-emerald-400/20', icon: 'text-emerald-400', bg: 'bg-emerald-400/10' },
               { ring: 'ring-blue-400/20',    icon: 'text-blue-400',    bg: 'bg-blue-400/10' },

@@ -76,14 +76,14 @@ function AssetsDebt({
     <motion.div variants={container} initial="hidden" animate="show" className="p-4 md:p-8 pb-[100px]">
       {/* Header / Summary Section */}
       <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-        <div className="lg:col-span-2 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col justify-between">
+        <div className="lg:col-span-2 card-luxury rounded-3xl p-6 lg:p-10 flex flex-col justify-between">
           <div>
-            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2">Total Net Worth</h2>
+            <h2 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2">Total Net Worth</h2>
             <div className="flex flex-col md:flex-row md:items-end gap-2 md:gap-4 mb-8">
-              <span className={`text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none truncate ${netWorth >= 0 ? 'text-white' : 'text-red-400'}`}>
+              <span className={`text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-none truncate title-luxury ${netWorth >= 0 ? 'text-slate-100' : 'text-red-400'}`}>
                 {fm(netWorth)}
               </span>
-              <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">Liquid + Portfolio</p>
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Liquid + Portfolio</p>
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
@@ -102,12 +102,12 @@ function AssetsDebt({
           </div>
         </div>
 
-        <div className="glass-card-premium rounded-3xl p-6 lg:p-8 flex flex-col justify-center gap-8">
+        <div className="card-luxury rounded-3xl p-6 lg:p-8 flex flex-col justify-center gap-8">
           <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-3">Asset Ratio</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-3">Asset Ratio</h3>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-primary tracking-tight truncate pr-4">{fm(totalAssets)}</span>
-              <span className="text-xs font-semibold text-neutral-400">
+              <span className="text-xs font-semibold text-slate-400">
                 {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
@@ -120,10 +120,10 @@ function AssetsDebt({
             </div>
           </div>
           <div>
-            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-3">Debt Exposure</h3>
+            <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-3">Debt Exposure</h3>
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-red-400 tracking-tight truncate pr-4">{fm(totalDebts)}</span>
-              <span className="text-xs font-semibold text-neutral-400">
+              <span className="text-xs font-semibold text-slate-400">
                 {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
@@ -143,7 +143,7 @@ function AssetsDebt({
         {/* Assets Section */}
         <motion.section variants={item} className="space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury flex items-center gap-2">
               <span className="material-symbols-outlined text-[24px]">account_balance_wallet</span>
               Assets Portfolio
             </h3>
@@ -169,27 +169,27 @@ function AssetsDebt({
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * i }}
-                  className="glass-card-premium rounded-2xl p-4 flex items-center justify-between group transition-colors"
+                  className="card-luxury rounded-2xl p-4 flex items-center justify-between group transition-colors"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
                       <span className="material-symbols-outlined font-medium text-[20px]">{getAssetIcon(asset.category)}</span>
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-white group-hover:text-primary transition-colors text-sm truncate">{asset.name}</h4>
-                      <p className="text-[11px] font-medium text-neutral-500 mt-0.5 truncate">{asset.category} • {asset.note || 'No notes'}</p>
+                      <h4 className="font-semibold text-slate-100 group-hover:text-primary transition-colors text-sm truncate">{asset.name}</h4>
+                      <p className="text-[11px] font-medium text-slate-500 mt-0.5 truncate">{asset.category} • {asset.note || 'No notes'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 pl-4 shrink-0">
                     <div className="text-right">
                       <p className="text-base font-bold text-primary">{fm(asset.amount)}</p>
-                      <p className="text-[10px] font-medium text-neutral-500">Updated {formatDate(asset.updatedAt)}</p>
+                      <p className="text-[10px] font-medium text-slate-500">Updated {formatDate(asset.updatedAt)}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-1">
-                      <button onClick={() => handleEditAsset(asset)} className="p-1.5 text-neutral-500 hover:text-white transition-colors rounded">
+                      <button onClick={() => handleEditAsset(asset)} className="p-1.5 text-slate-500 hover:text-slate-100 transition-colors rounded">
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteAsset(asset.id)} className="p-1.5 text-neutral-500 hover:text-red-400 transition-colors rounded">
+                      <button onClick={() => onDeleteAsset(asset.id)} className="p-1.5 text-slate-500 hover:text-red-400 transition-colors rounded">
                         <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
@@ -203,7 +203,7 @@ function AssetsDebt({
         {/* Debt Section */}
         <motion.section variants={item} className="space-y-4">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+            <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury flex items-center gap-2">
               <span className="material-symbols-outlined text-[24px]">credit_card_off</span>
               Total Liabilities
             </h3>
@@ -229,27 +229,27 @@ function AssetsDebt({
                   initial={{ opacity: 0, y: 5 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1 * i }}
-                  className="glass-card-premium rounded-2xl p-4 flex items-center justify-between group transition-colors border-l-2 border-l-red-500"
+                  className="card-luxury rounded-2xl p-4 flex items-center justify-between group transition-colors border-l-2 border-l-red-500"
                 >
                   <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center text-red-400 shrink-0">
                       <span className="material-symbols-outlined font-medium text-[20px]">{getDebtIcon(debt.category)}</span>
                     </div>
                     <div className="min-w-0">
-                      <h4 className="font-semibold text-white group-hover:text-red-400 transition-colors text-sm truncate">{debt.name}</h4>
-                      <p className="text-[11px] font-medium text-neutral-500 mt-0.5 truncate">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
+                      <h4 className="font-semibold text-slate-100 group-hover:text-red-400 transition-colors text-sm truncate">{debt.name}</h4>
+                      <p className="text-[11px] font-medium text-slate-500 mt-0.5 truncate">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 pl-4 shrink-0">
                     <div className="text-right">
                       <p className="text-base font-bold text-red-400">{fm(debt.amount)}</p>
-                      <p className="text-[10px] font-medium text-neutral-500">Updated {formatDate(debt.updatedAt)}</p>
+                      <p className="text-[10px] font-medium text-slate-500">Updated {formatDate(debt.updatedAt)}</p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-1">
-                      <button onClick={() => handleEditDebt(debt)} className="p-1.5 text-neutral-500 hover:text-white transition-colors rounded">
+                      <button onClick={() => handleEditDebt(debt)} className="p-1.5 text-slate-500 hover:text-slate-100 transition-colors rounded">
                         <span className="material-symbols-outlined text-[18px]">edit</span>
                       </button>
-                      <button onClick={() => onDeleteDebt(debt.id)} className="p-1.5 text-neutral-500 hover:text-red-400 transition-colors rounded">
+                      <button onClick={() => onDeleteDebt(debt.id)} className="p-1.5 text-slate-500 hover:text-red-400 transition-colors rounded">
                         <span className="material-symbols-outlined text-[18px]">delete</span>
                       </button>
                     </div>
@@ -347,11 +347,11 @@ function Modal({ isOpen, onClose, title, children, t }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative z-[201] w-[90vw] max-w-[480px] max-h-[90vh] overflow-y-auto rounded-2xl glass-card-premium p-6 shadow-2xl custom-scrollbar mx-auto my-auto"
+            className="relative z-[201] w-[90vw] max-w-[480px] max-h-[90vh] overflow-y-auto rounded-2xl card-luxury p-6 shadow-2xl custom-scrollbar mx-auto my-auto"
           >
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
-              <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
+              <h2 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{title}</h2>
+              <button onClick={onClose} className="p-2 text-slate-500 hover:text-slate-100 transition-colors">
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
             </div>

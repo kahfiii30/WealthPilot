@@ -20,11 +20,16 @@ const CATEGORIES = [
 // ─── Animation variants ──────────────────────────────────────────────────────
 const container = {
   hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.08 } },
+  show: { opacity: 1, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
 };
 const item = {
-  hidden: { opacity: 0, y: 14 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.22, 1, 0.36, 1] } },
+  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  show: { 
+    opacity: 1, 
+    y: 0, 
+    scale: 1, 
+    transition: { type: "spring", stiffness: 120, damping: 15, mass: 1 } 
+  },
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────────
@@ -150,14 +155,14 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       {/* ── Welcome Header ─────────────────────────────────────────── */}
       <motion.section variants={item} className="mb-7 md:mb-9 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-600 mb-2">
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h2 className="text-3xl 2xl:text-4xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>
-            {t('welcome')}, <span className="text-gradient-emerald">{displayName}</span>.
+          <h2 className="text-3xl 2xl:text-4xl font-bold text-slate-100 tracking-tight title-luxury">
+            {t('welcome')}, <span className="text-primary">{displayName}</span>.
           </h2>
           <div className="flex items-center gap-2 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50" />
+            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
             <p className="text-sm font-medium text-slate-400">{t('healthStatus')}</p>
           </div>
         </div>
@@ -165,9 +170,9 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsReportOpen(true)}
-            className="btn-ghost h-10 px-4 rounded-xl text-sm"
+            className="btn-ghost h-10 px-4"
           >
-            <span className="material-symbols-outlined text-emerald-400 text-[17px]">analytics</span>
+            <span className="material-symbols-outlined text-primary text-[17px]">analytics</span>
             Report
           </button>
           <div className="flex flex-col gap-1">
@@ -176,7 +181,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
               type="month"
               value={selectedMonth}
               onChange={e => setSelectedMonth(e.target.value)}
-              className="glass-input h-10 px-4 text-sm font-semibold rounded-xl [color-scheme:dark] cursor-pointer min-w-[160px]"
+              className="glass-input h-10 px-4 text-sm font-medium cursor-pointer min-w-[160px]"
             />
           </div>
         </div>
@@ -185,21 +190,20 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       {/* ── Primary Metrics Row ─────────────────────────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6 mb-6">
 
-        {/* Net Worth Card */}
-        <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 flex flex-col min-w-0 relative overflow-hidden">
+        <motion.div variants={item} className="card-luxury p-6 md:p-7 flex flex-col min-w-0 relative overflow-hidden">
           {/* Ambient glow blob */}
-          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-emerald-500/8 blur-3xl pointer-events-none" />
+          <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
           <div className="flex justify-between items-start mb-5 min-w-0 relative z-10">
             <div className="min-w-0">
               <span className="text-label mb-2 block">
                 {t('totalNetWorth')}
               </span>
-              <p className="text-4xl 2xl:text-5xl font-bold tracking-tight mt-1 truncate text-gradient-silver" style={{ fontFamily: 'Outfit, sans-serif' }}>
+              <p className="text-4xl 2xl:text-5xl font-bold tracking-tight mt-1 truncate text-slate-100 title-luxury">
                 {fm(netWorth)}
               </p>
             </div>
-            <div className="p-2.5 rounded-xl bg-emerald-400/10 border border-emerald-400/20 text-emerald-400 shrink-0 glow-emerald-sm">
+            <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20 text-primary shrink-0 glow-emerald-sm">
               <span className="material-symbols-outlined font-medium" style={{ fontVariationSettings: "'FILL' 1" }}>account_balance_wallet</span>
             </div>
           </div>
@@ -233,12 +237,12 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
         </motion.div>
 
         {/* Cashflow Card */}
-        <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 flex flex-col relative overflow-hidden">
-          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-indigo-500/6 blur-3xl pointer-events-none" />
+        <motion.div variants={item} className="card-luxury p-6 md:p-7 flex flex-col relative overflow-hidden">
+          <div className="absolute -bottom-10 -left-10 w-36 h-36 rounded-full bg-indigo-500/5 blur-3xl pointer-events-none" />
 
           <div className="mb-5 relative z-10">
-            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>{t('cashflowOverview')}</h3>
-            <p className="text-sm text-slate-500 mt-0.5 font-medium">Income vs expenses this period</p>
+            <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{t('cashflowOverview')}</h3>
+            <p className="text-sm text-slate-400 mt-0.5 font-medium">Income vs expenses this period</p>
           </div>
 
           <div className="grid grid-cols-2 gap-5 border-y border-white/5 py-5 my-auto relative z-10">
@@ -276,15 +280,15 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       </div>
 
       {/* ── Wallets & Accounts ─────────────────────────────────────── */}
-      <motion.div variants={item} className="glass-card-premium rounded-2xl p-6 md:p-7 mb-6 relative overflow-hidden">
-        <div className="absolute -top-16 right-8 w-48 h-48 rounded-full bg-emerald-500/5 blur-3xl pointer-events-none" />
+      <motion.div variants={item} className="card-luxury p-6 md:p-7 mb-6 relative overflow-hidden">
+        <div className="absolute -top-16 right-8 w-48 h-48 rounded-full bg-primary/5 blur-3xl pointer-events-none" />
 
         <div className="flex justify-between items-center mb-6 relative z-10">
           <div>
-            <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Wallets & Accounts</h3>
-            <p className="text-sm text-slate-500 font-medium mt-0.5">Your asset portfolio</p>
+            <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Wallets & Accounts</h3>
+            <p className="text-sm text-slate-400 font-medium mt-0.5">Your asset portfolio</p>
           </div>
-          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-600 bg-white/3 border border-white/6 px-2.5 py-1 rounded-lg">
+          <span className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
             {accountBalances.length} accounts
           </span>
         </div>
@@ -325,10 +329,10 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mb-6">
 
         {/* Spending Breakdown */}
-        <motion.div variants={item} className="lg:col-span-4 glass-card-premium rounded-2xl p-6 flex flex-col">
+        <motion.div variants={item} className="lg:col-span-4 card-luxury p-6 flex flex-col">
           <div className="flex justify-between items-center mb-5">
-            <h3 className="text-lg font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>{t('spendingBreakdown')}</h3>
-            <span className="text-[10px] text-slate-600 font-black uppercase tracking-wider">{selectedMonth}</span>
+            <h3 className="text-lg font-bold text-slate-100 tracking-tight title-luxury">{t('spendingBreakdown')}</h3>
+            <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider">{selectedMonth}</span>
           </div>
 
           <div className="flex-1">
@@ -378,14 +382,14 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       {/* ── Monthly History ────────────────────────────────────────── */}
       <motion.section variants={item} className="mt-4">
         <div className="flex items-center gap-3 mb-5">
-          <span className="material-symbols-outlined text-slate-600" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
-          <h3 className="text-xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Monthly History</h3>
+          <span className="material-symbols-outlined text-slate-500" style={{ fontVariationSettings: "'FILL' 1" }}>history</span>
+          <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Monthly History</h3>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {monthlySummaryList.map((summary) => (
-            <div key={summary.month} className="glass-card-premium rounded-xl p-5 group relative overflow-hidden">
+            <div key={summary.month} className="card-luxury rounded-xl p-5 group relative overflow-hidden">
               {/* Subtle background blob */}
-              <div className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${summary.balance >= 0 ? 'bg-emerald-500/15' : 'bg-red-500/15'}`} />
+              <div className={`absolute -bottom-6 -right-6 w-20 h-20 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${summary.balance >= 0 ? 'bg-primary/10' : 'bg-red-500/10'}`} />
 
               <p className="text-label mb-4 relative z-10">{summary.month}</p>
               <div className="space-y-2.5 relative z-10">
@@ -437,14 +441,14 @@ function ReportModal({ isOpen, onClose, data, fm, month, transactions }) {
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-        className="relative z-10 w-full max-w-2xl glass-card-premium rounded-3xl p-8 max-h-[88vh] overflow-y-auto no-scrollbar"
+        className="relative z-10 w-full max-w-2xl card-luxury rounded-3xl p-8 max-h-[88vh] overflow-y-auto no-scrollbar"
       >
         {/* Top hairline */}
-        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/30 to-transparent rounded-t-3xl" />
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent rounded-t-3xl" />
 
         <div className="flex justify-between items-center mb-8 border-b border-white/5 pb-6">
           <div>
-            <h2 className="text-2xl font-bold text-white tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Monthly Report</h2>
+            <h2 className="text-2xl font-bold text-slate-100 tracking-tight title-luxury">Monthly Report</h2>
             <p className="text-label mt-1">{month}</p>
           </div>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-lg transition-all">
@@ -484,7 +488,7 @@ function ReportModal({ isOpen, onClose, data, fm, month, transactions }) {
         </div>
 
         {/* Risk notes */}
-        <div className="glass-card-premium rounded-2xl p-5 mb-7">
+        <div className="card-luxury p-5 mb-7 rounded-2xl">
           <div className="flex items-center gap-2 mb-3">
             <span className="material-symbols-outlined text-indigo-400 text-[18px]" style={{ fontVariationSettings: "'FILL' 1" }}>shield</span>
             <h5 className="text-label">Financial Risk Notes</h5>

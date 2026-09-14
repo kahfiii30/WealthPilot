@@ -198,9 +198,9 @@ function Settings({
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col mb-8"
       >
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1 ml-1">Configuration</p>
-        <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">{t('settings')}</h2>
-        <p className="text-sm font-medium text-neutral-500 tracking-tight mt-1">Manage your command center and personal preferences.</p>
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1 ml-1">Configuration</p>
+        <h2 className="text-3xl lg:text-4xl font-bold text-slate-100 tracking-tight title-luxury">{t('settings')}</h2>
+        <p className="text-sm font-medium text-slate-400 tracking-tight mt-1">Manage your command center and personal preferences.</p>
       </motion.div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 lg:gap-8">
@@ -219,10 +219,10 @@ function Settings({
               className={`flex-none md:w-full flex items-center gap-3 px-4 py-3 transition-colors duration-200 rounded-lg cursor-pointer whitespace-nowrap ${
                 activeTab === tab.id 
                 ? 'bg-primary/10 text-primary font-semibold' 
-                : 'text-neutral-500 hover:text-white hover:bg-white/[0.05]'
+                : 'text-slate-500 hover:text-slate-100 hover:bg-white/[0.05]'
               }`}
             >
-              <span className={`material-symbols-outlined text-[20px] ${activeTab === tab.id ? 'text-primary' : 'text-neutral-500'}`}>{tab.icon}</span>
+              <span className={`material-symbols-outlined text-[20px] ${activeTab === tab.id ? 'text-primary' : 'text-slate-500'}`}>{tab.icon}</span>
               <span className="text-sm font-semibold">{tab.label}</span>
             </motion.button>
           ))}
@@ -239,8 +239,8 @@ function Settings({
               transition={{ duration: 0.2 }}
             >
               {activeTab === 'profile' && (
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Personal Information</h3>
+                <div className="rounded-xl card-luxury p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Personal Information</h3>
                   
                   <form onSubmit={handleProfileSave}>
                     <div className="space-y-8">
@@ -257,7 +257,7 @@ function Settings({
                             type="button"
                             disabled={isUploadingAvatar}
                             onClick={() => fileInputRef.current.click()}
-                            className="px-4 py-2 bg-white/[0.05] border border-white/10 text-white rounded-lg hover:bg-white/[0.1] transition-colors cursor-pointer text-xs font-semibold uppercase tracking-wider disabled:opacity-50"
+                            className="px-4 py-2 bg-white/[0.05] border border-white/10 text-slate-100 rounded-lg hover:bg-white/[0.1] transition-colors cursor-pointer text-xs font-semibold uppercase tracking-wider disabled:opacity-50"
                           >
                             {isUploadingAvatar ? "Uploading..." : "Update Avatar"}
                           </button>
@@ -268,28 +268,28 @@ function Settings({
                             accept="image/*" 
                             onChange={handlePhotoChange} 
                           />
-                          <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider">PNG, JPG or WEBP • Max 2MB</p>
+                          <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">PNG, JPG or WEBP • Max 2MB</p>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('firstName')}</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">{t('firstName')}</label>
                           <input 
                             name="firstName" 
                             required
                             type="text" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
                             value={form.firstName} 
                             onChange={e => setForm({...form, firstName: e.target.value})}
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('lastName')}</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">{t('lastName')}</label>
                           <input 
                             name="lastName" 
                             type="text" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
                             value={form.lastName} 
                             onChange={e => setForm({...form, lastName: e.target.value})}
                           />
@@ -297,12 +297,12 @@ function Settings({
                       </div>
                       
                       <div className="space-y-2">
-                        <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('email')}</label>
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">{t('email')}</label>
                         <input 
                           name="email" 
                           required
                           type="email" 
-                          className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                          className="glass-input w-full h-12 px-4 text-sm font-medium" 
                           value={form.email} 
                           onChange={e => setForm({...form, email: e.target.value})}
                         />
@@ -318,16 +318,16 @@ function Settings({
               )}
 
               {activeTab === 'preferences' && (
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Localization & Visuals</h3>
+                <div className="rounded-xl card-luxury p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Localization & Visuals</h3>
                   <form onSubmit={handlePrefSave}>
                     <div className="space-y-8">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('currency')}</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">{t('currency')}</label>
                           <select 
                             name="currency" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 appearance-none cursor-pointer text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium appearance-none cursor-pointer" 
                             value={localPrefs.currency}
                             onChange={(e) => setLocalPrefs({...localPrefs, currency: e.target.value})}
                           >
@@ -339,21 +339,21 @@ function Settings({
                       
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">{t('exchangeRate')} (1 USD = ? IDR)</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">{t('exchangeRate')} (1 USD = ? IDR)</label>
                           <input 
                             name="exchangeRate" 
                             type="number" 
                             step="0.01"
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
                             value={localPrefs.exchangeRate}
                             onChange={(e) => setLocalPrefs({...localPrefs, exchangeRate: parseFloat(e.target.value) || 0})}
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Appearance Theme</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Appearance Theme</label>
                           <select 
                             name="theme" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 appearance-none cursor-pointer text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium appearance-none cursor-pointer" 
                             value={localPrefs.theme}
                             onChange={(e) => setLocalPrefs({...localPrefs, theme: e.target.value})}
                           >
@@ -373,8 +373,8 @@ function Settings({
               )}
 
               {activeTab === 'notifications' && (
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Intelligence Alerts</h3>
+                <div className="rounded-xl card-luxury p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Intelligence Alerts</h3>
                   <form onSubmit={handleNotifSave}>
                     <div className="space-y-4">
                       {[
@@ -392,8 +392,8 @@ function Settings({
                             defaultChecked={notifications[notif.id]} 
                           />
                           <div className="flex-1">
-                            <p className="font-semibold text-white text-sm">{notif.label}</p>
-                            <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{notif.desc}</p>
+                            <p className="font-semibold text-slate-100 text-sm">{notif.label}</p>
+                            <p className="text-[11px] font-medium text-slate-500 mt-0.5">{notif.desc}</p>
                           </div>
                         </label>
                       ))}
@@ -409,13 +409,13 @@ function Settings({
 
               {activeTab === 'security' && (
                 <div className="space-y-6">
-                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                    <h3 className="text-xl font-bold text-white tracking-tight mb-6">Access Control</h3>
+                  <div className="rounded-xl card-luxury p-6 lg:p-8">
+                    <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-6">Access Control</h3>
                     <div className="space-y-6">
                       <div className="flex justify-between items-center p-4 bg-white/[0.02] rounded-lg border border-white/5">
                         <div>
-                          <p className="font-semibold text-white text-sm tracking-tight">Active Command Session</p>
-                          <p className="text-[11px] font-medium text-neutral-500 mt-1">Chrome Protocol • Windows OS</p>
+                          <p className="font-semibold text-slate-100 text-sm tracking-tight">Active Command Session</p>
+                          <p className="text-[11px] font-medium text-slate-500 mt-1">Chrome Protocol • Windows OS</p>
                         </div>
                         <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold rounded uppercase tracking-wider border border-primary/20">Authorized</span>
                       </div>
@@ -428,26 +428,26 @@ function Settings({
                     </div>
                   </div>
 
-                  <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                    <h3 className="text-xl font-bold text-white tracking-tight mb-6">Update Password</h3>
+                  <div className="rounded-xl card-luxury p-6 lg:p-8">
+                    <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-6">Update Password</h3>
                     <form onSubmit={handlePasswordUpdate}>
                       <div className="space-y-6">
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">New Password</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">New Password</label>
                           <input 
                             required
                             type="password" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
                             value={passwordForm.newPassword} 
                             onChange={e => setPasswordForm({...passwordForm, newPassword: e.target.value})}
                           />
                         </div>
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Confirm New Password</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Confirm New Password</label>
                           <input 
                             required
                             type="password" 
-                            className="w-full bg-white/[0.02] border border-white/10 rounded-lg px-4 py-3 text-white outline-none focus:border-primary/50 transition-colors duration-200 text-sm" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
                             value={passwordForm.confirmPassword} 
                             onChange={e => setPasswordForm({...passwordForm, confirmPassword: e.target.value})}
                           />
@@ -475,8 +475,8 @@ function Settings({
               )}
 
               {activeTab === 'integrations' && (
-                <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8">
-                  <h3 className="text-xl font-bold text-white tracking-tight mb-8">Integrations</h3>
+                <div className="rounded-xl card-luxury p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Integrations</h3>
                   
                   <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-5 bg-white/[0.02] rounded-lg border border-white/5">
@@ -485,8 +485,8 @@ function Settings({
                           <span className="material-symbols-outlined text-[#2AABEE] text-xl">send</span>
                         </div>
                         <div>
-                          <p className="font-semibold text-white text-sm tracking-tight">Telegram Bot</p>
-                          <p className="text-[11px] font-medium text-neutral-500 mt-0.5">Chat to log finances</p>
+                          <p className="font-semibold text-slate-100 text-sm tracking-tight">Telegram Bot</p>
+                          <p className="text-[11px] font-medium text-slate-500 mt-0.5">Chat to log finances</p>
                         </div>
                       </div>
                       <span className={`px-3 py-1 ${linkedTelegramId ? 'bg-primary/10 text-primary border-primary/20' : 'bg-white/[0.05] text-neutral-400 border-white/10'} text-[10px] font-bold rounded uppercase tracking-wider border`}>
@@ -495,8 +495,8 @@ function Settings({
                     </div>
 
                     <div className="p-5 bg-white/[0.01] rounded-lg border border-white/5">
-                      <h4 className="text-sm font-semibold text-white mb-2">How to connect:</h4>
-                      <ol className="list-decimal list-inside text-xs text-neutral-400 space-y-2 mb-6">
+                      <h4 className="text-sm font-semibold text-slate-100 mb-2">How to connect:</h4>
+                      <ol className="list-decimal list-inside text-xs text-slate-400 space-y-2 mb-6">
                         <li>Open Telegram and search for your bot.</li>
                         <li>Type <code className="bg-white/[0.05] px-1 py-0.5 rounded text-primary border border-white/10">/start</code></li>
                         <li>The bot will reply with your <strong>Telegram ID</strong>.</li>
@@ -517,13 +517,13 @@ function Settings({
                         }
                       }}>
                         <div className="space-y-2">
-                          <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Telegram ID</label>
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Telegram ID</label>
                           <div className="flex gap-3">
                             <input 
                               required
                               type="text" 
                               placeholder="e.g. 123456789"
-                              className="flex-1 bg-white/[0.02] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary/50 transition-colors text-sm" 
+                              className="flex-1 glass-input h-10 px-4 text-sm font-medium" 
                               value={telegramId} 
                               onChange={e => setTelegramId(e.target.value)}
                             />

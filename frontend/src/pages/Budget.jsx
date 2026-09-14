@@ -143,8 +143,8 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
     <motion.div variants={containerVariants} initial="hidden" animate="show" className="p-4 md:p-8 pb-[100px]">
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-8 gap-6">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1">Strategy Center</p>
-          <h2 className="text-3xl font-bold text-white tracking-tight">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1">Strategy Center</p>
+          <h2 className="text-3xl font-bold text-slate-100 tracking-tight title-luxury">
             {t('monthlyBudget')} {new Date(selectedMonth + "-01").toLocaleString('default', { month: 'long', year: 'numeric' })}
           </h2>
         </div>
@@ -166,17 +166,17 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
       </div>
 
       <div className="grid grid-cols-12 gap-4 md:gap-6 mb-6">
-        <div className="col-span-12 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 min-w-0">
+        <div className="col-span-12 card-luxury rounded-3xl p-6 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 min-w-0">
           <div className="min-w-0 flex-1">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-4">{t('dailySafeToSpend')}</p>
-            <h3 className={`text-4xl lg:text-5xl font-bold tracking-tight mb-2 truncate ${safeToSpendPerDay > 0 ? 'text-primary' : 'text-red-400'}`}>
-              {fm(safeToSpendPerDay)} <span className="text-2xl font-semibold text-neutral-500">/ day</span>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-4">{t('dailySafeToSpend')}</p>
+            <h3 className={`text-4xl lg:text-5xl font-bold tracking-tight mb-2 truncate title-luxury ${safeToSpendPerDay > 0 ? 'text-primary' : 'text-red-400'}`}>
+              {fm(safeToSpendPerDay)} <span className="text-2xl font-semibold text-slate-500">/ day</span>
             </h3>
-            <p className="text-sm font-medium text-neutral-400">Remaining for the next {remainingDays} days.</p>
+            <p className="text-sm font-medium text-slate-400">Remaining for the next {remainingDays} days.</p>
           </div>
           <div className="w-full lg:w-[400px] shrink-0">
             <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider mb-2">
-              <span className="text-neutral-500">Monthly Utilization</span>
+              <span className="text-slate-500">Monthly Utilization</span>
               <span className={consumedPercent > 100 ? 'text-red-400' : 'text-primary'}>{consumedPercent.toFixed(1)}%</span>
             </div>
             <div className="h-3 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
@@ -186,23 +186,23 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </div>
 
         <motion.div variants={itemVariants} className="col-span-12 grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 min-w-0">
-          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-primary min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Total Budget</p>
-            <p className="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate">{fm(totalBudget)}</p>
+          <div className="card-luxury rounded-2xl p-6 flex flex-col border-l-2 border-l-primary min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2 truncate">Total Budget</p>
+            <p className="text-2xl lg:text-3xl font-bold text-slate-100 tracking-tight truncate title-luxury">{fm(totalBudget)}</p>
           </div>
-          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-blue-400 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Actual Spending</p>
-            <p className="text-2xl lg:text-3xl font-bold text-white tracking-tight truncate">{fm(totalActual)}</p>
+          <div className="card-luxury rounded-2xl p-6 flex flex-col border-l-2 border-l-blue-400 min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2 truncate">Actual Spending</p>
+            <p className="text-2xl lg:text-3xl font-bold text-slate-100 tracking-tight truncate title-luxury">{fm(totalActual)}</p>
           </div>
-          <div className="glass-card-premium rounded-2xl p-6 flex flex-col border-l-2 border-l-red-400 min-w-0">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2 truncate">Remaining Budget</p>
-            <p className={`text-2xl lg:text-3xl font-bold tracking-tight truncate ${remainingBudget >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(remainingBudget)}</p>
+          <div className="card-luxury rounded-2xl p-6 flex flex-col border-l-2 border-l-red-400 min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2 truncate">Remaining Budget</p>
+            <p className={`text-2xl lg:text-3xl font-bold tracking-tight truncate title-luxury ${remainingBudget >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(remainingBudget)}</p>
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 glass-card-premium rounded-3xl p-6 lg:p-8 min-w-0">
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 card-luxury rounded-3xl p-6 lg:p-8 min-w-0">
           <div className="flex items-center justify-between mb-8">
-            <h4 className="text-xl font-bold text-white tracking-tight">{t('categoryBreakdown')}</h4>
+            <h4 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{t('categoryBreakdown')}</h4>
             <span onClick={() => setIsManageModalOpen(true)} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:text-primary-dark cursor-pointer transition-colors">{t('manageLimits')}</span>
           </div>
           <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
@@ -210,9 +210,9 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
               <motion.div key={sObj.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * sIdx }} className="min-w-0">
                 <div className="flex justify-between items-end mb-2 min-w-0">
                   <div className="min-w-0 flex-1 pr-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 truncate">{sObj.category}</p>
-                    <p className={`text-lg font-bold tracking-tight truncate ${sObj.percentage > 100 ? 'text-red-400' : 'text-white'}`}>
-                      {fm(sObj.actualSpent)} <span className="text-sm font-medium text-neutral-500 tracking-normal">/ {fm(sObj.limit)}</span>
+                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{sObj.category}</p>
+                    <p className={`text-lg font-bold tracking-tight truncate ${sObj.percentage > 100 ? 'text-red-400' : 'text-slate-100'}`}>
+                      {fm(sObj.actualSpent)} <span className="text-sm font-medium text-slate-500 tracking-normal">/ {fm(sObj.limit)}</span>
                     </p>
                   </div>
                   <p className={`text-sm font-bold shrink-0 ${sObj.percentage > 100 ? 'text-red-400' : 'text-primary'}`}>{sObj.percentage.toFixed(0)}%</p>
@@ -225,8 +225,8 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
           </div>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 glass-card-premium rounded-3xl p-6 lg:p-8">
-          <h4 className="text-xl font-bold text-white tracking-tight mb-8">Budget vs Actual</h4>
+        <motion.div variants={itemVariants} className="col-span-12 lg:col-span-5 card-luxury rounded-3xl p-6 lg:p-8">
+          <h4 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Budget vs Actual</h4>
           {chartData.every(d => d.budgeted === 0 && d.actual === 0) ? (
             <div className="flex flex-col items-center justify-center h-[200px] text-center">
               <span className="material-symbols-outlined text-neutral-600 text-3xl mb-2">query_stats</span>
@@ -250,9 +250,9 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         </motion.div>
 
         {/* High Impact Spending */}
-        <motion.div variants={itemVariants} className="col-span-12 glass-card-premium rounded-3xl overflow-hidden">
+        <motion.div variants={itemVariants} className="col-span-12 card-luxury rounded-3xl overflow-hidden">
           <div className="p-6 lg:p-8 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <h4 className="text-xl font-bold text-white tracking-tight">Recent High-Impact Spending</h4>
+            <h4 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Recent High-Impact Spending</h4>
             <div className="relative w-full md:w-64 group">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500 group-focus-within:text-primary transition-colors text-[18px]">search</span>
               <input 
@@ -274,10 +274,10 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/5">
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('description')}</th>
-                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('category')}</th>
-                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">{t('amount')}</th>
-                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Impact</th>
+                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t('description')}</th>
+                    <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t('category')}</th>
+                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">{t('amount')}</th>
+                    <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">Impact</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -312,8 +312,8 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                               <span className="material-symbols-outlined font-medium text-[20px]">payments</span>
                             </div>
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold text-white truncate group-hover:text-primary transition-colors">{tItem.notes || tItem.category}</p>
-                              <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{formatDate(tItem.date)}</p>
+                              <p className="text-sm font-semibold text-slate-100 truncate group-hover:text-primary transition-colors">{tItem.notes || tItem.category}</p>
+                              <p className="text-[11px] font-medium text-slate-400 mt-0.5">{formatDate(tItem.date)}</p>
                             </div>
                           </div>
                         </td>
@@ -322,7 +322,7 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                             {tItem.category}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-right font-bold text-base text-white group-hover:text-primary transition-colors">{fm(tItem.amount)}</td>
+                        <td className="px-6 py-4 text-right font-bold text-base text-slate-100 group-hover:text-primary transition-colors">{fm(tItem.amount)}</td>
                         <td className={`px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider ${iLabelColor}`}>{iLabel}</td>
                       </motion.tr>
                     );
@@ -371,10 +371,10 @@ function BudgetModal({ isOpen, onClose, initialData, onSave, t, isSaving, error 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
-        className="relative z-[201] w-[90vw] max-w-md rounded-2xl glass-card-premium p-8 shadow-2xl mx-auto my-auto"
+        className="relative z-[201] w-[90vw] max-w-md rounded-2xl card-luxury p-8 shadow-2xl mx-auto my-auto"
       >
         <div className="mb-8 flex items-start justify-between gap-4">
-          <h2 className="text-2xl font-bold text-white tracking-tight">
+          <h2 className="text-2xl font-bold text-slate-100 tracking-tight title-luxury">
             {initialData ? t('editBudget') : t('addBudget')}
           </h2>
           <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
@@ -459,10 +459,10 @@ function ManageLimitsModal({ isOpen, onClose, monthlyBudgets, onEdit, onDelete, 
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }} 
         animate={{ opacity: 1, scale: 1 }} 
-        className="relative z-[151] w-[90vw] max-w-lg rounded-2xl glass-card-premium shadow-2xl overflow-hidden mx-auto my-auto"
+        className="relative z-[151] w-[90vw] max-w-lg rounded-2xl card-luxury shadow-2xl overflow-hidden mx-auto my-auto"
       >
         <div className="p-6 border-b border-white/5 flex justify-between items-center">
-          <h2 className="text-xl font-bold text-white tracking-tight">{t('manageLimits')}</h2>
+          <h2 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{t('manageLimits')}</h2>
           <button onClick={onClose} className="p-2 text-neutral-400 hover:text-white transition-colors">
             <span className="material-symbols-outlined">close</span>
           </button>

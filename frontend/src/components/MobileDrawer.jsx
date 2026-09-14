@@ -31,12 +31,12 @@ function MobileDrawer({ isOpen, onClose, activePage, setActivePage, onLogout, us
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-            className="fixed top-0 left-0 bottom-0 w-[280px] max-w-[85vw] bg-[#0a0a0a] border-r border-white/5 shadow-2xl z-[60] flex flex-col md:hidden"
+            className="fixed top-0 left-0 bottom-0 w-[280px] max-w-[85vw] glass-panel border-r border-white/5 shadow-2xl z-[60] flex flex-col md:hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-white/5">
-              <h1 className="text-xl font-bold text-white tracking-tight">WealthPilot</h1>
-              <button onClick={onClose} className="p-2 -mr-2 text-neutral-400 hover:text-white transition-colors cursor-pointer">
+              <h1 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">WealthPilot</h1>
+              <button onClick={onClose} className="p-2 -mr-2 text-slate-500 hover:text-slate-100 transition-colors cursor-pointer">
                 <span className="material-symbols-outlined">close</span>
               </button>
             </div>
@@ -49,8 +49,8 @@ function MobileDrawer({ isOpen, onClose, activePage, setActivePage, onLogout, us
                 className="w-12 h-12 rounded-full border border-white/10 object-cover bg-white/[0.02]"
               />
               <div>
-                <p className="font-semibold text-white line-clamp-1">{userProfile?.firstName || 'Pilot'}</p>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">Platinum</p>
+                <p className="font-semibold text-slate-100 line-clamp-1">{userProfile?.firstName || 'Pilot'}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">Platinum</p>
               </div>
             </div>
 
@@ -70,10 +70,10 @@ function MobileDrawer({ isOpen, onClose, activePage, setActivePage, onLogout, us
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200 ${
                       isActive
                         ? 'bg-primary/10 text-primary font-semibold'
-                        : 'text-neutral-400 hover:bg-white/[0.05] hover:text-white'
+                        : 'text-slate-400 hover:bg-white/[0.05] hover:text-slate-100'
                     }`}
                   >
-                    <span className={`material-symbols-outlined ${isActive ? 'text-primary' : 'text-neutral-400'}`} style={isActive ? {fontVariationSettings: "'FILL' 1"} : {}}>
+                    <span className={`material-symbols-outlined ${isActive ? 'text-primary' : 'text-slate-400'}`} style={isActive ? {fontVariationSettings: "'FILL' 1"} : {}}>
                       {item.icon}
                     </span>
                     <span className="text-sm">{item.label}</span>

@@ -57,6 +57,18 @@ function App() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
   });
 
+  const [direction, setDirection] = useState(1);
+  const prevIndexRef = React.useRef(0);
+
+  useEffect(() => {
+    const ROUTE_ORDER = ['/', '/transactions', '/budget', '/assets', '/receivables', '/insight', '/settings'];
+    const currentIndex = ROUTE_ORDER.indexOf(location.pathname);
+    if (currentIndex !== -1) {
+      if (currentIndex > prevIndexRef.current) setDirection(1);
+      else if (currentIndex < prevIndexRef.current) setDirection(-1);
+      prevIndexRef.current = currentIndex;
+    }
+  }, [location.pathname]);
 
   // Auth State Listener
   useEffect(() => {
@@ -380,6 +392,9 @@ function App() {
 
   return (
     <div className="relative min-h-screen text-slate-200 selection:bg-primary/30">
+      {/* ── Background Vertical Grid Lines ── */}
+      <div className="premium-bg-lines" />
+
       <Toaster position="top-right" toastOptions={{
         style: {
           background: '#1a1a1a',
@@ -395,13 +410,13 @@ function App() {
       <main className="md:ml-[240px] pt-[72px] pb-[80px] md:pb-0 min-h-screen relative w-full md:w-[calc(100%-240px)]">
         <AnimatePresence mode="wait" onExitComplete={() => window.scrollTo(0, 0)}>
           <Routes location={location} key={location.pathname}>
-            <Route path="/" element={<AnimatedPage><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
-            <Route path="/transactions" element={<AnimatedPage><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
-            <Route path="/budget" element={<AnimatedPage><Budget transactions={transactions} budgets={budgets} onAddBudget={addBudget} onUpdateBudget={updateBudget} onDeleteBudget={deleteBudget} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
-            <Route path="/assets" element={<AnimatedPage><AssetsDebt assets={assets} debts={debts} receivables={receivables} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} /></AnimatedPage>} />
-            <Route path="/receivables" element={<AnimatedPage><Receivables receivables={receivables} assets={assets} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} /></AnimatedPage>} />
-            <Route path="/insight" element={<AnimatedPage><Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} receivables={receivables} onNavigate={() => {}} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
-            <Route path="/settings" element={<AnimatedPage><Settings userProfile={userProfile} setUserProfile={handleUpdateProfile} preferences={preferences} setPreferences={handleSetPreferences} notifications={notifications} setNotifications={handleSetNotifications} onLogout={handleLogout} onResetData={handleResetFinanceData} t={t} fm={fm} /></AnimatedPage>} />
+            <Route path="/" element={<AnimatedPage direction={direction}><Dashboard transactions={transactions} assets={assets} debts={debts} receivables={receivables} onDeleteTransaction={handleDeleteTransaction} t={t} fm={fm} userProfile={userProfile} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/transactions" element={<AnimatedPage direction={direction}><Transactions transactions={transactions} onDelete={handleDeleteTransaction} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/budget" element={<AnimatedPage direction={direction}><Budget transactions={transactions} budgets={budgets} onAddBudget={addBudget} onUpdateBudget={updateBudget} onDeleteBudget={deleteBudget} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/assets" element={<AnimatedPage direction={direction}><AssetsDebt assets={assets} debts={debts} receivables={receivables} transactions={transactions} onAddAsset={addAsset} onUpdateAsset={updateAsset} onDeleteAsset={deleteAsset} onAddDebt={addDebt} onUpdateDebt={updateDebt} onDeleteDebt={deleteDebt} t={t} fm={fm} /></AnimatedPage>} />
+            <Route path="/receivables" element={<AnimatedPage direction={direction}><Receivables receivables={receivables} assets={assets} onAddReceivable={addReceivable} onUpdateReceivable={updateReceivable} onDeleteReceivable={deleteReceivable} onMarkPayment={markReceivablePayment} t={t} fm={fm} /></AnimatedPage>} />
+            <Route path="/insight" element={<AnimatedPage direction={direction}><Insight transactions={transactions} assets={assets} debts={debts} budgets={budgets} receivables={receivables} onNavigate={() => {}} onQuickAdd={() => setIsQuickAddOpen(true)} t={t} fm={fm} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} /></AnimatedPage>} />
+            <Route path="/settings" element={<AnimatedPage direction={direction}><Settings userProfile={userProfile} setUserProfile={handleUpdateProfile} preferences={preferences} setPreferences={handleSetPreferences} notifications={notifications} setNotifications={handleSetNotifications} onLogout={handleLogout} onResetData={handleResetFinanceData} t={t} fm={fm} /></AnimatedPage>} />
           </Routes>
         </AnimatePresence>
       </main>

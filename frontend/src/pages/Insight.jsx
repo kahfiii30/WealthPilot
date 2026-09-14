@@ -278,18 +278,18 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
       {/* Page Title Area */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-primary mb-1 ml-1">Strategy & Analysis</p>
-          <h2 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">{t('insight')}</h2>
-          <p className="text-sm font-medium text-neutral-500 mt-1">Real-time intelligence based on your command center data.</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-1 ml-1">Strategy & Analysis</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-slate-100 tracking-tight title-luxury">{t('insight')}</h2>
+          <p className="text-sm font-medium text-slate-400 mt-1">Real-time intelligence based on your command center data.</p>
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full md:w-auto">
           <div className="flex flex-col gap-1.5 min-w-[160px]">
-            <label className="text-[11px] font-semibold uppercase tracking-wider text-neutral-500 ml-1">Analysis Period</label>
+            <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Analysis Period</label>
             <input 
               type="month" 
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(e.target.value)}
-              className="bg-white/[0.03] border border-white/10 rounded-lg px-4 py-2 text-white outline-none focus:border-primary/50 transition-colors [color-scheme:dark] text-sm"
+              className="glass-input px-4 py-2 text-sm font-medium"
             />
           </div>
           {isInsightDismissed && (
@@ -306,7 +306,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
       {/* Bento Grid Layout */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8">
         {/* Financial Health Score Card */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-5 rounded-xl border border-white/5 bg-white/[0.02] p-8 flex flex-col items-center justify-center relative min-h-[420px]">
+        <div className="col-span-1 md:col-span-12 lg:col-span-5 card-luxury p-8 flex flex-col items-center justify-center relative min-h-[420px] rounded-2xl">
           
           <div className="relative flex flex-col items-center">
             <div className="w-48 h-48 md:w-56 md:h-56 rounded-full border-[12px] border-white/5 flex items-center justify-center relative">
@@ -320,8 +320,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                 ></circle>
               </svg>
               <div className="text-center">
-                <span className="text-5xl md:text-6xl font-bold text-white tracking-tighter block leading-none">{analysis.wealthScore}</span>
-                <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-widest mt-2 block">Wealth Score</span>
+                <span className="text-5xl md:text-6xl font-bold text-slate-100 tracking-tighter block leading-none">{analysis.wealthScore}</span>
+                <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest mt-2 block">Wealth Score</span>
               </div>
             </div>
             <div className={`mt-8 px-6 py-2 ${analysis.statusColor} bg-white/[0.03] border border-white/10 rounded-lg font-semibold text-xs uppercase tracking-wider`}>
@@ -331,25 +331,25 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
           
           <div className="mt-8 w-full grid grid-cols-3 gap-4 border-t border-white/5 pt-8">
             <div className="text-center group/item">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 mb-1 group-hover/item:text-primary transition-colors">Income Flow</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 group-hover/item:text-primary transition-colors">Income Flow</p>
               <span className={`material-symbols-outlined font-medium text-2xl mb-1 ${analysis.monthlyIncome > analysis.monthlyExpense ? 'text-primary' : 'text-red-400'}`}>
                 {analysis.monthlyIncome > analysis.monthlyExpense ? 'trending_up' : 'trending_down'}
               </span>
-              <p className="text-[9px] font-bold text-white uppercase tracking-widest">{analysis.monthlyIncome > analysis.monthlyExpense ? 'Surplus' : 'Deficit'}</p>
+              <p className="text-[9px] font-bold text-slate-100 uppercase tracking-widest">{analysis.monthlyIncome > analysis.monthlyExpense ? 'Surplus' : 'Deficit'}</p>
             </div>
             <div className="text-center group/item">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 mb-1 group-hover/item:text-primary transition-colors">Debt Level</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 group-hover/item:text-primary transition-colors">Debt Level</p>
               <span className={`material-symbols-outlined font-medium text-2xl mb-1 ${analysis.debtToAssetRatio > 40 ? 'text-red-400' : 'text-primary'}`}>
                 {analysis.debtToAssetRatio > 40 ? 'gpp_maybe' : 'verified_user'}
               </span>
-              <p className="text-[9px] font-bold text-white uppercase tracking-widest">{analysis.debtToAssetRatio > 40 ? 'High Risk' : 'Healthy'}</p>
+              <p className="text-[9px] font-bold text-slate-100 uppercase tracking-widest">{analysis.debtToAssetRatio > 40 ? 'High Risk' : 'Healthy'}</p>
             </div>
             <div className="text-center group/item">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500 mb-1 group-hover/item:text-primary transition-colors">Liquidity</p>
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-1 group-hover/item:text-primary transition-colors">Liquidity</p>
               <span className={`material-symbols-outlined font-medium text-2xl mb-1 ${analysis.emergencyFundMonths < 3 ? 'text-red-400' : 'text-primary'}`}>
                 {analysis.emergencyFundMonths < 3 ? 'warning' : 'savings'}
               </span>
-              <p className="text-[9px] font-bold text-white uppercase tracking-widest">{analysis.emergencyFundMonths.toFixed(1)} Mo</p>
+              <p className="text-[9px] font-bold text-slate-100 uppercase tracking-widest">{analysis.emergencyFundMonths.toFixed(1)} Mo</p>
             </div>
           </div>
         </div>
@@ -357,14 +357,14 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         {/* Analysis & Improvements Bento Group */}
         <div className="col-span-1 md:col-span-12 lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6 lg:gap-8">
           {/* Strength Analysis */}
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8 flex flex-col justify-between">
+          <div className="card-luxury p-6 lg:p-8 flex flex-col justify-between rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
               <span className="material-symbols-outlined text-primary text-[24px]">check_circle</span>
-              <h3 className="text-xl font-bold text-white tracking-tight">Strength Analysis</h3>
+              <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Strength Analysis</h3>
             </div>
             <ul className="space-y-6 flex-1 flex flex-col justify-center">
               <li className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-neutral-400 tracking-tight">
+                <span className="text-sm font-semibold text-slate-400 tracking-tight">
                   {analysis.monthlyIncome > analysis.monthlyExpense ? 'Income exceeds expenses' : 'Expenses exceed income'}
                 </span>
                 <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${analysis.monthlyIncome > analysis.monthlyExpense ? 'text-primary bg-primary/10' : 'text-red-400 bg-red-400/10'}`}>
@@ -372,13 +372,13 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                 </span>
               </li>
               <li className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-neutral-400 tracking-tight">Save rate {analysis.saveRate.toFixed(1)}%</span>
+                <span className="text-sm font-semibold text-slate-400 tracking-tight">Save rate {analysis.saveRate.toFixed(1)}%</span>
                 <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${analysis.saveRate >= 20 ? 'text-primary bg-primary/10' : analysis.saveRate >= 10 ? 'text-primary bg-primary/10' : 'text-yellow-400 bg-yellow-400/10'}`}>
                   {analysis.saveRate >= 20 ? 'Excellent' : analysis.saveRate >= 10 ? 'Good' : 'Needs Work'}
                 </span>
               </li>
               <li className="flex justify-between items-center">
-                <span className="text-sm font-semibold text-neutral-400 tracking-tight">Debt Exposure</span>
+                <span className="text-sm font-semibold text-slate-400 tracking-tight">Debt Exposure</span>
                 <span className={`text-[9px] font-bold uppercase tracking-wider px-3 py-1 rounded-md ${analysis.debtToAssetRatio <= 30 ? 'text-primary bg-primary/10' : analysis.debtToAssetRatio <= 60 ? 'text-yellow-400 bg-yellow-400/10' : 'text-red-400 bg-red-400/10'}`}>
                   {analysis.debtToAssetRatio <= 30 ? 'Stable' : analysis.debtToAssetRatio <= 60 ? 'Attention' : 'Critical'}
                 </span>
@@ -387,10 +387,10 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
           </div>
 
           {/* Risk Factors */}
-          <div className="rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8 flex flex-col justify-between">
+          <div className="card-luxury p-6 lg:p-8 flex flex-col justify-between rounded-2xl">
             <div className="flex items-center gap-3 mb-6">
               <span className="material-symbols-outlined text-red-400 text-[24px]">warning</span>
-              <h3 className="text-xl font-bold text-white tracking-tight">Risk Factors</h3>
+              <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Risk Factors</h3>
             </div>
             <div className="space-y-4 overflow-y-auto custom-scrollbar pr-2 flex-1 flex flex-col justify-center">
               {smartInsight.riskLevel !== "Low" ? (
@@ -401,15 +401,15 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                   </div>
                   {analysis.budgetUsage > 100 && (
                     <div className="p-4 bg-white/[0.03] rounded-lg border border-white/10">
-                      <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">Budget</p>
-                      <p className="text-sm font-semibold text-white tracking-tight">Monthly budget exceeded by {formatRupiah(analysis.monthlyExpense - analysis.monthlyBudget)}</p>
+                      <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Budget</p>
+                      <p className="text-sm font-semibold text-slate-100 tracking-tight">Monthly budget exceeded by {formatRupiah(analysis.monthlyExpense - analysis.monthlyBudget)}</p>
                     </div>
                   )}
                 </>
               ) : (
                 <div className="p-6 flex flex-col items-center justify-center text-center">
-                  <span className="material-symbols-outlined text-neutral-600 text-4xl mb-3">gpp_good</span>
-                  <p className="text-sm font-semibold text-neutral-500">No major risks detected based on current data.</p>
+                  <span className="material-symbols-outlined text-slate-600 text-4xl mb-3">gpp_good</span>
+                  <p className="text-sm font-semibold text-slate-500">No major risks detected based on current data.</p>
                 </div>
               )}
             </div>
@@ -429,12 +429,12 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                 </div>
                 <div className="flex-1 text-center md:text-left">
                   <div className="flex flex-col md:flex-row items-center gap-3 mb-3">
-                    <h3 className="text-xl font-bold text-white tracking-tight">Smart Insight AI</h3>
+                    <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">Smart Insight AI</h3>
                     <span className={`text-[9px] font-bold px-3 py-1 rounded-full uppercase tracking-wider border ${smartInsight.riskLevel === 'Critical' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
                       {smartInsight.riskLevel} Risk Profile
                     </span>
                   </div>
-                  <p className="text-base font-semibold text-neutral-300 leading-relaxed tracking-tight mb-2">
+                  <p className="text-base font-semibold text-slate-300 leading-relaxed tracking-tight mb-2">
                     {smartInsight.mainInsight}
                   </p>
                   <p className="text-sm font-semibold text-primary/80 mb-6">
@@ -461,23 +461,23 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         </div>
 
         {/* Goal Tracker Card */}
-        <div className="col-span-1 md:col-span-12 glass-card-premium rounded-3xl p-6 lg:p-10">
+        <div className="col-span-1 md:col-span-12 card-luxury rounded-3xl p-6 lg:p-10">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
             <div>
-              <h3 className="text-2xl font-bold text-white tracking-tight">Strategic Goal Tracker</h3>
-              <p className="text-sm font-medium text-neutral-500 mt-1">Projecting your journey to absolute financial freedom.</p>
+              <h3 className="text-2xl font-bold text-slate-100 tracking-tight title-luxury">Strategic Goal Tracker</h3>
+              <p className="text-sm font-medium text-slate-500 mt-1">Projecting your journey to absolute financial freedom.</p>
             </div>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
             <div className="space-y-8 flex flex-col justify-center">
               <div className="flex justify-between items-end">
                 <div>
-                  <h4 className="text-xl font-bold text-white tracking-tight">Emergency Fund (6 Months)</h4>
-                  <p className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider mt-1">Target: {formatRupiah(efTarget)}</p>
+                  <h4 className="text-xl font-bold text-slate-100 tracking-tight">Emergency Fund (6 Months)</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">Target: {formatRupiah(efTarget)}</p>
                 </div>
                 <div className="text-right">
                   <span className="text-3xl font-bold text-primary tracking-tighter block leading-none">{efPercent.toFixed(0)}%</span>
-                  <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mt-1 block">Completed</span>
+                  <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mt-1 block">Completed</span>
                 </div>
               </div>
               <div className="w-full h-3 bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
@@ -488,7 +488,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                   className="h-full bg-primary"
                 ></motion.div>
               </div>
-              <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+              <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <span>Liquid Assets: {formatRupiah(efSaved)}</span>
                 <span>Requirement: {formatRupiah(Math.max(efTarget - efSaved, 0))}</span>
               </div>
@@ -519,14 +519,14 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         </div>
 
         {/* Capital Accumulation Trend */}
-        <div className="col-span-1 lg:col-span-6 glass-card-premium rounded-3xl p-6 lg:p-10 flex flex-col justify-center">
+        <div className="col-span-1 lg:col-span-6 card-luxury rounded-3xl p-6 lg:p-10 flex flex-col justify-center">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
-            <h3 className="text-2xl font-bold text-white tracking-tight">Monthly Flow Analysis</h3>
+            <h3 className="text-2xl font-bold text-slate-100 tracking-tight title-luxury">Monthly Flow Analysis</h3>
             <div className="flex gap-6">
-              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <span className="w-2.5 h-2.5 rounded-full bg-primary"></span> Income
               </span>
-              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+              <span className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                 <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span> Expense
               </span>
             </div>
@@ -553,8 +553,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         </div>
 
         {/* Strategic Tasks */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-4 rounded-xl border border-white/5 bg-white/[0.02] p-6 lg:p-8 flex flex-col">
-          <h3 className="text-xl font-bold text-white tracking-tight mb-6">Strategic Tasks</h3>
+        <div className="col-span-1 md:col-span-12 lg:col-span-4 card-luxury rounded-3xl p-6 lg:p-8 flex flex-col">
+          <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-6">Strategic Tasks</h3>
           <div className="space-y-4 flex-1 flex flex-col justify-center">
             {strategicTasks.length > 0 ? strategicTasks.map((item, i) => (
               <motion.div 
@@ -569,8 +569,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                   <span className={`material-symbols-outlined font-medium text-[20px] ${item.color}`}>{item.icon}</span>
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-white tracking-tight">{item.title}</p>
-                  <p className="text-[11px] font-medium text-neutral-500 mt-0.5 line-clamp-2">{item.desc}</p>
+                  <p className="text-sm font-semibold text-slate-100 tracking-tight">{item.title}</p>
+                  <p className="text-[11px] font-medium text-slate-500 mt-0.5 line-clamp-2">{item.desc}</p>
                 </div>
               </motion.div>
             )) : (
@@ -582,7 +582,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
           </div>
           <button 
             onClick={() => setIsLogModalOpen(true)}
-            className="w-full mt-6 py-3 text-center text-[10px] font-semibold uppercase tracking-wider text-neutral-500 hover:text-white transition-colors border-t border-white/5"
+            className="w-full mt-6 py-3 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-100 transition-colors border-t border-white/5"
           >
             View Optimization Log
           </button>
@@ -594,59 +594,59 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         <div className="space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="p-5 bg-white/[0.02] rounded-lg border border-white/5">
-              <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-3">Wealth Snapshot</p>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Wealth Snapshot</p>
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-xs font-medium text-neutral-400">Total Assets</span><span className="text-xs font-bold text-white">{formatRupiah(analysis.totalAssets)}</span></div>
-                <div className="flex justify-between"><span className="text-xs font-medium text-neutral-400">Liabilities</span><span className="text-xs font-bold text-red-400">{formatRupiah(analysis.totalLiabilities)}</span></div>
-                <div className="border-t border-white/5 my-2 pt-2 flex justify-between"><span className="text-xs font-medium text-white">Net Worth</span><span className="text-sm font-bold text-primary">{formatRupiah(analysis.netWorth)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-medium text-slate-400">Total Assets</span><span className="text-xs font-bold text-slate-100">{formatRupiah(analysis.totalAssets)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-medium text-slate-400">Liabilities</span><span className="text-xs font-bold text-red-400">{formatRupiah(analysis.totalLiabilities)}</span></div>
+                <div className="border-t border-white/5 my-2 pt-2 flex justify-between"><span className="text-xs font-medium text-slate-100">Net Worth</span><span className="text-sm font-bold text-primary">{formatRupiah(analysis.netWorth)}</span></div>
               </div>
             </div>
             <div className="p-5 bg-white/[0.02] rounded-lg border border-white/5">
-              <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-3">Cashflow (MTD)</p>
+              <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-3">Cashflow (MTD)</p>
               <div className="space-y-2">
-                <div className="flex justify-between"><span className="text-xs font-medium text-neutral-400">Income</span><span className="text-xs font-bold text-primary">{formatRupiah(analysis.monthlyIncome)}</span></div>
-                <div className="flex justify-between"><span className="text-xs font-medium text-neutral-400">Expenses</span><span className="text-xs font-bold text-red-400">{formatRupiah(analysis.monthlyExpense)}</span></div>
-                <div className="border-t border-white/5 my-2 pt-2 flex justify-between"><span className="text-xs font-medium text-white">Savings</span><span className="text-sm font-bold text-primary">{formatRupiah(analysis.monthlySavings)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-medium text-slate-400">Income</span><span className="text-xs font-bold text-primary">{formatRupiah(analysis.monthlyIncome)}</span></div>
+                <div className="flex justify-between"><span className="text-xs font-medium text-slate-400">Expenses</span><span className="text-xs font-bold text-red-400">{formatRupiah(analysis.monthlyExpense)}</span></div>
+                <div className="border-t border-white/5 my-2 pt-2 flex justify-between"><span className="text-xs font-medium text-slate-100">Savings</span><span className="text-sm font-bold text-primary">{formatRupiah(analysis.monthlySavings)}</span></div>
               </div>
             </div>
           </div>
 
           <div>
-            <h4 className="text-base font-bold text-white mb-4 flex items-center gap-2">
+            <h4 className="text-base font-bold text-slate-100 mb-4 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">insights</span>
               Efficiency Metrics
             </h4>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="p-4 bg-white/[0.02] rounded-lg border border-white/5 text-center">
-                <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">Save Rate</p>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Save Rate</p>
                 <p className="text-lg font-bold text-primary">{analysis.saveRate.toFixed(1)}%</p>
               </div>
               <div className="p-4 bg-white/[0.02] rounded-lg border border-white/5 text-center">
-                <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">Debt Ratio</p>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Debt Ratio</p>
                 <p className="text-lg font-bold text-primary">{analysis.debtToAssetRatio.toFixed(1)}%</p>
               </div>
               <div className="p-4 bg-white/[0.02] rounded-lg border border-white/5 text-center">
-                <p className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider mb-1">Budget Usage</p>
+                <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-1">Budget Usage</p>
                 <p className="text-lg font-bold text-blue-400">{analysis.budgetUsage.toFixed(1)}%</p>
               </div>
             </div>
           </div>
 
           <div>
-            <h4 className="text-base font-bold text-white mb-4">Strategic Recommendations</h4>
+            <h4 className="text-base font-bold text-slate-100 mb-4">Strategic Recommendations</h4>
             <div className="space-y-3">
               {smartInsight.recommendations.map((rec, i) => (
                 <div key={i} className="p-4 bg-white/[0.02] border border-white/5 rounded-lg flex justify-between items-center gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <p className="text-sm font-semibold text-white tracking-tight">{rec.title}</p>
+                      <p className="text-sm font-semibold text-slate-100 tracking-tight">{rec.title}</p>
                       <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${rec.priority === 'high' ? 'bg-red-500/10 text-red-400' : 'bg-primary/10 text-primary'}`}>
                         {rec.priority}
                       </span>
                     </div>
-                    <p className="text-xs font-medium text-neutral-400 leading-relaxed">{rec.description}</p>
+                    <p className="text-xs font-medium text-slate-400 leading-relaxed">{rec.description}</p>
                   </div>
-                  <button onClick={() => rec.action === 'Add' ? onQuickAdd() : onNavigate(rec.action.toLowerCase().includes('budget') ? 'budget' : 'assets')} className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.1] text-white rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-colors shrink-0 border border-white/10">
+                  <button onClick={() => rec.action === 'Add' ? onQuickAdd() : onNavigate(rec.action.toLowerCase().includes('budget') ? 'budget' : 'assets')} className="px-4 py-2 bg-white/[0.05] hover:bg-white/[0.1] text-slate-100 rounded-lg text-[10px] font-semibold uppercase tracking-wider transition-colors shrink-0 border border-white/10">
                     {rec.action}
                   </button>
                 </div>
@@ -661,16 +661,16 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-lg">
             <div>
-              <p className="text-xs font-bold text-white tracking-tight">System Initialization</p>
-              <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mt-1">Ready for analysis</p>
+              <p className="text-xs font-bold text-slate-100 tracking-tight">System Initialization</p>
+              <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mt-1">Ready for analysis</p>
             </div>
-            <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider">System</span>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">System</span>
           </div>
           {analysis.budgetUsage > 100 && (
             <div className="flex items-center justify-between p-4 bg-red-500/5 border border-red-500/20 rounded-lg">
               <div>
                 <p className="text-xs font-bold text-red-400 tracking-tight">Budget Exceeded Alert</p>
-                <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mt-1">Requires intervention</p>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mt-1">Requires intervention</p>
               </div>
               <span className="text-[10px] font-bold text-red-400 uppercase tracking-wider">Warning</span>
             </div>
@@ -679,14 +679,14 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
             <div className="flex items-center justify-between p-4 bg-primary/5 border border-primary/20 rounded-lg">
               <div>
                 <p className="text-xs font-bold text-primary tracking-tight">High Accumulation Signal</p>
-                <p className="text-[10px] font-medium text-neutral-500 uppercase tracking-wider mt-1">Status: Active</p>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider mt-1">Status: Active</p>
               </div>
               <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Signal</span>
             </div>
           )}
           <div className="p-6 text-center border border-dashed border-white/10 rounded-lg bg-white/[0.01]">
-            <span className="material-symbols-outlined text-3xl mb-2 text-neutral-600">history</span>
-            <p className="text-xs font-medium text-neutral-500">No previous logs found. System history cleared.</p>
+            <span className="material-symbols-outlined text-3xl mb-2 text-slate-600">history</span>
+            <p className="text-xs font-medium text-slate-500">No previous logs found. System history cleared.</p>
           </div>
         </div>
       </Modal>
@@ -705,16 +705,16 @@ function Modal({ isOpen, onClose, title, children }) {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="relative z-[201] w-[90vw] max-w-2xl rounded-xl glass-card-premium shadow-2xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar mx-auto my-auto"
+            className="relative z-[201] w-[90vw] max-w-2xl rounded-3xl card-luxury shadow-2xl p-6 lg:p-8 max-h-[90vh] overflow-y-auto custom-scrollbar mx-auto my-auto"
           >
             <div className="flex justify-between items-center mb-6">
               <div>
                 <p className="text-[10px] font-semibold uppercase tracking-wider text-primary mb-1">Intelligence Report</p>
-                <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
+                <h2 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{title}</h2>
               </div>
               <button 
                 onClick={onClose}
-                className="p-2 text-neutral-400 hover:text-white transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-100 transition-colors rounded-lg hover:bg-white/5"
               >
                 <span className="material-symbols-outlined text-[20px]">close</span>
               </button>
@@ -723,7 +723,7 @@ function Modal({ isOpen, onClose, title, children }) {
             <div className="mt-8 pt-6 border-t border-white/10 text-right">
               <button 
                 onClick={onClose}
-                className="px-6 py-2 bg-white text-black rounded-lg text-xs font-semibold hover:bg-neutral-200 transition-colors"
+                className="px-6 py-2 bg-slate-100 text-slate-900 rounded-lg text-xs font-bold hover:bg-slate-300 transition-colors"
               >
                 Close Report
               </button>

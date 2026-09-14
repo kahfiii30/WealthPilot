@@ -31,14 +31,14 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
     show: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.05
+        staggerChildren: 0.08
       }
     }
   };
 
   const item = {
-    hidden: { opacity: 0, y: 5 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.2 } }
+    hidden: { opacity: 0, y: 15, scale: 0.98 },
+    show: { opacity: 1, y: 0, scale: 1, transition: { type: "spring", stiffness: 150, damping: 20 } }
   };
 
 
@@ -94,14 +94,14 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
             className="space-y-4"
           >
             {filtered.map((t_data) => (
-              <motion.div key={t_data.id} variants={item} className="rounded-2xl glass-card-premium p-5">
+              <motion.div key={t_data.id} variants={item} className="rounded-2xl card-luxury p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex items-center gap-4">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${t_data.type === 'income' ? 'bg-primary/10 text-primary' : 'bg-red-500/10 text-red-400'}`}>
                       <span className="material-symbols-outlined font-medium text-[20px]">{t_data.type === 'income' ? 'south_west' : 'north_east'}</span>
                     </div>
                     <div>
-                      <p className="font-semibold text-white text-sm line-clamp-1">{t_data.title}</p>
+                      <p className="font-semibold text-slate-100 text-sm line-clamp-1">{t_data.title}</p>
                       <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{formatDate(t_data.date)}</p>
                     </div>
                   </div>
@@ -128,16 +128,16 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block rounded-3xl glass-card-premium overflow-hidden">
+      <div className="hidden md:block rounded-3xl card-luxury overflow-hidden">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-white/5">
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Date</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Transaction</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Category</th>
-              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Method</th>
-              <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-neutral-500">Amount</th>
-              <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase tracking-wider text-neutral-500"></th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Date</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Transaction</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Category</th>
+              <th className="px-6 py-4 text-[11px] font-semibold uppercase tracking-wider text-slate-500">Method</th>
+              <th className="px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider text-slate-500">Amount</th>
+              <th className="px-6 py-4 text-center text-[11px] font-semibold uppercase tracking-wider text-slate-500"></th>
             </tr>
           </thead>
           <motion.tbody 
@@ -154,32 +154,32 @@ function Transactions({ transactions = [], onDelete, fm, selectedMonth, setSelec
               </tr>
             ) : (
               filtered.map((t_data) => (
-                <motion.tr key={t_data.id} variants={item} className="hover:bg-white/[0.02] transition-colors group">
-                  <td className="px-6 py-4 text-sm font-medium text-neutral-400 whitespace-nowrap">
+                <motion.tr key={t_data.id} variants={item} className="hover:bg-white/[0.03] transition-colors group">
+                  <td className="px-6 py-4 text-sm font-medium text-slate-400 whitespace-nowrap">
                     {formatDate(t_data.date)}
                   </td>
                   <td className="px-6 py-4">
                     <div>
-                      <p className="font-semibold text-white group-hover:text-primary transition-colors">
+                      <p className="font-semibold text-slate-100 group-hover:text-primary transition-colors">
                         {t_data.title}
                       </p>
                       {t_data.notes && (
-                        <p className="text-[12px] text-neutral-500 mt-0.5">
+                        <p className="text-[12px] text-slate-500 mt-0.5">
                           {t_data.notes}
                         </p>
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="px-2 py-1 bg-white/[0.03] text-neutral-400 rounded text-[10px] uppercase font-semibold tracking-wider border border-white/5 whitespace-nowrap">{t_data.category}</span>
+                    <span className="px-2 py-1 bg-white/[0.03] text-slate-400 rounded text-[10px] uppercase font-semibold tracking-wider border border-white/5 whitespace-nowrap">{t_data.category}</span>
                   </td>
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-neutral-500">
+                    <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500">
                       <span className="material-symbols-outlined text-[16px]">account_balance_wallet</span>
                       {t_data.method}
                     </div>
                   </td>
-                  <td className={`px-6 py-4 text-right font-bold whitespace-nowrap ${t_data.type === 'income' ? 'text-primary' : 'text-white'}`}>
+                  <td className={`px-6 py-4 text-right font-bold whitespace-nowrap ${t_data.type === 'income' ? 'text-primary' : 'text-slate-100'}`}>
                     {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
                   </td>
                   <td className="px-6 py-4 text-center">

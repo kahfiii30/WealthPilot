@@ -15,10 +15,14 @@ export const formatMoney = (amountInIdr, settings) => {
   }
 
   // Default IDR
-  return new Intl.NumberFormat('id-ID', {
+  const isNegative = amountInIdr < 0;
+  const absAmount = Math.abs(amountInIdr);
+  const formatted = new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amountInIdr).replace(/,00$/, '').replace('IDR', 'Rp');
+  }).format(absAmount).replace(/,00$/, '').replace(/IDR\s?|Rp\s?/, '').trim();
+  
+  return `${isNegative ? '-' : ''}Rp ${formatted}`;
 };

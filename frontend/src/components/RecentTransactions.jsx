@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { formatDate } from '../utils/dateUtils';
 
 function RecentTransactions({ transactions, onDelete, t, fm }) {
   // Sort by date descending
@@ -40,17 +41,17 @@ function RecentTransactions({ transactions, onDelete, t, fm }) {
                         <span className="material-symbols-outlined font-medium text-[20px]">{t_data.type === 'income' ? 'south_west' : 'north_east'}</span>
                       </div>
                       <div>
-                        <p className="font-semibold text-white group-hover:text-primary transition-colors text-sm">{t_data.title}</p>
+                        <p className="font-semibold text-white text-sm">{t_data.title.replace(/\w\S*/g, w => w.charAt(0).toUpperCase() + w.substr(1).toLowerCase())}</p>
                         <p className="text-[11px] font-medium text-neutral-500 mt-0.5">{t_data.category}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 text-sm font-medium text-neutral-400">{t_data.date}</td>
+                  <td className="py-4 text-sm font-medium text-neutral-400">{formatDate(t_data.date)}</td>
                   <td className={`py-4 text-right font-bold text-base ${t_data.type === 'income' ? 'text-primary' : 'text-white'}`}>
-                    {t_data.type === 'income' ? '+' : '-'} {fm(t_data.amount)}
+                    {t_data.type === 'income' ? '+' : ''}{fm(t_data.type === 'income' ? t_data.amount : -t_data.amount)}
                   </td>
                   <td className="py-4 text-center">
-                    <button onClick={() => onDelete(t_data.id)} className="text-neutral-600 hover:text-red-400 p-2 rounded-lg transition-colors">
+                    <button onClick={() => { if (window.confirm('Hapus transaksi ini?')) onDelete(t_data.id); }} className="text-neutral-600 hover:text-red-400 p-2 rounded-lg transition-colors">
                       <span className="material-symbols-outlined text-[20px]">delete</span>
                     </button>
                   </td>

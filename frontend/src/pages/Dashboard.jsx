@@ -47,7 +47,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
     const income  = filteredTransactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
     const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
     const sav = income - expense;
-    const rate = income > 0 ? ((sav / income) * 100).toFixed(1) : 0;
+    const rate = income > 0 ? ((sav / income) * 100).toFixed(1) : '—';
     return { totalIncome: income, totalExpense: expense, savings: sav, savingsRate: rate };
   }, [filteredTransactions]);
 
@@ -154,16 +154,28 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
       {/* ── Welcome Header ─────────────────────────────────────────── */}
       <motion.section variants={item} className="mb-7 md:mb-9 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
+        <div className="flex-1">
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">
-            {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            {new Date().toLocaleDateString('id-ID', { weekday: 'long', month: 'long', day: 'numeric' })}
           </p>
-          <h2 className="text-3xl 2xl:text-4xl font-bold text-slate-100 tracking-tight title-luxury">
-            {t('welcome')}, <span className="text-primary">{displayName}</span>.
+          <h2 className="text-3xl 2xl:text-4xl font-bold text-slate-100 tracking-tight title-luxury mb-4">
+            Halo, <span className="text-primary">{displayName}</span>.
           </h2>
-          <div className="flex items-center gap-2 mt-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse shadow-sm shadow-primary/50" />
-            <p className="text-sm font-medium text-slate-400">{t('healthStatus')}</p>
+          <div className="card-luxury p-4 rounded-xl border border-primary/20 bg-primary/5 inline-flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-primary text-[20px]">{totalExpense > totalIncome ? 'warning' : 'tips_and_updates'}</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-slate-100">
+                {totalIncome === 0 && totalExpense === 0 
+                  ? "Belum ada aktivitas finansial bulan ini." 
+                  : totalExpense > totalIncome 
+                    ? `Pengeluaran bulan ini melebihi pemasukan sebesar ${fm(totalExpense - totalIncome)}.`
+                    : `Anggaran aman. Sisa dana bulan ini ${fm(totalIncome - totalExpense)}.`
+                }
+              </p>
+              <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ringkasan aksi berdasarkan data berjalan</p>
+            </div>
           </div>
         </div>
 
@@ -227,7 +239,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           <div className="mt-5 grid grid-cols-2 gap-4 border-t border-white/5 pt-5 relative z-10">
             <div className="gradient-border-card p-3 rounded-xl">
               <p className="text-label mb-1">Savings Rate</p>
-              <p className="text-2xl font-bold text-white tracking-tight">{savingsRate}%</p>
+              <p className="text-2xl font-bold text-white tracking-tight">{savingsRate === '—' ? '—' : `${savingsRate}%`}</p>
             </div>
             <div className="gradient-border-card p-3 rounded-xl">
               <p className="text-label mb-1">Monthly Savings</p>
@@ -302,24 +314,35 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
               { ring: 'ring-amber-400/20',   icon: 'text-amber-400',   bg: 'bg-amber-400/10' },
             ];
             const c = colors[idx % colors.length];
+            const getIcon = (name) => {
+              const n = name.toLowerCase();
+              if (n.includes('cash') || n.includes('tunai')) return 'payments';
+              if (n.includes('gopay') || n.includes('ovo') || n.includes('dana') || n.includes('shopeepay')) return 'account_balance_wallet';
+              if (n.includes('credit') || n.includes('kartu') || n.includes('paylater')) return 'credit_card';
+              return 'account_balance';
+            };
+            const iconName = getIcon(asset.name);
             return (
-              <div key={asset.id}
+              <div key={asset.name}
                 className="flex items-center gap-3.5 p-4 rounded-xl bg-white/[0.025] border border-white/[0.06] hover:bg-white/[0.045] hover:border-white/10 transition-all duration-200 cursor-default group"
               >
                 <div className={`w-10 h-10 rounded-xl ${c.bg} border ${c.ring} ring-1 flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 duration-200`}>
-                  <span className={`material-symbols-outlined text-[18px] ${c.icon}`} style={{ fontVariationSettings: "'FILL' 1" }}>account_balance</span>
+                  <span className={`material-symbols-outlined text-[18px] ${c.icon}`} style={{ fontVariationSettings: "'FILL' 1" }}>{iconName}</span>
                 </div>
                 <div className="min-w-0">
                   <p className="font-semibold text-slate-100 text-sm truncate">{asset.name}</p>
                   <p className="text-[10px] font-black uppercase tracking-wider text-slate-600 truncate">{asset.type || asset.category}</p>
-                  <p className="font-bold text-white text-sm mt-0.5">{fm(asset.amount)}</p>
+                  <p className={`font-bold text-sm mt-0.5 flex items-center gap-1 ${asset.amount < 0 ? 'text-red-400' : 'text-white'}`}>
+                    {fm(asset.amount)}
+                    {asset.amount < 0 && <span className="material-symbols-outlined text-[14px]" title="Saldo tidak wajar">warning</span>}
+                  </p>
                 </div>
               </div>
             );
           })}
-          {assets.length === 0 && (
+          {accountBalances.length === 0 && (
             <div className="col-span-full py-10 text-center text-slate-600 text-sm font-medium">
-              No accounts added yet.
+              Belum ada akun yang ditambahkan.
             </div>
           )}
         </div>

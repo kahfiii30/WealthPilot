@@ -186,11 +186,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             </div>
             <div>
               <p className="text-sm font-bold text-slate-100">
-                {bSummary.totalBudget === 0 
-                  ? "Belum ada budget bulan ini." 
-                  : bSummary.remainingBudget >= 0 
-                    ? `Anggaran aman. Sisa dana bulan ini ${fm(bSummary.remainingBudget)}.`
-                    : `Pengeluaran bulan ini melebihi budget sebesar ${fm(Math.abs(bSummary.remainingBudget))}.`
+                {totalIncome === 0 && totalExpense === 0
+                  ? "Belum ada data pemasukan atau pengeluaran bulan ini."
+                  : totalExpense > totalIncome 
+                    ? `Pengeluaran bulan ini lebih besar dari pemasukan sebesar ${fm(totalExpense - totalIncome)}.`
+                    : `Cashflow bulan ini aman. Sisa surplus ${fm(totalIncome - totalExpense)}.`
                 }
               </p>
               <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ringkasan aksi berdasarkan data berjalan</p>

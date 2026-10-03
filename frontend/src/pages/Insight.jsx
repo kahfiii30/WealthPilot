@@ -1,6 +1,18 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMonthKey } from '../services/financeService';
+import { 
+  getCashBalance, 
+  getTotalAssets, 
+  getTotalLiabilities, 
+  getNetWorth, 
+  getMonthlyIncome, 
+  getMonthlyExpense, 
+  getSavingsRate,
+  getDebtToAssetRatio,
+  getLiquidityMonths,
+  classifyTransaction
+} from '../lib/finance/calculations';
 
 
 // Helper Functions
@@ -34,31 +46,17 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
 
   // 1. Core Calculations
   const analysis = useMemo(() => {
-    const totalAssets = assets.reduce((sum, a) => sum + toNumber(a.amount), 0);
-    const totalLiabilities = debts.reduce((sum, d) => sum + toNumber(d.amount), 0);
-    
-    // Calculate total outstanding receivables
-    const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
-    const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + toNumber(r.remainingAmount), 0);
-    
-    // Calculate all-time cashflow
-    const allTimeIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + toNumber(t.amount), 0);
-    const allTimeExpense = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + toNumber(t.amount), 0);
-    const cashBalance = allTimeIncome - allTimeExpense;
+    const cashBalance = getCashBalance(transactions);
+    const totalAssets = getTotalAssets(cashBalance, assets, receivables);
+    const totalLiabilities = getTotalLiabilities(debts);
+    const netWorth = getNetWorth(totalAssets, totalLiabilities);
 
-    const netWorth = cashBalance + totalAssets + outstandingReceivables - totalLiabilities;
-
-    const monthlyIncome = filteredTransactions
-      .filter(t_item => t_item.type === 'income')
-      .reduce((sum, t_item) => sum + toNumber(t_item.amount), 0);
-
-    const monthlyExpense = filteredTransactions
-      .filter(t_item => t_item.type === 'expense')
-      .reduce((sum, t_item) => sum + toNumber(t_item.amount), 0);
+    const monthlyIncome = getMonthlyIncome(transactions, selectedMonth);
+    const monthlyExpense = getMonthlyExpense(transactions, selectedMonth);
 
     const monthlySavings = monthlyIncome - monthlyExpense;
-    const saveRate = monthlyIncome > 0 ? (monthlySavings / monthlyIncome) * 100 : 0;
-    const debtToAssetRatio = totalAssets > 0 ? (totalLiabilities / totalAssets) * 100 : 0;
+    const saveRate = getSavingsRate(monthlyIncome, monthlyExpense) * 100;
+    const debtToAssetRatio = getDebtToAssetRatio(totalLiabilities, totalAssets) * 100;
     const expenseRatio = monthlyIncome > 0 ? (monthlyExpense / monthlyIncome) * 100 : 0;
 
     const currentBudgets = budgets.filter(b => b.month === selectedMonth);
@@ -67,23 +65,18 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
 
     // Liquid Assets Calculation
     const liquidCategories = ['Cash', 'Bank', 'E-Wallet', 'Investment', 'Crypto'];
-    const liquidAssets = assets
+    const liquidPortfolio = assets
       .filter(a => liquidCategories.includes(a.category))
       .reduce((sum, a) => sum + toNumber(a.amount), 0);
     
-    const effectiveLiquid = liquidAssets > 0 ? liquidAssets : totalAssets;
+    const effectiveLiquid = cashBalance + liquidPortfolio > 0 ? cashBalance + liquidPortfolio : totalAssets;
 
-    const monthsWithData = new Set(transactions.map(ti => getMonthKey(ti.date || ti.createdAt))).size || 1;
-    const realMonthlyExpenseAvg = transactions
-      .filter(t_item => t_item.type === 'expense')
-      .reduce((sum, t_item) => sum + toNumber(t_item.amount), 0) / monthsWithData;
-
-    const emergencyFundMonths = realMonthlyExpenseAvg > 0 ? effectiveLiquid / realMonthlyExpenseAvg : 0;
+    const { months: emergencyFundMonths } = getLiquidityMonths(effectiveLiquid, transactions);
 
     // Biggest Category
     const categoryTotals = {};
     filteredTransactions
-      .filter(t_item => t_item.type === 'expense')
+      .filter(t_item => classifyTransaction(t_item) === 'expense')
       .forEach(t_item => {
         categoryTotals[t_item.category] = (categoryTotals[t_item.category] || 0) + toNumber(t_item.amount);
       });
@@ -122,6 +115,9 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
       return isPaidThisMonth ? acc + toNumber(r.paidAmount) : acc;
     }, 0);
     const overdueCount = (receivables || []).filter(r => r.status !== 'paid' && r.dueDate && new Date(r.dueDate) < new Date()).length;
+
+    const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
+    const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + toNumber(r.remainingAmount), 0);
 
     return {
       totalAssets, totalLiabilities, netWorth, monthlyIncome, monthlyExpense, monthlySavings,
@@ -244,12 +240,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
     }
 
     return last6Months.map(mKey => {
-      const income = transactions
-        .filter(t_i => t_i.type === 'income' && getMonthKey(t_i.date || t_i.createdAt) === mKey)
-        .reduce((sum, t_i) => sum + toNumber(t_i.amount), 0);
-      const expense = transactions
-        .filter(t_i => t_i.type === 'expense' && getMonthKey(t_i.date || t_i.createdAt) === mKey)
-        .reduce((sum, t_i) => sum + toNumber(t_i.amount), 0);
+      const income = getMonthlyIncome(transactions, mKey);
+      const expense = getMonthlyExpense(transactions, mKey);
       
       const label = new Date(mKey + "-01").toLocaleString('default', { month: 'short' });
       return { label, income, expense, mKey };

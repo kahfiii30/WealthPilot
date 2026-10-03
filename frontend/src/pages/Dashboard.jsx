@@ -5,6 +5,16 @@ import RecentTransactions from '../components/RecentTransactions';
 import CashflowChart from '../components/CashflowChart';
 import CategoryChart from '../components/CategoryChart';
 import { getMonthKey } from '../services/financeService';
+import { 
+  getCashBalance, 
+  getTotalAssets, 
+  getTotalLiabilities, 
+  getNetWorth, 
+  getMonthlyIncome, 
+  getMonthlyExpense, 
+  getSavingsRate,
+  classifyTransaction
+} from '../lib/finance/calculations';
 import { exportToCSV, exportToPDF } from '../utils/export';
 
 // ─── Category config ────────────────────────────────────────────────────────
@@ -44,15 +54,36 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
   // Monthly metrics
   const { totalIncome, totalExpense, savings, savingsRate } = useMemo(() => {
-    const income  = filteredTransactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-    const expense = filteredTransactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
+    const income = getMonthlyIncome(transactions, selectedMonth);
+    const expense = getMonthlyExpense(transactions, selectedMonth);
     const sav = income - expense;
-    const rate = income > 0 ? ((sav / income) * 100).toFixed(1) : '—';
-    return { totalIncome: income, totalExpense: expense, savings: sav, savingsRate: rate };
-  }, [filteredTransactions]);
+    const rate = getSavingsRate(income, expense);
+    return { 
+      totalIncome: income, 
+      totalExpense: expense, 
+      savings: sav, 
+      savingsRate: rate === 0 ? '—' : (rate * 100).toFixed(1) 
+    };
+  }, [transactions, selectedMonth]);
 
-  const totalAssets = useMemo(() => assets.reduce((a, x) => a + x.amount, 0), [assets]);
-  const totalDebts  = useMemo(() => debts.reduce((a, d) => a + d.amount, 0), [debts]);
+  const { cashBalance, netWorth, totalAssetsAmount, totalDebtsAmount, outstandingReceivables } = useMemo(() => {
+    const cash = getCashBalance(transactions);
+    const assetsTotal = getTotalAssets(cash, assets, receivables);
+    const liabilitiesTotal = getTotalLiabilities(debts);
+    const net = getNetWorth(assetsTotal, liabilitiesTotal);
+    
+    const active = (receivables || []).filter(r => r.status !== 'paid');
+    const outReceivables = active.reduce((a, r) => a + r.remainingAmount, 0);
+    const portfolioAssets = (assets || []).reduce((a, x) => a + x.amount, 0);
+
+    return { 
+      cashBalance: cash, 
+      netWorth: net, 
+      totalAssetsAmount: portfolioAssets, 
+      totalDebtsAmount: liabilitiesTotal,
+      outstandingReceivables: outReceivables
+    };
+  }, [transactions, assets, receivables, debts]);
 
   const accountBalances = useMemo(() => {
     const balances = {};
@@ -107,24 +138,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       .sort((a, b) => b.amount - a.amount);
   }, [transactions, assets]);
 
-  const { outstandingReceivables } = useMemo(() => {
-    const active = (receivables || []).filter(r => r.status !== 'paid');
-    return { outstandingReceivables: active.reduce((a, r) => a + r.remainingAmount, 0) };
-  }, [receivables]);
-
-  const { cashBalance, netWorth } = useMemo(() => {
-    const income  = transactions.filter(t => t.type === 'income').reduce((a, t) => a + t.amount, 0);
-    const expense = transactions.filter(t => t.type === 'expense').reduce((a, t) => a + t.amount, 0);
-    const cash = income - expense;
-    const net = cash + totalAssets + outstandingReceivables - totalDebts;
-    return { cashBalance: cash, netWorth: net };
-  }, [transactions, totalAssets, totalDebts, outstandingReceivables]);
-
   // Spending breakdown
   const expensesByCategory = useMemo(() => {
     return CATEGORIES.map(cat => {
       const amount = filteredTransactions
-        .filter(t => t.type === 'expense' && t.category === cat.name)
+        .filter(t => classifyTransaction(t) === 'expense' && t.category === cat.name)
         .reduce((sum, t) => sum + t.amount, 0);
       return { ...cat, amount };
     }).filter(c => c.amount > 0).sort((a, b) => b.amount - a.amount);
@@ -137,8 +155,9 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       const month = getMonthKey(tx.date);
       if (!acc[month]) acc[month] = { month, income: 0, expense: 0, balance: 0 };
       const amt = Number(tx.amount) || 0;
-      if (tx.type === 'income')  acc[month].income  += amt;
-      if (tx.type === 'expense') acc[month].expense += amt;
+      const type = classifyTransaction(tx);
+      if (type === 'income')  acc[month].income  += amt;
+      if (type === 'expense') acc[month].expense += amt;
       acc[month].balance = acc[month].income - acc[month].expense;
       return acc;
     }, {});
@@ -224,9 +243,9 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
           <div className="space-y-2.5 border-t border-white/5 pt-5 relative z-10">
             {[
               { label: 'Cash Balance',  val: fm(cashBalance),            color: 'text-slate-200' },
-              { label: 'Assets',        val: `+${fm(totalAssets)}`,       color: 'text-emerald-400' },
+              { label: 'Assets',        val: `+${fm(totalAssetsAmount)}`,       color: 'text-emerald-400' },
               { label: 'Receivables',   val: `+${fm(outstandingReceivables)}`, color: 'text-cyan-400' },
-              { label: 'Debts',         val: `−${fm(totalDebts)}`,        color: 'text-red-400' },
+              { label: 'Debts',         val: `−${fm(totalDebtsAmount)}`,        color: 'text-red-400' },
             ].map(row => (
               <div key={row.label} className="flex justify-between items-center text-sm">
                 <span className="text-slate-500 font-medium">{row.label}</span>
@@ -445,7 +464,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
       <ReportModal
         isOpen={isReportOpen}
         onClose={() => setIsReportOpen(false)}
-        data={{ income: totalIncome, expense: totalExpense, cashflow: savings, cashBalance, assets: totalAssets, debts: totalDebts, receivables: outstandingReceivables, savingsRate }}
+        data={{ income: totalIncome, expense: totalExpense, cashflow: savings, cashBalance, assets: totalAssetsAmount, debts: totalDebtsAmount, receivables: outstandingReceivables, savingsRate }}
         fm={fm}
         month={selectedMonth}
         transactions={filteredTransactions}

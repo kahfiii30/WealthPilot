@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { formatDate } from '../utils/dateUtils';
+import { 
+  getCashBalance, 
+  getTotalAssets, 
+  getTotalLiabilities, 
+  getNetWorth 
+} from '../lib/finance/calculations';
 
 function AssetsDebt({ 
   assets = [], 
@@ -22,19 +28,13 @@ function AssetsDebt({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
 
-  const totalAssets = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
-  const totalDebts = debts.reduce((acc, d) => acc + (Number(d.amount) || 0), 0);
+  const totalAssetsPortfolio = assets.reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
+  const totalDebts = getTotalLiabilities(debts);
   
-  const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
-  const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + (Number(r.remainingAmount) || 0), 0);
+  const cashBalance = getCashBalance(transactions);
+  const totalAssets = getTotalAssets(cashBalance, assets, receivables);
   
-  const cashBalance = transactions.reduce((acc, t_item) => {
-    if (t_item.type === 'income') return acc + Number(t_item.amount || 0);
-    if (t_item.type === 'expense') return acc - Number(t_item.amount || 0);
-    return acc;
-  }, 0);
-
-  const netWorth = cashBalance + totalAssets + outstandingReceivables - totalDebts;
+  const netWorth = getNetWorth(totalAssets, totalDebts);
 
   const assetCategories = ['Cash', 'Bank', 'E-Wallet', 'Crypto', 'Stocks', 'Business Inventory', 'Receivables', 'Others'];
   const debtCategories = ['Paylater', 'Installment', 'Loan', 'Credit Card', 'Personal Debt', 'Others'];
@@ -93,7 +93,7 @@ function AssetsDebt({
             </div>
             <div className="p-4 bg-white/[0.03] rounded-lg border border-white/5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-blue-400 mb-1">Portfolio Assets</p>
-              <p className="text-xl font-bold text-blue-400 tracking-tight truncate">{fm(totalAssets)}</p>
+              <p className="text-xl font-bold text-blue-400 tracking-tight truncate">{fm(totalAssetsPortfolio)}</p>
             </div>
             <div className="p-4 bg-white/[0.03] rounded-lg border border-white/5">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-red-400 mb-1">Total Liabilities</p>
@@ -106,15 +106,15 @@ function AssetsDebt({
           <div>
             <h3 className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-3">Asset Ratio</h3>
             <div className="flex items-center justify-between">
-              <span className="text-2xl font-bold text-primary tracking-tight truncate pr-4">{fm(totalAssets)}</span>
+              <span className="text-2xl font-bold text-primary tracking-tight truncate pr-4">{fm(totalAssetsPortfolio)}</span>
               <span className="text-xs font-semibold text-slate-400">
-                {totalAssets + totalDebts > 0 ? ((totalAssets / (totalAssets + totalDebts)) * 100).toFixed(1) : 100}%
+                {totalAssetsPortfolio + totalDebts > 0 ? ((totalAssetsPortfolio / (totalAssetsPortfolio + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
             <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${totalAssets + totalDebts > 0 ? (totalAssets / (totalAssets + totalDebts)) * 100 : 100}%` }}
+                animate={{ width: `${totalAssetsPortfolio + totalDebts > 0 ? (totalAssetsPortfolio / (totalAssetsPortfolio + totalDebts)) * 100 : 100}%` }}
                 className="h-full bg-primary"
               ></motion.div>
             </div>
@@ -124,13 +124,13 @@ function AssetsDebt({
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-red-400 tracking-tight truncate pr-4">{fm(totalDebts)}</span>
               <span className="text-xs font-semibold text-slate-400">
-                {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
+                {totalAssetsPortfolio + totalDebts > 0 ? ((totalDebts / (totalAssetsPortfolio + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
             <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${totalAssets + totalDebts > 0 ? (totalDebts / (totalAssets + totalDebts)) * 100 : 0}%` }}
+                animate={{ width: `${totalAssetsPortfolio + totalDebts > 0 ? (totalDebts / (totalAssetsPortfolio + totalDebts)) * 100 : 0}%` }}
                 className="h-full bg-red-500"
               ></motion.div>
             </div>

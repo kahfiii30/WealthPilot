@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { getMonthKey } from '../services/financeService';
 import { formatDate } from '../utils/dateUtils';
+import { getBudgetSummary } from '../lib/finance/calculations';
 
 // Helper Functions
 const parseAmount = (value) => {
@@ -30,49 +31,19 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   const [searchTerm, setSearchTerm] = useState('');
 
   // 3. Calculations
-  const monthlyBudgets = budgets.filter(b => b.month === selectedMonth);
-
-  const totalBudget = monthlyBudgets.reduce((sum, b) => {
-    return sum + (Number.isFinite(b.limit) ? b.limit : 0);
-  }, 0);
-
-  const totalActual = transactions
-    .filter(t_data => t_data.type === "expense")
-    .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonth)
-    .reduce((sum, t_data) => {
-      return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
-    }, 0);
-
-  const remainingBudget = totalBudget - totalActual;
-
-  const getRemainingDaysInMonth = () => {
-    const now = new Date();
-    const [year, month] = selectedMonth.split("-").map(Number);
-    const lastDay = new Date(year, month, 0).getDate();
-    const isCurrentMonth = now.getFullYear() === year && now.getMonth() + 1 === month;
-    return isCurrentMonth ? Math.max(lastDay - now.getDate() + 1, 1) : lastDay;
-  };
-
-  const remainingDays = getRemainingDaysInMonth();
-  const safeToSpendPerDay = totalBudget > 0 && remainingDays > 0 ? remainingBudget / remainingDays : 0;
-  const consumedPercent = totalBudget > 0 ? (totalActual / totalBudget) * 100 : 0;
-
-  // Category Breakdown Data
-  const cStats = monthlyBudgets.map(b => {
-    const actualSpent = transactions
-      .filter(t_data => t_data.type === "expense")
-      .filter(t_data => t_data.category === b.category)
-      .filter(t_data => getMonthKey(t_data.date || t_data.createdAt) === selectedMonth)
-      .reduce((sum, t_data) => {
-        return sum + (Number.isFinite(t_data.amount) ? t_data.amount : 0);
-      }, 0);
-
-    const percentage = b.limit > 0 ? (actualSpent / b.limit) * 100 : 0;
-    return { ...b, actualSpent, percentage };
-  });
+  const {
+    totalBudget,
+    totalActual,
+    remainingBudget,
+    safeToSpendPerDay,
+    consumedPercent,
+    remainingDays,
+    categoryStats: cStats,
+    monthlyBudgets,
+    monthlyExpenses
+  } = getBudgetSummary(transactions, budgets, selectedMonth);
 
   // High Impact Spending
-  const monthlyExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === selectedMonth);
   const highImpact = monthlyExpenses
     .filter(t_data => 
       (t_data.notes || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
@@ -93,12 +64,11 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
   };
 
   const chartData = getLastThreeMonths().map(m => {
-    const mBudgets = budgets.filter(b => b.month === m);
-    const mExpenses = transactions.filter(t_data => t_data.type === 'expense' && getMonthKey(t_data.date || t_data.createdAt) === m);
+    const summary = getBudgetSummary(transactions, budgets, m);
     return {
       monthLabel: new Date(m + "-01").toLocaleString('default', { month: 'short' }),
-      budgeted: mBudgets.reduce((acc, b) => acc + Number(b.limit || 0), 0),
-      actual: mExpenses.reduce((acc, t_data) => acc + Number(t_data.amount || 0), 0)
+      budgeted: summary.totalBudget,
+      actual: summary.totalActual
     };
   });
 
@@ -169,18 +139,20 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
         <div className="col-span-12 card-luxury rounded-3xl p-6 lg:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8 min-w-0">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-4">{t('dailySafeToSpend')}</p>
-            <h3 className={`text-4xl lg:text-5xl font-bold tracking-tight mb-2 truncate title-luxury ${safeToSpendPerDay > 0 ? 'text-primary' : 'text-red-400'}`}>
-              {fm(safeToSpendPerDay)} <span className="text-2xl font-semibold text-slate-500">/ day</span>
+            <h3 className={`text-4xl lg:text-5xl font-bold tracking-tight mb-2 truncate title-luxury ${safeToSpendPerDay !== null ? 'text-primary' : 'text-slate-400'}`}>
+              {safeToSpendPerDay !== null ? <>{fm(safeToSpendPerDay)} <span className="text-2xl font-semibold text-slate-500">/ day</span></> : <span className="text-2xl font-semibold">Set budget untuk menghitung</span>}
             </h3>
             <p className="text-sm font-medium text-slate-400">Remaining for the next {remainingDays} days.</p>
           </div>
           <div className="w-full lg:w-[400px] shrink-0">
             <div className="flex justify-between text-[11px] font-semibold uppercase tracking-wider mb-2">
               <span className="text-slate-500">Monthly Utilization</span>
-              <span className={consumedPercent > 100 ? 'text-red-400' : 'text-primary'}>{consumedPercent.toFixed(1)}%</span>
+              <span className={consumedPercent !== null ? (consumedPercent > 100 ? 'text-red-400' : 'text-primary') : 'text-slate-500'}>
+                {consumedPercent !== null ? `${consumedPercent.toFixed(1)}%` : '—'}
+              </span>
             </div>
             <div className="h-3 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
-              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(consumedPercent, 100)}%` }} className={`h-full ${consumedPercent > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
+              <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(consumedPercent || 0, 100)}%` }} className={`h-full ${consumedPercent > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
             </div>
           </div>
         </div>
@@ -196,29 +168,43 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
           </div>
           <div className="card-luxury rounded-2xl p-6 flex flex-col border-l-2 border-l-red-400 min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 mb-2 truncate">Remaining Budget</p>
-            <p className={`text-2xl lg:text-3xl font-bold tracking-tight truncate title-luxury ${remainingBudget >= 0 ? 'text-primary' : 'text-red-400'}`}>{fm(remainingBudget)}</p>
+            <p className={`text-xl lg:text-3xl font-bold tracking-tight truncate title-luxury ${remainingBudget !== null ? (remainingBudget >= 0 ? 'text-primary' : 'text-red-400') : 'text-slate-400'}`}>
+              {remainingBudget !== null ? fm(remainingBudget) : 'Belum ada budget'}
+            </p>
           </div>
         </motion.div>
 
         <motion.div variants={itemVariants} className="col-span-12 lg:col-span-7 card-luxury rounded-3xl p-6 lg:p-8 min-w-0">
           <div className="flex items-center justify-between mb-8">
             <h4 className="text-xl font-bold text-slate-100 tracking-tight title-luxury">{t('categoryBreakdown')}</h4>
-            <span onClick={() => setIsManageModalOpen(true)} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:text-primary-dark cursor-pointer transition-colors">{t('manageLimits')}</span>
+            <span onClick={() => setIsManageModalOpen(true)} className="text-[11px] font-semibold uppercase tracking-wider text-primary hover:text-primary-dark cursor-pointer transition-colors">Manage limits</span>
           </div>
           <div className="space-y-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-            {cStats.length === 0 ? <EmptyState title="No budgets set" desc="Start setting limits." icon="settings_suggest" /> : cStats.map((sObj, sIdx) => (
-              <motion.div key={sObj.id} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * sIdx }} className="min-w-0">
+            {cStats.length === 0 ? <EmptyState title="No expenses yet" desc="Transactions will appear here." icon="receipt_long" /> : cStats.map((sObj, sIdx) => (
+              <motion.div key={sObj.id || `c-${sIdx}`} initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 * sIdx }} className="min-w-0">
                 <div className="flex justify-between items-end mb-2 min-w-0">
                   <div className="min-w-0 flex-1 pr-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{sObj.category}</p>
-                    <p className={`text-lg font-bold tracking-tight truncate ${sObj.percentage > 100 ? 'text-red-400' : 'text-slate-100'}`}>
-                      {fm(sObj.actualSpent)} <span className="text-sm font-medium text-slate-500 tracking-normal">/ {fm(sObj.limit)}</span>
+                    <div className="flex items-center gap-2 mb-1">
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 truncate">{sObj.category}</p>
+                      {!sObj.hasBudget && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-slate-300">No limit</span>
+                      )}
+                    </div>
+                    <p className={`text-lg font-bold tracking-tight truncate ${(sObj.hasBudget && sObj.percentage > 100) ? 'text-red-400' : 'text-slate-100'}`}>
+                      {fm(sObj.actualSpent)} 
+                      {sObj.hasBudget && <span className="text-sm font-medium text-slate-500 tracking-normal"> / {fm(sObj.limit)}</span>}
                     </p>
                   </div>
-                  <p className={`text-sm font-bold shrink-0 ${sObj.percentage > 100 ? 'text-red-400' : 'text-primary'}`}>{sObj.percentage.toFixed(0)}%</p>
+                  {sObj.hasBudget ? (
+                    <p className={`text-sm font-bold shrink-0 ${sObj.percentage > 100 ? 'text-red-400' : 'text-primary'}`}>{sObj.percentage.toFixed(0)}%</p>
+                  ) : (
+                    <button onClick={() => { setEditingBudget(null); setIsBudgetModalOpen(true); }} className="text-[10px] font-semibold text-primary hover:underline shrink-0">Set limit</button>
+                  )}
                 </div>
                 <div className="h-2 w-full bg-white/[0.03] rounded-full overflow-hidden border border-white/5">
-                  <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full ${sObj.percentage > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
+                  {sObj.hasBudget && (
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${Math.min(sObj.percentage, 100)}%` }} className={`h-full ${sObj.percentage > 100 ? 'bg-red-500' : 'bg-primary'}`}></motion.div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -235,17 +221,24 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
               </p>
             </div>
           ) : (
-            <div className="relative h-[200px] flex items-end justify-around gap-4">
-              {chartData.map((d, idx) => (
-                <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[40px]">
-                  <div className="flex gap-1.5 w-full h-[140px] items-end justify-center">
-                    <div className="w-3 bg-white/[0.05] rounded-t-sm transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
-                    <div className={`w-3 rounded-t-sm transition-all duration-500 ${d.actual > d.budgeted ? 'bg-red-400' : 'bg-primary'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
+            <>
+              {totalBudget === 0 && (
+                <p className="text-xs text-neutral-500 mb-4 text-center">Belum ada budget pembanding</p>
+              )}
+              <div className="relative h-[170px] flex items-end justify-around gap-4">
+                {chartData.map((d, idx) => (
+                  <div key={idx} className="flex flex-col items-center gap-3 w-full max-w-[40px]">
+                    <div className="flex gap-1.5 w-full h-[120px] items-end justify-center">
+                      {d.budgeted > 0 && (
+                        <div className="w-3 bg-white/[0.05] rounded-t-sm transition-all duration-500" style={{ height: `${(d.budgeted / maxVal) * 100}%` }}></div>
+                      )}
+                      <div className={`w-3 rounded-t-sm transition-all duration-500 ${d.budgeted > 0 && d.actual > d.budgeted ? 'bg-red-400' : 'bg-primary'}`} style={{ height: `${(d.actual / maxVal) * 100}%` }}></div>
+                    </div>
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">{d.monthLabel}</p>
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-500">{d.monthLabel}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            </>
           )}
         </motion.div>
 
@@ -321,6 +314,9 @@ function Budget({ transactions = [], budgets = [], onAddBudget, onUpdateBudget, 
                           <span className={`px-2 py-1 rounded text-[10px] font-semibold uppercase tracking-wider inline-block border ${iLabel === 'Over Budget' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-primary/10 text-primary border-primary/20'}`}>
                             {tItem.category}
                           </span>
+                          {tItem.category === 'Lainnya' && (
+                            <button className="ml-3 text-[10px] font-semibold text-primary hover:underline">Kategorikan</button>
+                          )}
                         </td>
                         <td className="px-6 py-4 text-right font-bold text-base text-slate-100 group-hover:text-primary transition-colors">{fm(tItem.amount)}</td>
                         <td className={`px-6 py-4 text-right text-[11px] font-semibold uppercase tracking-wider ${iLabelColor}`}>{iLabel}</td>

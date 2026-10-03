@@ -11,7 +11,8 @@ import {
   getSavingsRate,
   getDebtToAssetRatio,
   getLiquidityMonths,
-  classifyTransaction
+  classifyTransaction,
+  getFinancialHealth
 } from '../lib/finance/calculations';
 
 

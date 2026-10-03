@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMonthKey } from '../services/financeService';
 import { 
@@ -35,6 +35,20 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [isInsightDismissed, setIsInsightDismissed] = useState(localStorage.getItem("smartInsightDismissed") === "true");
+  const [goals, setGoals] = useState({ targetType: 'auto', manualTarget: 0, autoMonths: 6 });
+
+  useEffect(() => {
+    const loadGoals = async () => {
+      try {
+        const { fetchGoals } = await import('../services/goalService');
+        const userGoals = await fetchGoals();
+        if (userGoals) setGoals(userGoals);
+      } catch (err) {
+        console.error('Failed to load goals:', err);
+      }
+    };
+    loadGoals();
+  }, []);
 
   const filteredTransactions = useMemo(() => {
     return transactions.filter(ti => (ti.date || ti.createdAt) && getMonthKey(ti.date || ti.createdAt) === selectedMonth);
@@ -47,7 +61,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
   // 1. Core Calculations
   const analysis = useMemo(() => {
     const cashBalance = getCashBalance(transactions);
-    const totalAssets = getTotalAssets(cashBalance, assets, receivables);
+    const totalAssets = getTotalAssets(cashBalance, assets, receivables, transactions);
     const totalLiabilities = getTotalLiabilities(debts);
     const netWorth = getNetWorth(totalAssets, totalLiabilities);
 
@@ -103,11 +117,7 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
 
     const wealthScore = Math.round(saveRateScore + debtScore + emergencyScore + budgetScore);
     
-    let status = "Critical";
-    let statusColor = "text-red-400";
-    if (wealthScore >= 80) { status = "Excellent"; statusColor = "text-primary"; }
-    else if (wealthScore >= 60) { status = "Good"; statusColor = "text-primary"; }
-    else if (wealthScore >= 40) { status = "Needs Attention"; statusColor = "text-yellow-400"; }
+    const { status, statusColor, riskLevel } = getFinancialHealth(wealthScore);
 
     // Receivables Metrics
     const paidReceivablesThisMonth = (receivables || []).reduce((acc, r) => {
@@ -127,15 +137,14 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
     };
   }, [filteredTransactions, assets, debts, budgets, receivables, selectedMonth, transactions]);
 
-  // 3. Smart Insight AI Logic (Rule-based)
   const smartInsight = useMemo(() => {
     const { 
       totalAssets, totalLiabilities, monthlyIncome, monthlyExpense, 
-      saveRate, debtToAssetRatio, budgetUsage, biggestCategory, netWorth 
+      saveRate, debtToAssetRatio, budgetUsage, biggestCategory, netWorth, riskLevel: baseRiskLevel 
     } = analysis;
 
     const recommendations = [];
-    let riskLevel = "Low";
+    let riskLevel = baseRiskLevel;
     let riskSummary = "Your financial position looks stable based on current data.";
     let opportunitySummary = "No major accumulation signals detected yet.";
     let mainInsight = "Add transactions, assets, debts, and budgets to unlock personalized financial insights.";
@@ -191,7 +200,11 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
       }
 
       if (netWorth > 0 && saveRate > 0) {
-        opportunitySummary = "Your net worth is positive and your monthly cashflow is profitable. Continue compounding assets.";
+        if (riskLevel === "Low") {
+          opportunitySummary = "Your net worth is positive and your monthly cashflow is profitable. Continue compounding assets.";
+        } else {
+          opportunitySummary = "Your net worth is positive, but you must resolve risk factors to safely continue compounding.";
+        }
       }
     } else {
       recommendations.push({ title: "Record your first transaction", description: "Add your recent income or expenses to start the analysis.", priority: "high", action: "Add" });
@@ -207,7 +220,6 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
     const tasks = [];
     const { emergencyFundMonths, debtToAssetRatio, saveRate, monthlyBudget, budgetUsage, monthlyIncome } = analysis;
 
-    if (assets.length === 0) tasks.push({ icon: 'add_card', color: 'text-primary', bg: 'bg-primary/10', title: 'Add your first asset', desc: 'Required for net worth calculation.', priority: 'high', target: 'assets', flag: 'openAssetModalOnLoad' });
     if (debts.length === 0 && assets.length > 0) tasks.push({ icon: 'fact_check', color: 'text-sky-400', bg: 'bg-sky-400/10', title: 'Review debt position', desc: 'Ensure all liabilities are recorded.', priority: 'low', target: 'assets', flag: 'openDebtModalOnLoad' });
     if (emergencyFundMonths < 3) tasks.push({ icon: 'emergency', color: 'text-red-400', bg: 'bg-red-400/10', title: 'Build emergency fund', desc: 'Current buffer is less than 3 months.', priority: 'high', target: 'insight' });
     if (debtToAssetRatio > 30) tasks.push({ icon: 'trending_down', color: 'text-orange-400', bg: 'bg-orange-400/10', title: 'Reduce debt exposure', desc: 'Keep debt-to-asset below 30% for stability.', priority: 'medium', target: 'assets', flag: 'openDebtModalOnLoad' });
@@ -232,11 +244,20 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
 
   // 5. Trend Chart Data
   const trendData = useMemo(() => {
+    if (transactions.length === 0) return [];
+    
+    // Find the month of the first transaction
+    const firstTx = [...transactions].sort((a, b) => new Date(a.date || a.createdAt) - new Date(b.date || b.createdAt))[0];
+    const firstMonthKey = getMonthKey(firstTx.date || firstTx.createdAt);
+    
     const last6Months = [];
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      last6Months.push(getMonthKey(d));
+      const mKey = getMonthKey(d);
+      if (mKey >= firstMonthKey) {
+        last6Months.push(mKey);
+      }
     }
 
     return last6Months.map(mKey => {
@@ -261,9 +282,17 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
   };
 
   // Emergency Fund Goal Details
-  const efTarget = analysis.monthlyExpense > 0 ? analysis.monthlyExpense * 6 : 25000000;
+  let efTarget = 0;
+  if (goals.targetType === 'manual') {
+    efTarget = goals.manualTarget;
+  } else {
+    // automatic
+    const { avgMonthlyEssentialExpense } = getLiquidityMonths(analysis.effectiveLiquid, transactions);
+    efTarget = avgMonthlyEssentialExpense > 0 ? avgMonthlyEssentialExpense * goals.autoMonths : 0;
+  }
+  
   const efSaved = analysis.effectiveLiquid;
-  const efPercent = Math.min((efSaved / efTarget) * 100, 100);
+  const efPercent = efTarget > 0 ? Math.min((efSaved / efTarget) * 100, 100) : 0;
 
   return (
     <div className="p-4 md:p-8 pb-[100px]">
@@ -429,9 +458,27 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
                   <p className="text-base font-semibold text-slate-300 leading-relaxed tracking-tight mb-2">
                     {smartInsight.mainInsight}
                   </p>
-                  <p className="text-sm font-semibold text-primary/80 mb-6">
-                    {smartInsight.opportunitySummary}
-                  </p>
+                  
+                  {smartInsight.riskLevel !== "Low" && (
+                    <div className="mb-4 mt-4 p-4 rounded-xl border border-red-500/20 bg-red-500/5 flex gap-3 text-left">
+                      <span className="material-symbols-outlined text-red-400 text-[20px]">warning</span>
+                      <div>
+                        <p className="text-sm font-semibold text-red-400 mb-1">Risk Factors</p>
+                        <p className="text-sm text-slate-400 leading-relaxed">{smartInsight.riskSummary}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {smartInsight.riskLevel === "Low" && (
+                    <div className="mb-4 mt-4 p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex gap-3 text-left">
+                      <span className="material-symbols-outlined text-emerald-400 text-[20px]">trending_up</span>
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-400 mb-1">Strength Analysis</p>
+                        <p className="text-sm text-slate-400 leading-relaxed">{smartInsight.opportunitySummary}</p>
+                      </div>
+                    </div>
+                  )}
+                  
                   <div className="flex flex-col sm:flex-row gap-3">
                     <button 
                       onClick={() => setIsAuditModalOpen(true)}
@@ -464,8 +511,8 @@ function Insight({ transactions = [], assets = [], debts = [], budgets = [], rec
             <div className="space-y-8 flex flex-col justify-center">
               <div className="flex justify-between items-end">
                 <div>
-                  <h4 className="text-xl font-bold text-slate-100 tracking-tight">Emergency Fund (6 Months)</h4>
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">Target: {formatRupiah(efTarget)}</p>
+                  <h4 className="text-xl font-bold text-slate-100 tracking-tight">Emergency Fund</h4>
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider mt-1">Target: {formatRupiah(efTarget)} ({goals.targetType === 'auto' ? `${goals.autoMonths} Months` : 'Manual'})</p>
                 </div>
                 <div className="text-right">
                   <span className="text-3xl font-bold text-primary tracking-tighter block leading-none">{efPercent.toFixed(0)}%</span>

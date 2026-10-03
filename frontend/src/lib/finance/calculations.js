@@ -1,12 +1,11 @@
+import { CATEGORIES } from './categories.js';
+
 export function classifyTransaction(transaction) {
-  if (transaction.type === 'income') return 'income';
-  
-  // Categorize specific ones as transfer/investment
   const investCategories = ['Trading', 'Investasi'];
-  if (investCategories.includes(transaction.category)) {
+  if (investCategories.includes(transaction.category) || transaction.type === 'transfer' || transaction.type === 'investment') {
     return 'transfer/investment';
   }
-  
+  if (transaction.type === 'income') return 'income';
   return 'expense';
 }
 
@@ -16,30 +15,75 @@ export function getMonthKey(dateInput) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+// Trading & Investment Engine
+export function getTradingBalanceAndGain(transactions) {
+  let investmentAssets = 0;
+  const gainsByMonth = {};
+  const lossesByMonth = {};
+
+  const sorted = [...transactions].sort((a, b) => {
+    const da = new Date(a.date || a.createdAt).getTime();
+    const db = new Date(b.date || b.createdAt).getTime();
+    return da - db;
+  });
+
+  sorted.forEach(t => {
+    const isInvest = ['Trading', 'Investasi'].includes(t.category) || t.type === 'transfer' || t.type === 'investment';
+    if (!isInvest) return;
+
+    const amt = Number.isFinite(Number(t.amount)) ? Number(t.amount) : 0;
+    const m = getMonthKey(t.date || t.createdAt);
+    if (!gainsByMonth[m]) gainsByMonth[m] = 0;
+    if (!lossesByMonth[m]) lossesByMonth[m] = 0;
+
+    // Outflow to investment
+    if (t.type === 'expense' || t.type === 'transfer') {
+      investmentAssets += amt;
+    } 
+    // Inflow from investment
+    else if (t.type === 'income') {
+      if (amt > investmentAssets) {
+        const gain = amt - investmentAssets;
+        gainsByMonth[m] += gain;
+        investmentAssets = 0;
+      } else {
+        investmentAssets -= amt;
+      }
+    }
+    // Explicit investment gain/loss (if added in the future)
+    else if (t.type === 'investment') {
+      if (amt > 0) gainsByMonth[m] += amt;
+      else lossesByMonth[m] += Math.abs(amt);
+    }
+  });
+
+  return { investmentAssets, gainsByMonth, lossesByMonth };
+}
+
 export function getCashBalance(transactions) {
-  // Cash balance is defined as all-time income minus all-time expense
-  // Note: if a transaction is a transfer to investment, it should reduce cash balance, 
-  // but for FASE 1 we follow the existing logic (income - expense).
-  // FASE 1 also says "EXCLUDE tipe transfer & investment" for Monthly Income/Expense.
-  // For cash balance, any money out (expense or investment) reduces cash.
   let cash = 0;
   transactions.forEach(t => {
-    const type = classifyTransaction(t);
-    const amount = Number.isFinite(Number(t.amount)) ? Number(t.amount) : 0;
+    const isInvest = ['Trading', 'Investasi'].includes(t.category) || t.type === 'transfer' || t.type === 'investment';
+    const amt = Number.isFinite(Number(t.amount)) ? Number(t.amount) : 0;
+    
     if (t.type === 'income') {
-      cash += amount;
-    } else if (t.type === 'expense' || type === 'transfer/investment') {
-      cash -= amount;
+      cash += amt;
+    } else if (t.type === 'expense' || (isInvest && (t.type === 'expense' || t.type === 'transfer'))) {
+      cash -= amt;
     }
   });
   return cash;
 }
 
-export function getTotalAssets(cash, assets, receivables) {
+export function getTotalAssets(cash, assets, receivables, transactions) {
   const portfolio = (assets || []).reduce((acc, a) => acc + (Number(a.amount) || 0), 0);
   const activeReceivables = (receivables || []).filter(r => r.status !== 'paid');
   const outstandingReceivables = activeReceivables.reduce((sum, r) => sum + (Number(r.remainingAmount) || 0), 0);
-  return cash + portfolio + outstandingReceivables;
+  
+  // Add remaining trading balance
+  const { investmentAssets } = getTradingBalanceAndGain(transactions);
+  
+  return cash + portfolio + outstandingReceivables + investmentAssets;
 }
 
 export function getTotalLiabilities(debts) {
@@ -56,17 +100,27 @@ export function getDebtToAssetRatio(liabilities, totalAssetsPlusCash) {
 }
 
 export function getMonthlyIncome(transactions, monthKey) {
-  return transactions
+  const { gainsByMonth } = getTradingBalanceAndGain(transactions);
+  const tradingGain = gainsByMonth[monthKey] || 0;
+
+  const normalIncome = transactions
     .filter(t => classifyTransaction(t) === 'income')
     .filter(t => getMonthKey(t.date || t.createdAt) === monthKey)
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  return normalIncome + tradingGain;
 }
 
 export function getMonthlyExpense(transactions, monthKey) {
-  return transactions
+  const { lossesByMonth } = getTradingBalanceAndGain(transactions);
+  const tradingLoss = lossesByMonth[monthKey] || 0;
+
+  const normalExpense = transactions
     .filter(t => classifyTransaction(t) === 'expense')
     .filter(t => getMonthKey(t.date || t.createdAt) === monthKey)
     .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+  return normalExpense + tradingLoss;
 }
 
 export function getSavingsRate(income, expense) {
@@ -77,13 +131,31 @@ export function getSavingsRate(income, expense) {
 
 export function getLiquidityMonths(cash, transactions) {
   const expenseTx = transactions.filter(t => classifyTransaction(t) === 'expense');
-  const monthsWithData = new Set(expenseTx.map(t => getMonthKey(t.date || t.createdAt))).size || 1;
   
-  const allTimeExpense = expenseTx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
-  const avgMonthlyExpense = allTimeExpense / monthsWithData;
+  // Find only essential expenses
+  const essentialCategories = CATEGORIES.filter(c => c.isEssential).map(c => c.name);
+  const essentialTx = expenseTx.filter(t => essentialCategories.includes(t.category));
   
-  if (avgMonthlyExpense <= 0) return { months: 0, flag: "data belum cukup" };
-  return { months: cash / avgMonthlyExpense, flag: null };
+  const allMonths = new Set(essentialTx.map(t => getMonthKey(t.date || t.createdAt)));
+  const monthsWithData = allMonths.size || 1;
+  
+  const allTimeEssentialExpense = essentialTx.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+  const avgMonthlyEssentialExpense = allTimeEssentialExpense / monthsWithData;
+  
+  if (avgMonthlyEssentialExpense <= 0) return { months: 0, flag: "data belum cukup" };
+  return { months: cash / avgMonthlyEssentialExpense, flag: null, avgMonthlyEssentialExpense };
+}
+
+export function getFinancialHealth(wealthScore) {
+  let status = "Critical";
+  let statusColor = "text-red-400";
+  let riskLevel = "Critical";
+  
+  if (wealthScore >= 80) { status = "Excellent"; statusColor = "text-primary"; riskLevel = "Low"; }
+  else if (wealthScore >= 60) { status = "Good"; statusColor = "text-primary"; riskLevel = "Low"; }
+  else if (wealthScore >= 40) { status = "Needs Attention"; statusColor = "text-yellow-400"; riskLevel = "High"; }
+  
+  return { status, statusColor, riskLevel };
 }
 
 export function getBudgetSummary(transactions, budgets, selectedMonth) {

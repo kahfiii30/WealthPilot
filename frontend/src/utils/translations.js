@@ -54,7 +54,8 @@ export const translations = {
     save: "Save",
     update: "Update",
     delete: "Delete",
-    edit: "Edit"
+    edit: "Edit",
+    manageLimits: "Manage Limits"
   }
 };
 

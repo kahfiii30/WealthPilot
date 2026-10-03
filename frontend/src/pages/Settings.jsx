@@ -26,6 +26,8 @@ function Settings({
   const [isLinkingTelegram, setIsLinkingTelegram] = useState(false);
   const [telegramId, setTelegramId] = useState('');
   const [linkedTelegramId, setLinkedTelegramId] = useState(null);
+  const [goals, setGoals] = useState({ targetType: 'auto', manualTarget: 0, autoMonths: 6 });
+  const [isSavingGoals, setIsSavingGoals] = useState(false);
   
   const [form, setForm] = useState({
     firstName: "",
@@ -64,7 +66,17 @@ function Settings({
         setTelegramId(link);
       }
     };
+    const loadGoals = async () => {
+      try {
+        const { fetchGoals } = await import('../services/goalService');
+        const userGoals = await fetchGoals();
+        if (userGoals) setGoals(userGoals);
+      } catch (err) {
+        console.error('Failed to load goals:', err);
+      }
+    };
     loadTelegramLink();
+    loadGoals();
   }, []);
 
   const handleProfileSave = async (e) => {
@@ -170,6 +182,7 @@ function Settings({
 
   const tabs = [
     { id: 'profile', label: t('profile'), icon: 'person' },
+    { id: 'goals', label: 'Goals', icon: 'flag' },
     { id: 'preferences', label: t('preferences'), icon: 'tune' },
     { id: 'notifications', label: t('notifications'), icon: 'notifications' },
     { id: 'integrations', label: 'Integrations', icon: 'hub' },
@@ -311,6 +324,77 @@ function Settings({
                     <div className="mt-10 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-end gap-4">
                       <button type="submit" disabled={isSaving} className="w-full sm:w-auto px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm disabled:opacity-50">
                         {isSaving ? "Saving..." : "Commit Changes"}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {activeTab === 'goals' && (
+                <div className="rounded-xl card-luxury p-6 lg:p-8">
+                  <h3 className="text-xl font-bold text-slate-100 tracking-tight title-luxury mb-8">Financial Goals & Emergency Fund</h3>
+                  <form onSubmit={async (e) => {
+                    e.preventDefault();
+                    try {
+                      setIsSavingGoals(true);
+                      const { updateGoals } = await import('../services/goalService');
+                      await updateGoals(goals);
+                      toast.success('Goals updated successfully!');
+                    } catch (err) {
+                      toast.error(err.message || 'Failed to update goals.');
+                    } finally {
+                      setIsSavingGoals(false);
+                    }
+                  }}>
+                    <div className="space-y-8">
+                      <div className="space-y-4">
+                        <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Emergency Fund Target Mode</label>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          <label className={`flex-1 p-4 rounded-xl border cursor-pointer transition-colors ${goals.targetType === 'auto' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] text-slate-400'}`}>
+                            <input type="radio" name="targetType" value="auto" checked={goals.targetType === 'auto'} onChange={() => setGoals({...goals, targetType: 'auto'})} className="hidden" />
+                            <p className="font-bold text-sm mb-1">Automatic Calculation</p>
+                            <p className="text-[11px] font-medium opacity-80">Based on your average essential expenses</p>
+                          </label>
+                          <label className={`flex-1 p-4 rounded-xl border cursor-pointer transition-colors ${goals.targetType === 'manual' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-white/[0.02] border-white/5 hover:bg-white/[0.05] text-slate-400'}`}>
+                            <input type="radio" name="targetType" value="manual" checked={goals.targetType === 'manual'} onChange={() => setGoals({...goals, targetType: 'manual'})} className="hidden" />
+                            <p className="font-bold text-sm mb-1">Manual Target</p>
+                            <p className="text-[11px] font-medium opacity-80">Set a specific fixed amount</p>
+                          </label>
+                        </div>
+                      </div>
+
+                      {goals.targetType === 'auto' && (
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Buffer Size (Months)</label>
+                          <select 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium appearance-none cursor-pointer"
+                            value={goals.autoMonths}
+                            onChange={(e) => setGoals({...goals, autoMonths: parseInt(e.target.value)})}
+                          >
+                            <option value="3" className="bg-[#0a0a0a]">3 Months (Minimum safety net)</option>
+                            <option value="6" className="bg-[#0a0a0a]">6 Months (Recommended for stability)</option>
+                            <option value="12" className="bg-[#0a0a0a]">12 Months (Maximum security)</option>
+                          </select>
+                        </div>
+                      )}
+
+                      {goals.targetType === 'manual' && (
+                        <div className="space-y-2">
+                          <label className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 ml-1">Manual Target Amount</label>
+                          <input 
+                            type="number" 
+                            className="glass-input w-full h-12 px-4 text-sm font-medium" 
+                            value={goals.manualTarget} 
+                            onChange={e => setGoals({...goals, manualTarget: parseFloat(e.target.value) || 0})}
+                            placeholder="e.g. 50000000"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <div className="mt-10 pt-6 border-t border-white/5 flex items-center justify-end">
+                      <button type="submit" disabled={isSavingGoals} className="px-6 py-3 bg-white text-black font-semibold rounded-lg hover:bg-neutral-200 transition-colors duration-200 cursor-pointer text-sm disabled:opacity-50">
+                        {isSavingGoals ? "Saving..." : "Save Goals"}
                       </button>
                     </div>
                   </form>

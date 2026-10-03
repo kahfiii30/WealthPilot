@@ -68,6 +68,18 @@ function App() {
       else if (currentIndex < prevIndexRef.current) setDirection(-1);
       prevIndexRef.current = currentIndex;
     }
+
+    const titles = {
+      '/': 'Dashboard - WealthPilot',
+      '/transactions': 'Transactions - WealthPilot',
+      '/budget': 'Budget - WealthPilot',
+      '/insight': 'Insights - WealthPilot',
+      '/assets': 'Assets & Debt - WealthPilot',
+      '/receivables': 'Receivables - WealthPilot',
+      '/settings': 'Settings - WealthPilot',
+      '/login': 'Login - WealthPilot'
+    };
+    document.title = titles[location.pathname] || 'WealthPilot';
   }, [location.pathname]);
 
   // Auth State Listener

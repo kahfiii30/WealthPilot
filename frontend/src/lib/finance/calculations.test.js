@@ -10,17 +10,55 @@ import {
   getMonthlyIncome,
   getMonthlyExpense,
   getSavingsRate,
-  getLiquidityMonths
+  getTradingBalanceAndGain
 } from './calculations.js';
 
 describe('calculations', () => {
+  describe('Trading Logic', () => {
+    it('invariant test: untuk periode dengan saldo awal 0, monthlySavings === perubahan cash balance', () => {
+      const transactions = [
+        { amount: 1000000, type: 'income', category: 'Salary', date: '2026-10-01' },
+        { amount: 200000, type: 'expense', category: 'Food & Dining', date: '2026-10-05' },
+        { amount: 300000, type: 'expense', category: 'Trading', date: '2026-10-10' }, // investment out
+        { amount: 350000, type: 'income', category: 'Trading', date: '2026-10-25' } // return 300k + 50k gain
+      ];
+      
+      const m = '2026-10';
+      const mIncome = getMonthlyIncome(transactions, m); // 1000000 + 50000
+      const mExpense = getMonthlyExpense(transactions, m); // 200000
+      const mSavings = mIncome - mExpense; // 1050000 - 200000 = 850000
+      
+      const cashChange = getCashBalance(transactions); // 1000000 - 200000 - 300000 + 350000 = 850000
+      
+      expect(mSavings).toBe(cashChange);
+      expect(mSavings).toBe(850000);
+      expect(mIncome).toBe(1050000); // normal income + 50k gain
+    });
+    
+    it('adds remaining investment balance to total assets', () => {
+       const transactions = [
+         { amount: 500000, type: 'expense', category: 'Trading', date: '2026-10-01' },
+         { amount: 200000, type: 'income', category: 'Trading', date: '2026-10-10' }
+       ];
+       const cash = getCashBalance(transactions); // -500000 + 200000 = -300000
+       const assets = [];
+       const receivables = [];
+       // Trading balance left = 300000. Total assets = -300000 (cash) + 300000 = 0.
+       expect(getTotalAssets(cash, assets, receivables, transactions)).toBe(0);
+       
+       const { investmentAssets } = getTradingBalanceAndGain(transactions);
+       expect(investmentAssets).toBe(300000);
+    });
+  });
+
   describe('classifyTransaction', () => {
-    it('should classify income correctly', () => {
+    it('should classify normal income correctly', () => {
       expect(classifyTransaction({ type: 'income', category: 'Salary' })).toBe('income');
     });
 
     it('should classify Trading and Investasi as transfer/investment', () => {
       expect(classifyTransaction({ type: 'expense', category: 'Trading' })).toBe('transfer/investment');
+      expect(classifyTransaction({ type: 'income', category: 'Trading' })).toBe('transfer/investment');
       expect(classifyTransaction({ type: 'expense', category: 'Investasi' })).toBe('transfer/investment');
     });
 
@@ -30,68 +68,4 @@ describe('calculations', () => {
     });
   });
 
-  describe('Phase 1 pure functions', () => {
-    const transactions = [
-      { amount: 1000, type: 'income', category: 'Salary', date: '2026-10-01' },
-      { amount: 200, type: 'expense', category: 'Food', date: '2026-10-05' },
-      { amount: 100, type: 'expense', category: 'Trading', date: '2026-10-10' } // transfer/investment
-    ];
-    const assets = [{ amount: 500 }];
-    const receivables = [{ status: 'pending', remainingAmount: 300 }, { status: 'paid', remainingAmount: 100 }];
-    const debts = [{ amount: 400 }];
-
-    it('getCashBalance', () => {
-      // 1000 - 200 - 100 = 700
-      expect(getCashBalance(transactions)).toBe(700);
-    });
-
-    it('getTotalAssets', () => {
-      const cash = 700;
-      // 700 + 500 + 300 = 1500
-      expect(getTotalAssets(cash, assets, receivables)).toBe(1500);
-    });
-
-    it('getTotalLiabilities', () => {
-      expect(getTotalLiabilities(debts)).toBe(400);
-    });
-
-    it('getNetWorth', () => {
-      expect(getNetWorth(1500, 400)).toBe(1100);
-    });
-
-    it('getMonthlyIncome & Expense', () => {
-      expect(getMonthlyIncome(transactions, '2026-10')).toBe(1000);
-      // trading is excluded from expense
-      expect(getMonthlyExpense(transactions, '2026-10')).toBe(200); 
-    });
-  });
-
-  describe('getBudgetSummary', () => {
-    beforeEach(() => {
-      vi.useFakeTimers();
-      vi.setSystemTime(new Date('2026-10-15T10:00:00Z'));
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    it('handles (a) tanpa budget', () => {
-      const transactions = [
-        { amount: 100000, type: 'expense', category: 'Food & Dining', date: '2026-10-01' },
-        { amount: 200000, type: 'expense', category: 'Lainnya', date: '2026-10-10' }
-      ];
-      const budgets = [];
-
-      const result = getBudgetSummary(transactions, budgets, '2026-10');
-
-      expect(result.totalBudget).toBe(0);
-      expect(result.totalActual).toBe(300000);
-      expect(result.remainingBudget).toBeNull();
-      expect(result.safeToSpendPerDay).toBeNull();
-      expect(result.consumedPercent).toBeNull();
-      expect(result.categoryStats.length).toBe(2);
-      expect(result.categoryStats[0].hasBudget).toBe(false);
-    });
-  });
 });

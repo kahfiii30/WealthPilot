@@ -68,7 +68,7 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
 
   const { cashBalance, netWorth, totalAssetsAmount, totalDebtsAmount, outstandingReceivables } = useMemo(() => {
     const cash = getCashBalance(transactions);
-    const assetsTotal = getTotalAssets(cash, assets, receivables);
+    const assetsTotal = getTotalAssets(cash, assets, receivables, transactions);
     const liabilitiesTotal = getTotalLiabilities(debts);
     const net = getNetWorth(assetsTotal, liabilitiesTotal);
     
@@ -186,11 +186,11 @@ function Dashboard({ transactions, assets = [], debts = [], receivables = [], on
             </div>
             <div>
               <p className="text-sm font-bold text-slate-100">
-                {totalIncome === 0 && totalExpense === 0 
-                  ? "Belum ada aktivitas finansial bulan ini." 
-                  : totalExpense > totalIncome 
-                    ? `Pengeluaran bulan ini melebihi pemasukan sebesar ${fm(totalExpense - totalIncome)}.`
-                    : `Anggaran aman. Sisa dana bulan ini ${fm(totalIncome - totalExpense)}.`
+                {bSummary.totalBudget === 0 
+                  ? "Belum ada budget bulan ini." 
+                  : bSummary.remainingBudget >= 0 
+                    ? `Anggaran aman. Sisa dana bulan ini ${fm(bSummary.remainingBudget)}.`
+                    : `Pengeluaran bulan ini melebihi budget sebesar ${fm(Math.abs(bSummary.remainingBudget))}.`
                 }
               </p>
               <p className="text-[11px] text-slate-400 font-medium mt-0.5">Ringkasan aksi berdasarkan data berjalan</p>

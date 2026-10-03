@@ -32,7 +32,7 @@ function AssetsDebt({
   const totalDebts = getTotalLiabilities(debts);
   
   const cashBalance = getCashBalance(transactions);
-  const totalAssets = getTotalAssets(cashBalance, assets, receivables);
+  const totalAssets = getTotalAssets(cashBalance, assets, receivables, transactions);
   
   const netWorth = getNetWorth(totalAssets, totalDebts);
 
@@ -108,13 +108,13 @@ function AssetsDebt({
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-primary tracking-tight truncate pr-4">{fm(totalAssetsPortfolio)}</span>
               <span className="text-xs font-semibold text-slate-400">
-                {totalAssetsPortfolio + totalDebts > 0 ? ((totalAssetsPortfolio / (totalAssetsPortfolio + totalDebts)) * 100).toFixed(1) : 100}%
+                {totalAssetsPortfolio + cashBalance + totalDebts > 0 ? ((totalAssetsPortfolio / (totalAssetsPortfolio + cashBalance + totalDebts)) * 100).toFixed(1) : 100}%
               </span>
             </div>
             <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${totalAssetsPortfolio + totalDebts > 0 ? (totalAssetsPortfolio / (totalAssetsPortfolio + totalDebts)) * 100 : 100}%` }}
+                animate={{ width: `${totalAssetsPortfolio + cashBalance + totalDebts > 0 ? (totalAssetsPortfolio / (totalAssetsPortfolio + cashBalance + totalDebts)) * 100 : 100}%` }}
                 className="h-full bg-primary"
               ></motion.div>
             </div>
@@ -124,13 +124,13 @@ function AssetsDebt({
             <div className="flex items-center justify-between">
               <span className="text-2xl font-bold text-red-400 tracking-tight truncate pr-4">{fm(totalDebts)}</span>
               <span className="text-xs font-semibold text-slate-400">
-                {totalAssetsPortfolio + totalDebts > 0 ? ((totalDebts / (totalAssetsPortfolio + totalDebts)) * 100).toFixed(1) : 0}%
+                {totalAssets + totalDebts > 0 ? ((totalDebts / (totalAssets + totalDebts)) * 100).toFixed(1) : 0}%
               </span>
             </div>
             <div className="w-full h-2 bg-white/[0.03] rounded-full mt-3 overflow-hidden border border-white/5">
               <motion.div 
                 initial={{ width: 0 }}
-                animate={{ width: `${totalAssetsPortfolio + totalDebts > 0 ? (totalDebts / (totalAssetsPortfolio + totalDebts)) * 100 : 0}%` }}
+                animate={{ width: `${totalAssets + totalDebts > 0 ? (totalDebts / (totalAssets + totalDebts)) * 100 : 0}%` }}
                 className="h-full bg-red-500"
               ></motion.div>
             </div>
@@ -237,7 +237,34 @@ function AssetsDebt({
                     </div>
                     <div className="min-w-0">
                       <h4 className="font-semibold text-slate-100 group-hover:text-red-400 transition-colors text-sm truncate">{debt.name}</h4>
-                      <p className="text-[11px] font-medium text-slate-500 mt-0.5 truncate">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <p className="text-[11px] font-medium text-slate-500 truncate">{debt.category} • Due: {formatDate(debt.dueDate)}</p>
+                        {(() => {
+                          if (!debt.dueDate) return null;
+                          let target = new Date(debt.dueDate);
+                          const now = new Date();
+                          
+                          // If it's just a day (e.g. "11") or already passed in a previous month, 
+                          // maybe they want it recurring? "Data 11 Jan 2026 saat ini harus tampil OVERDUE"
+                          // Let's just compare dates.
+                          if (Number.isNaN(target.getTime())) {
+                            // try to parse as day
+                            const day = parseInt(debt.dueDate, 10);
+                            if (day > 0 && day <= 31) {
+                              target = new Date(now.getFullYear(), now.getMonth(), day);
+                            }
+                          }
+                          
+                          if (Number.isNaN(target.getTime())) return null;
+                          
+                          const diffTime = target - now;
+                          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                          
+                          if (diffDays < 0) return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-red-500/20 text-red-400">OVERDUE</span>;
+                          if (diffDays <= 7) return <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-yellow-500/20 text-yellow-400">Due in {diffDays}d</span>;
+                          return null;
+                        })()}
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-4 pl-4 shrink-0">
